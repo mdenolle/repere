@@ -1,10 +1,85 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-05-08T13:43:37Z",
-  "source": "results",
+  "generated_at": "2026-05-08T22:02:02Z",
+  "source": "results/*.json + demo_small_models.json",
   "leaderboard": [
     {
       "rank": 1,
+      "model_id": "llama3.1:8b",
+      "agent_condition": "stalta-detection+skill-v0.2",
+      "suite": "sta_lta.intent_extraction",
+      "score": 1.0,
+      "quality_percent": 100.0,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
+    },
+    {
+      "rank": 2,
+      "model_id": "qwen2.5:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "sta_lta.intent_extraction",
+      "score": 1.0,
+      "quality_percent": 100.0,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
+    },
+    {
+      "rank": 3,
+      "model_id": "qwen2.5:7b",
+      "agent_condition": "stalta-detection+skill-v0.2",
+      "suite": "sta_lta.intent_extraction",
+      "score": 1.0,
+      "quality_percent": 100.0,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
+    },
+    {
+      "rank": 4,
+      "model_id": "llama3.1:8b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "sta_lta.intent_extraction",
+      "score": 0.7222222222222222,
+      "quality_percent": 72.22222222222221,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
+    },
+    {
+      "rank": 5,
+      "model_id": "mistral:7b",
+      "agent_condition": "stalta-detection+skill-v0.2",
+      "suite": "sta_lta.intent_extraction",
+      "score": 0.6666666666666666,
+      "quality_percent": 66.66666666666666,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
+    },
+    {
+      "rank": 6,
       "model_id": "mistral:latest",
       "agent_condition": "SeismoDataAgent+skill-v0.1-draft",
       "suite": "sta_lta.intent_extraction_public_v0",
@@ -19,7 +94,7 @@
       "skill_version": "v0.1-draft"
     },
     {
-      "rank": 2,
+      "rank": 7,
       "model_id": "mistral:latest",
       "agent_condition": "generic-coding-agent",
       "suite": "sta_lta.intent_extraction_public_v0",
@@ -34,10 +109,10 @@
       "skill_version": null
     },
     {
-      "rank": 3,
+      "rank": 8,
       "model_id": "stub-local",
       "agent_condition": "generic-coding-agent",
-      "suite": "sta_lta.intent_extraction_smoke",
+      "suite": "sta_lta.intent_extraction",
       "score": 0.16666666666666666,
       "quality_percent": 16.666666666666664,
       "cost_usd": 0.0,
@@ -47,6 +122,21 @@
       "run_file": "stub_eval.json",
       "skill_name": null,
       "skill_version": null
+    },
+    {
+      "rank": 9,
+      "model_id": "mistral:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "sta_lta.intent_extraction",
+      "score": 0.0,
+      "quality_percent": 0.0,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "demo_small_models.json",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2"
     }
   ],
   "notes": [

@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-05-08T22:02:02Z",
+  "source": "results/demo_small_models.json",
+  "leaderboard_kind": "skill_lift",
+  "rows": [
+    {
+      "model_id": "mistral:7b",
+      "suite": "sta_lta.intent_extraction",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2",
+      "score_none": 0.0,
+      "score_full": 0.6666666666666666,
+      "lift": 0.6666666666666666,
+      "cost_none_usd": 0.0,
+      "cost_full_usd": 0.0,
+      "cost_lift_pct": null,
+      "n_total": 6
+    },
+    {
+      "model_id": "llama3.1:8b",
+      "suite": "sta_lta.intent_extraction",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2",
+      "score_none": 0.7222222222222222,
+      "score_full": 1.0,
+      "lift": 0.2777777777777778,
+      "cost_none_usd": 0.0,
+      "cost_full_usd": 0.0,
+      "cost_lift_pct": null,
+      "n_total": 6
+    },
+    {
+      "model_id": "qwen2.5:7b",
+      "suite": "sta_lta.intent_extraction",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.2",
+      "score_none": 1.0,
+      "score_full": 1.0,
+      "lift": 0.0,
+      "cost_none_usd": 0.0,
+      "cost_full_usd": 0.0,
+      "cost_lift_pct": null,
+      "n_total": 6
+    }
+  ],
+  "notes": [
+    "Skill-lift leaderboard: each row reports the same model on the same suite under skill_mode='none' (baseline) and skill_mode='full' (skill loaded). 'lift' = score_full - score_none."
+  ]
+}

@@ -133,72 +133,155 @@ A draft seismology domain skill is available at `.github/skills/seismo-data-agen
 
 ## Golden datasets
 
-The STA/LTA suite has two kinds of gold:
+The STA/LTA suite uses two kinds of gold, and the leaderboard is a third
+artifact derived from runs over those golds. All three are reproducible
+from the scripts in [`scripts/`](scripts/), and each has a drift test that
+fails when the artifact and its source diverge.
 
-1. **Parametric gold** (intent, fetch_code, trigger_code, report). Each suite
-   derives `(prompt, gold)` directly from `events.yaml`. Adding an event to
-   `events.yaml` produces 5 graded items automatically. Static dumps of
-   every `(prompt, gold)` pair live under [`tests/fixtures/`](tests/fixtures/) so reviewers can
-   inspect what the benchmark actually asks for, and a drift test
-   ([`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py)) fails when the live items diverge from the dump.
+| Artifact | Where it lives | How to (re)build | Drift test |
+|---|---|---|---|
+| `(prompt, gold)` fixtures for intent / fetch_code / trigger_code / report | [`tests/fixtures/sta_lta.<suite>.json`](tests/fixtures/) | `python scripts/build_suite_fixtures.py` | [`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py) |
+| Plot PNG goldens (public) | [`src/frugalmind_suites/sta_lta/data/golden/<id>.png`](src/frugalmind_suites/sta_lta/data/golden/) | `python scripts/build_plot_goldens.py` | [`tests/test_canonical_recipe.py`](tests/test_canonical_recipe.py) |
+| Plot PNG goldens (private) | `$FM_STALTA_GOLDEN_DIR/<id>.png` (gitignored) | `python scripts/build_plot_goldens.py --private` | none — private; reviewed manually |
+| Static leaderboard data | [`site/data/leaderboard.json`](site/data/leaderboard.json), [`site/data/skill_lift.json`](site/data/skill_lift.json) | `python scripts/build_site_data.py` | [`tests/test_site_data.py`](tests/test_site_data.py) |
 
-2. **Plot gold** (the plot suite only). The gold is a PNG produced by the
-   canonical recipe in [`src/frugalmind_suites/sta_lta/recipe.py`](src/frugalmind_suites/sta_lta/recipe.py). SSIM scoring
-   compares model output to that PNG with a 0.85 threshold.
+### 1. Build the `(prompt, gold)` fixtures for the four parametric suites
 
-### Building plot goldens
-
-The generator is [`scripts/build_plot_goldens.py`](scripts/build_plot_goldens.py). It supports two output
-modes (public vs private) and two data modes (real FDSN vs deterministic
-synthetic):
-
-```bash
-# Public goldens, real FDSN data (committed under data/golden/)
-python scripts/build_plot_goldens.py --only nisqually-2001 tohoku-2011-teleseism
-
-# Private goldens for VERIFY events still being validated (gitignored output dir)
-FM_STALTA_GOLDEN_DIR=~/private/fm_goldens \
-  python scripts/build_plot_goldens.py --private \
-  --only pnsn-quiet-day-VERIFY mt-rainier-swarm-2024-VERIFY
-
-# Sandbox / CI smoke (no network, deterministic synthetic data)
-python scripts/build_plot_goldens.py --synth --only nisqually-2001 tohoku-2011-teleseism
-```
-
-Synthetic mode produces structurally correct placeholder PNGs (right
-panels, correct title format, working triggers) so the suite has *something*
-to compare against during local development. **Never publish benchmark
-numbers against synthetic goldens** — regenerate from real FDSN data on a
-host with network access first.
-
-The two committed public goldens (`nisqually-2001.png`, `tohoku-2011-teleseism.png`)
-in this repo were generated in synthetic mode for the initial commit; they
-must be regenerated from real FDSN before any leaderboard publication.
-
-### Regenerating the parametric fixtures
-
-If you change `events.yaml` or any of the suite prompt templates, regenerate
-the static fixtures:
+Four of the five STA/LTA suites are parametric over `events.yaml` —
+intent_extraction, fetch_code, trigger_code, and report all derive every
+prompt and every gold answer at runtime from the same truth set. To get a
+human-inspectable static view of what the benchmark asks each model:
 
 ```bash
 python scripts/build_suite_fixtures.py
 ```
 
-Then review the diff under `tests/fixtures/` and commit it as part of the
-same PR. The drift test will keep failing until you do.
+This writes one JSON file per suite under `tests/fixtures/`:
+
+```text
+tests/fixtures/
+├── sta_lta.intent_extraction.json   # 6 items, JSON-shaped golds
+├── sta_lta.fetch_code.json          # 6 items, code-execution scoring
+├── sta_lta.trigger_code.json        # 6 items, code-execution scoring
+└── sta_lta.report.json              # 6 items, lexical scoring
+```
+
+Each item looks like this (snippet from `sta_lta.intent_extraction.json`):
+
+```json
+{
+  "item_index": 0,
+  "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+  "gold": {
+    "network": "UW",
+    "station": "LON",
+    "location": "",
+    "channel": "BHZ",
+    "starttime": "2001-02-28T18:47:02.800000+00:00",
+    "endtime": "2001-02-28T19:02:02.800000+00:00"
+  }
+}
+```
+
+The fixtures are not the gold; `events.yaml` is. The fixtures are a
+**static rendering** of what the live suites currently emit, so reviewers
+can read prompts and golds in a PR without running Python. If you change
+`events.yaml` or a suite prompt template, regenerate the fixtures and
+commit the diff in the same PR. `tests/test_suite_fixtures.py` will fail
+until you do.
+
+### 2. Build the plot PNG goldens
+
+The fifth suite (plot) compares model output to a reference PNG via SSIM.
+The generator is [`scripts/build_plot_goldens.py`](scripts/build_plot_goldens.py); it supports two
+output modes (public vs private) and two data modes (real FDSN vs
+deterministic synthetic):
+
+```bash
+# (A) Public goldens, real FDSN data — commits under data/golden/.
+#     Use only for citable events that have been validated against a catalog.
+python scripts/build_plot_goldens.py --only nisqually-2001 tohoku-2011-teleseism
+
+# (B) Private goldens for VERIFY events still under validation.
+#     Output dir is gitignored; FM_STALTA_GOLDEN_DIR points scorers at it.
+FM_STALTA_GOLDEN_DIR=~/private/fm_goldens \
+  python scripts/build_plot_goldens.py --private \
+  --only pnsn-quiet-day-VERIFY mt-rainier-swarm-2024-VERIFY
+
+# (C) Synthetic-data fallback for sandboxes / CI smoke. Deterministic.
+#     Do NOT publish benchmark numbers against synthetic goldens.
+python scripts/build_plot_goldens.py --synth --only nisqually-2001 tohoku-2011-teleseism
+```
+
+The recipe — preprocessing, STA/LTA, and the matplotlib layout — is pinned
+in [`src/frugalmind_suites/sta_lta/recipe.py`](src/frugalmind_suites/sta_lta/recipe.py) and
+shared by both data modes. The two-panel layout (waveform + STA/LTA, red
+dashed vertical lines at trigger onsets, station/event title) matches what
+the [`seismic-plotting`](.github/skills/seismic-plotting) skill instructs
+models to produce.
+
+> The two public goldens currently committed (`nisqually-2001.png`,
+> `tohoku-2011-teleseism.png`) were generated in synthetic mode. Regenerate
+> with mode (A) on a host with EarthScope/IRIS access before any
+> leaderboard publication.
+
+### 3. Build the static-site leaderboard data
+
+After running real evals (or just the offline demo), refresh the JSON files
+the GitHub-Pages site reads:
+
+```bash
+# Run the offline 3-small-models demo to produce results/demo_small_models.json:
+python scripts/demo_small_models.py
+
+# Or hit local Ollama instead:
+python scripts/demo_small_models.py --live
+
+# Then build the static-site data:
+python scripts/build_site_data.py
+```
+
+This writes:
+
+- `site/data/leaderboard.json` — main per-row leaderboard (rank, model,
+  agent_condition, suite, score, cost, completed, efficiency).
+- `site/data/skill_lift.json` — per-model lift table (`score_none`,
+  `score_full`, `lift`, `cost_lift_pct`).
+
+The HTML page at [`site/index.html`](site/index.html) renders both as two
+separate tables. To preview locally:
+
+```bash
+cd site && python -m http.server 8123
+# then open http://127.0.0.1:8123/
+```
+
+`tests/test_site_data.py` validates the schema of both JSON files and
+checks that every `querySelector('#…')` in [`site/app.js`](site/app.js) has
+a matching id in the HTML — a regression in either side of the contract
+fails the test before it reaches Pages.
 
 ### Public-vs-private policy
 
-- Commit small public fixtures, sample events, and goldens for VERIFIED
-  citable events (e.g. Nisqually 2001, Tōhoku 2011).
+- Commit small public fixtures, sample events, and PNG goldens for
+  VERIFIED citable events (Nisqually 2001, Tōhoku 2011).
 - Do not commit full private goldens, provider secrets, or paid-eval
   outputs.
-- Point local runs to private STA/LTA goldens with `FM_STALTA_GOLDEN_DIR`;
-  the generator's `--private` flag respects this.
+- Point scorers at private STA/LTA goldens via `FM_STALTA_GOLDEN_DIR`; the
+  generator's `--private` flag respects it.
 - Store local eval outputs under `results/`, which is gitignored.
 - Use GitHub Actions secrets for future private CI access.
 - Promote generated artifacts to public goldens only after human review of
   the catalog match and the underlying waveform.
+
+### Tests that protect each artifact
+
+| Test file | What it checks |
+|---|---|
+| [`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py) | Each parametric suite's live items match the committed `(prompt, gold)` fixtures. Fails if `events.yaml` or a prompt template drifts. |
+| [`tests/test_canonical_recipe.py`](tests/test_canonical_recipe.py) | The plot recipe is byte-deterministic (SSIM=1.0 self-match), positive synthetic events trigger, negative ones don't, both committed public PNGs exist. |
+| [`tests/test_site_data.py`](tests/test_site_data.py) | `leaderboard.json` and `skill_lift.json` have the expected fields; `app.js` selectors all resolve in `index.html`. |
+| [`tests/test_three_small_models.py`](tests/test_three_small_models.py) | The 3-small-models skill-lift demo runs end-to-end against the YAML registry and produces sane lift values. |
 
 ## Manual evals now, weekly later
 

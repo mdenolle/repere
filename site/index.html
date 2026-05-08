@@ -120,6 +120,51 @@
 
           <p id="leaderboard-notes" class="notes"></p>
         </section>
+
+        <section id="skill-lift" class="panel" aria-labelledby="skill-lift-title">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Per-model skill impact</p>
+              <h2 id="skill-lift-title">Skill lift</h2>
+            </div>
+            <div class="metadata">
+              <span id="skill-lift-generated-at">Loading…</span>
+              <span id="skill-lift-source-label">data/skill_lift.json</span>
+            </div>
+          </div>
+
+          <p class="lede" style="max-width: 60ch; margin-top: 0.25rem;">
+            Each row shows the same model on the same suite, once with no skill
+            (<code>none</code>) and once with the bound skill loaded
+            (<code>full</code>). Lift is the score gained from the skill alone;
+            cost lift is the extra spend the skill prefix introduced.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Model</th>
+                  <th scope="col">Skill</th>
+                  <th scope="col">Suite</th>
+                  <th scope="col">Score (none)</th>
+                  <th scope="col">Score (full)</th>
+                  <th scope="col">Lift</th>
+                  <th scope="col">Cost (none)</th>
+                  <th scope="col">Cost (full)</th>
+                  <th scope="col">Cost Δ</th>
+                </tr>
+              </thead>
+              <tbody id="skill-lift-body">
+                <tr>
+                  <td colspan="9" class="loading">Loading skill-lift data…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p id="skill-lift-notes" class="notes"></p>
+        </section>
       </main>
     </div>
 
