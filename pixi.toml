@@ -31,5 +31,6 @@ full = { features = ["dev", "geo", "plot"], solve-group = "default" }
 test = "pytest"
 smoke-eval = "frugalmind smoke-eval"
 export-leaderboard = "frugalmind export-leaderboard"
+run-ollama-intent = "frugalmind run-ollama-intent"
 lint = "ruff check src tests"
 format = "ruff format src tests"

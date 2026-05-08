@@ -17,6 +17,9 @@ def test_build_leaderboard_ranks_by_score_then_cost():
             },
             {
                 "model_id": "cheap-good",
+                "agent_condition": "SeismoDataAgent+skill-v0.1-draft",
+                "skill_name": "seismo-data-agent",
+                "skill_version": "v0.1-draft",
                 "score": 0.8,
                 "cost_usd": 0.05,
                 "n_completed": 10,
@@ -41,6 +44,10 @@ def test_build_leaderboard_ranks_by_score_then_cost():
     ]
     assert [row["rank"] for row in rows] == [1, 2, 3]
     assert rows[0]["efficiency_score"] == 16.0
+    assert rows[0]["agent_condition"] == "SeismoDataAgent+skill-v0.1-draft"
+    assert rows[0]["skill_name"] == "seismo-data-agent"
+    assert rows[0]["skill_version"] == "v0.1-draft"
+    assert rows[1]["agent_condition"] == "generic-coding-agent"
     assert payload["generated_at"] == "2026-05-08T00:00:00Z"
 
 
@@ -64,5 +71,6 @@ def test_export_leaderboard_reads_result_files(tmp_path):
 
     payload = json.loads(output.read_text())
     assert payload["leaderboard"][0]["model_id"] == "stub-local"
-    assert payload["leaderboard"][0]["suite"] == "sta_lta.intent_extraction_smoke"
+    assert payload["leaderboard"][0]["agent_condition"] == "generic-coding-agent"
+    assert payload["leaderboard"][0]["suite"] == "sta_lta.intent_extraction"
     assert payload["leaderboard"][0]["run_file"] == "run.json"

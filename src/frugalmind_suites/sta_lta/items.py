@@ -7,9 +7,11 @@ from it. Adding an event to events.yaml adds 5 graded items automatically.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
 import os
+import re
 
 import yaml
 
@@ -25,6 +27,31 @@ from .scorers import (
 
 _DEFAULT_EVENTS = Path(__file__).parent / "events.yaml"
 EVENTS_PATH = Path(os.environ.get("FM_STALTA_EVENTS", _DEFAULT_EVENTS))
+
+
+_FRAC_RE = re.compile(r"(\.\d+)(?=([+-]\d{2}:?\d{2}|Z|$))")
+
+
+def parse_origin_time(value: str) -> datetime:
+    """Robust ISO-8601 parser tolerating 1-9 fractional digits and missing tz.
+
+    `datetime.fromisoformat` on Python 3.10 only accepts 0/3/6 fractional digits;
+    `events.yaml` uses 1-digit fractions like 'YYYY-MM-DDTHH:MM:SS.8'. Pad to 6.
+    """
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+
+    def _pad(match: re.Match) -> str:
+        frac = match.group(1)[1:]  # strip leading '.'
+        frac = (frac + "000000")[:6]
+        return f".{frac}"
+
+    text = _FRAC_RE.sub(_pad, text)
+    dt = datetime.fromisoformat(text)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 def _load_events(path: Path = EVENTS_PATH) -> list[dict]:
@@ -53,14 +80,12 @@ class STALTAIntentExtractionSuite(DenolleGroupSuite):
     task_kind = TaskKind.EXTRACTION
 
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
+        from datetime import timedelta
+
         for ev in _load_events():
             station = ev["recommended_stations"][0]
-            from datetime import datetime, timedelta, timezone
-
             t0_str = ev["origin_time"]
-            t0 = datetime.fromisoformat(t0_str.replace("Z", "+00:00"))
-            if t0.tzinfo is None:
-                t0 = t0.replace(tzinfo=timezone.utc)
+            t0 = parse_origin_time(t0_str)
             half = timedelta(minutes=ev["suggested_window_min"] / 2)
             start, end = (t0 - half).isoformat(), (t0 + half).isoformat()
 

@@ -29,11 +29,23 @@ Initial focus:
 frugalmind/
 ├── src/
 │   ├── frugalmind/                  # Core eval primitives and CLI
+│   │   ├── adapters.py              # AnthropicAdapter, OpenAICompatAdapter, EchoAdapter
+│   │   ├── budget.py                # BudgetGuard
+│   │   ├── leaderboard.py           # LeaderboardRunner + skill-lift export
+│   │   ├── registry.py              # YAML model-registry loader
+│   │   ├── router.py                # FrugalRouter
+│   │   ├── skills.py                # SkillLoader, SkillManifest, render modes
+│   │   └── telemetry.py             # JSONLTelemetry
 │   └── frugalmind_suites/
 │       └── sta_lta/                 # First scientific benchmark suite
-├── tests/                           # Deterministic smoke tests
+├── config/
+│   └── models.yaml                  # 13-model registry (nano/small/medium/big/cloud)
+├── notebooks/                       # Interactive walkthroughs (quickstart, etc.)
+├── scripts/                         # Small standalone runners
+├── tests/                           # Deterministic test suite (~80 tests)
 ├── docs/                            # Archived suite docs and design notes
 ├── site/                            # GitHub Pages leaderboard
+├── .github/skills/                  # Domain-agent skills + manifest.yaml
 ├── .github/workflows/               # Manual CI scaffold
 ├── pyproject.toml                   # Python package metadata
 ├── pixi.toml                        # Primary development environment
@@ -48,16 +60,22 @@ Install Pixi, then run:
 
 ```bash
 pixi install
-pixi run test
-pixi run smoke-eval
-pixi run export-leaderboard
+pixi run test                # deterministic test suite (~80 tests, no providers)
+pixi run smoke-eval          # stub eval; writes results/stub_eval.json
+pixi run export-leaderboard  # builds site/data/leaderboard.json
 ```
 
-`pixi run test` runs only deterministic tests. It does not need ObsPy, network access, model-provider credentials, or private goldens.
+`pixi run test` does not need ObsPy, network access, model-provider
+credentials, or private goldens.
 
-`pixi run smoke-eval` runs a local stub evaluation and writes an ignored JSON result under `results/`.
+The CLI also exposes:
 
-`pixi run export-leaderboard` converts local JSON results into `site/data/leaderboard.json` for the static leaderboard.
+```bash
+pixi run frugalmind list-models             # print the loaded model registry
+pixi run frugalmind list-skills             # print skills + their suite bindings
+pixi run frugalmind run-skill-lift          # offline skill-lift demo
+pixi run frugalmind run-ollama-intent --model mistral:7b --skill stalta-detection
+```
 
 ## Conda fallback
 
@@ -72,6 +90,31 @@ python -m frugalmind.cli smoke-eval
 python -m frugalmind.cli export-leaderboard
 ```
 
+## Notebooks
+
+The fastest way to see the framework in action is the quickstart notebook:
+
+```bash
+pip install -e ".[dev]" jupyter
+jupyter lab notebooks/
+```
+
+Then open [`notebooks/01_skill_lift_quickstart.ipynb`](notebooks/01_skill_lift_quickstart.ipynb).
+It walks through three small-tier models (`mistral:7b`, `llama3.1:8b`,
+`qwen2.5:7b`) running the public STA/LTA intent-extraction suite under
+`none` vs `full` skill conditions and produces a leaderboard JSON. The
+default path uses an `EchoAdapter` so it runs offline; the last section
+shows how to swap to a live Ollama server with a one-line factory change.
+
+To run the same demo from the command line without the notebook:
+
+```bash
+python scripts/demo_small_models.py            # offline stub demo
+python scripts/demo_small_models.py --live     # uses local Ollama
+```
+
+See [`notebooks/README.md`](notebooks/README.md) for more.
+
 ## Current benchmark suite
 
 The STA/LTA suite tests a seismic analysis pipeline:
@@ -84,18 +127,78 @@ The STA/LTA suite tests a seismic analysis pipeline:
 
 The public sample truth set currently has six events across regional earthquakes, teleseisms, noise days, and quarry blasts. Several entries are marked `VERIFY`; do not publish benchmark numbers until those catalog entries are validated.
 
-## Private golden datasets
+The rationale for starting with STA/LTA is documented in `docs/stalta_benchmark_rationale.md`. In short, this is the smallest complete earthquake-seismology coding pipeline: fetch waveform data, detect a possible event, plot the result, and explain whether the source is plausibly local/regional, teleseismic, anthropogenic, or noise.
 
-FrugalMind should use public sample data for development and private/full golden datasets for serious model comparison.
+A draft seismology domain skill is available at `.github/skills/seismo-data-agent/SKILL.md`. Runs that use it should be labeled separately from raw coding-agent runs, for example with `agent_condition = "SeismoDataAgent+skill-v0.1-draft"`. Leaderboard condition metadata are described in `docs/leaderboard_conditions.md`.
 
-Policy:
+## Golden datasets
 
-- Commit small public fixtures and sample events.
-- Do not commit full private goldens, provider secrets, or paid-eval outputs.
-- Point local runs to private STA/LTA goldens with `FM_STALTA_GOLDEN_DIR`.
-- Store local eval outputs under `results/`, which is ignored by git.
+The STA/LTA suite has two kinds of gold:
+
+1. **Parametric gold** (intent, fetch_code, trigger_code, report). Each suite
+   derives `(prompt, gold)` directly from `events.yaml`. Adding an event to
+   `events.yaml` produces 5 graded items automatically. Static dumps of
+   every `(prompt, gold)` pair live under [`tests/fixtures/`](tests/fixtures/) so reviewers can
+   inspect what the benchmark actually asks for, and a drift test
+   ([`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py)) fails when the live items diverge from the dump.
+
+2. **Plot gold** (the plot suite only). The gold is a PNG produced by the
+   canonical recipe in [`src/frugalmind_suites/sta_lta/recipe.py`](src/frugalmind_suites/sta_lta/recipe.py). SSIM scoring
+   compares model output to that PNG with a 0.85 threshold.
+
+### Building plot goldens
+
+The generator is [`scripts/build_plot_goldens.py`](scripts/build_plot_goldens.py). It supports two output
+modes (public vs private) and two data modes (real FDSN vs deterministic
+synthetic):
+
+```bash
+# Public goldens, real FDSN data (committed under data/golden/)
+python scripts/build_plot_goldens.py --only nisqually-2001 tohoku-2011-teleseism
+
+# Private goldens for VERIFY events still being validated (gitignored output dir)
+FM_STALTA_GOLDEN_DIR=~/private/fm_goldens \
+  python scripts/build_plot_goldens.py --private \
+  --only pnsn-quiet-day-VERIFY mt-rainier-swarm-2024-VERIFY
+
+# Sandbox / CI smoke (no network, deterministic synthetic data)
+python scripts/build_plot_goldens.py --synth --only nisqually-2001 tohoku-2011-teleseism
+```
+
+Synthetic mode produces structurally correct placeholder PNGs (right
+panels, correct title format, working triggers) so the suite has *something*
+to compare against during local development. **Never publish benchmark
+numbers against synthetic goldens** — regenerate from real FDSN data on a
+host with network access first.
+
+The two committed public goldens (`nisqually-2001.png`, `tohoku-2011-teleseism.png`)
+in this repo were generated in synthetic mode for the initial commit; they
+must be regenerated from real FDSN before any leaderboard publication.
+
+### Regenerating the parametric fixtures
+
+If you change `events.yaml` or any of the suite prompt templates, regenerate
+the static fixtures:
+
+```bash
+python scripts/build_suite_fixtures.py
+```
+
+Then review the diff under `tests/fixtures/` and commit it as part of the
+same PR. The drift test will keep failing until you do.
+
+### Public-vs-private policy
+
+- Commit small public fixtures, sample events, and goldens for VERIFIED
+  citable events (e.g. Nisqually 2001, Tōhoku 2011).
+- Do not commit full private goldens, provider secrets, or paid-eval
+  outputs.
+- Point local runs to private STA/LTA goldens with `FM_STALTA_GOLDEN_DIR`;
+  the generator's `--private` flag respects this.
+- Store local eval outputs under `results/`, which is gitignored.
 - Use GitHub Actions secrets for future private CI access.
-- Promote generated artifacts to goldens only after human review.
+- Promote generated artifacts to public goldens only after human review of
+  the catalog match and the underlying waveform.
 
 ## Manual evals now, weekly later
 
@@ -114,12 +217,24 @@ pixi run export-leaderboard
 
 For GitHub, set Pages to deploy from GitHub Actions if it is not already enabled in repository settings. Private golden-set results should only be exported into the public site after human approval.
 
+Leaderboard rows include an `agent_condition` field so a raw `generic-coding-agent` run is not mixed with a `SeismoDataAgent+skill-v0.1-draft` run. Skill-assisted runs may also include `skill_name` and `skill_version`.
+
 ## Roadmap
 
-- Expand the core framework with real provider adapters.
-- Add cost-aware routing and subagent rigor policies.
-- Validate all public sample events against source catalogs.
+Done:
+
+- Provider adapters for Anthropic Messages API and OpenAI-compatible chat completions.
+- `FrugalRouter` with per-task quality floors, EMA score updates, and budget integration.
+- `BudgetGuard` and `JSONLTelemetry` modules.
+- 13-model registry (`config/models.yaml`) with cost metadata across nano/small/medium/big/cloud tiers.
+- Skill system: `SkillLoader` with `none`/`instructions`/`full` modes, `manifest.yaml` binding skills to suites, four full skills (`stalta-detection`, `obspy-fdsn-fetch`, `seismic-plotting`, `seismic-report`).
+- `LeaderboardRunner` that computes per-model **skill lift** between baseline and skill-loaded conditions.
+
+Next:
+
+- Validate all public sample events against source catalogs (lift the four `VERIFY` placeholders).
 - Add private full-suite golden datasets.
-- Add additional scientific and engineering benchmark suites.
-- Add model registry and budget configuration files.
+- Add additional scientific and engineering benchmark suites beyond STA/LTA.
+- Hook the `FrugalRouter` into a real benchmark loop (currently independent of `EvalRunner`).
+- Promote the legacy `seismo-data-agent` rows in the leaderboard to `stalta-detection` once verified.
 - Enable weekly evals once the manual workflow is stable.

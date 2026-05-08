@@ -1,0 +1,79 @@
+{
+  "schema_version": "0.1",
+  "suite_id": "sta_lta.intent_extraction",
+  "n_items": 6,
+  "items": [
+    {
+      "item_index": 0,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2001-02-28T18:47:02.800000+00:00",
+        "endtime": "2001-02-28T19:02:02.800000+00:00"
+      }
+    },
+    {
+      "item_index": 1,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M9.1 Tōhoku, recorded as teleseism in PNW\nOrigin time (UTC): 2011-03-11T05:46:24.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±30 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2011-03-11T05:16:24+00:00",
+        "endtime": "2011-03-11T06:16:24+00:00"
+      }
+    },
+    {
+      "item_index": 2,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Mt. Rainier shallow swarm, 2024 (placeholder — verify dates)\nOrigin time (UTC): 2024-07-04T12:00:00.0\nSuggested station: UW.STAR..EHZ\nSuggested window: ±2.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "STAR",
+        "location": "",
+        "channel": "EHZ",
+        "starttime": "2024-07-04T11:57:30+00:00",
+        "endtime": "2024-07-04T12:02:30+00:00"
+      }
+    },
+    {
+      "item_index": 3,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Quiet day on UW.LON — no events expected\nOrigin time (UTC): 2023-08-15T03:00:00.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±15 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2023-08-15T02:45:00+00:00",
+        "endtime": "2023-08-15T03:15:00+00:00"
+      }
+    },
+    {
+      "item_index": 4,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Routine quarry blast flagged in PNSN catalog (placeholder)\nOrigin time (UTC): 2024-03-12T20:30:00.0\nSuggested station: UW.ALCT..EHZ\nSuggested window: ±2.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "ALCT",
+        "location": "",
+        "channel": "EHZ",
+        "starttime": "2024-03-12T20:27:30+00:00",
+        "endtime": "2024-03-12T20:32:30+00:00"
+      }
+    },
+    {
+      "item_index": 5,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Low-SNR small event near detection threshold (placeholder)\nOrigin time (UTC): 2024-11-20T09:15:00.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±2.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2024-11-20T09:12:30+00:00",
+        "endtime": "2024-11-20T09:17:30+00:00"
+      }
+    }
+  ]
+}

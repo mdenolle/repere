@@ -99,7 +99,13 @@ class ModelRegistry:
 
 
 class EvalRunner:
-    """Budget-aware deterministic evaluation loop."""
+    """Budget-aware deterministic evaluation loop.
+
+    Internally delegates spend tracking to :class:`frugalmind.budget.BudgetGuard`
+    and per-call records to :class:`frugalmind.telemetry.JSONLTelemetry` (when
+    `telemetry=` is supplied). The public constructor signature is kept stable
+    for back-compat; pass `budget=` to share a guard across multiple runners.
+    """
 
     def __init__(
         self,
@@ -109,16 +115,28 @@ class EvalRunner:
         adapter_factory: Callable[[ModelCard], Adapter] | None = None,
         per_model_budget_usd: float = 1.0,
         total_budget_usd: float = 10.0,
+        budget: Any = None,
+        telemetry: Any = None,
+        skill_name: str | None = None,
+        skill_mode: str | None = None,
     ) -> None:
+        from .budget import BudgetGuard  # local import to avoid cycles
+
         self.registry = registry
         self.suites = list(suites)
         self.adapter_factory = adapter_factory
         self.per_model_budget_usd = per_model_budget_usd
         self.total_budget_usd = total_budget_usd
+        self.budget = budget if budget is not None else BudgetGuard(
+            per_model_usd=per_model_budget_usd,
+            total_usd=total_budget_usd,
+        )
+        self.telemetry = telemetry
+        self.skill_name = skill_name
+        self.skill_mode = skill_mode
 
     def run_all(self, model_ids: list[str] | None = None) -> list[EvalResult]:
         cards = [self.registry.get(mid) for mid in model_ids] if model_ids else self.registry.list()
-        total_spent = 0.0
         results: list[EvalResult] = []
 
         for card in cards:
@@ -126,22 +144,24 @@ class EvalRunner:
                 raise ValueError("EvalRunner requires adapter_factory for model execution")
 
             adapter = self.adapter_factory(card)
-            model_spent = 0.0
             completed = 0
             score_sum = 0.0
             details: list[dict[str, Any]] = []
             all_items = [item for suite in self.suites for item in suite.items()]
+            spent_at_start = self.budget.spent(card.id)
 
             for idx, (prompt, gold, scorer) in enumerate(all_items):
                 estimate = adapter.estimate_cost(prompt)
-                if model_spent + estimate > self.per_model_budget_usd:
-                    break
-                if total_spent + estimate > self.total_budget_usd:
+                if not self.budget.can_afford(card.id, estimate):
+                    if self.telemetry is not None:
+                        self.telemetry.log_event(
+                            "budget_skip",
+                            {"model_id": card.id, "item_index": idx, "estimate_usd": estimate},
+                        )
                     break
 
                 generation = adapter.generate(prompt)
-                model_spent += generation.cost_usd
-                total_spent += generation.cost_usd
+                self.budget.record(card.id, generation.cost_usd)
                 item_score = float(scorer(generation.text, gold))
                 completed += 1
                 score_sum += item_score
@@ -153,6 +173,14 @@ class EvalRunner:
                         "model_id": generation.model_id,
                     }
                 )
+                if self.telemetry is not None:
+                    self.telemetry.log_generation(
+                        generation,
+                        score=item_score,
+                        item_index=idx,
+                        skill_name=self.skill_name,
+                        skill_mode=self.skill_mode,
+                    )
 
             n_total = len(all_items)
             results.append(
@@ -161,7 +189,7 @@ class EvalRunner:
                     score=score_sum / n_total if n_total else 0.0,
                     n_completed=completed,
                     n_total=n_total,
-                    cost_usd=model_spent,
+                    cost_usd=self.budget.spent(card.id) - spent_at_start,
                     details=details,
                 )
             )
@@ -194,3 +222,55 @@ __all__ = [
     "TaskKind",
     "load_env_keys",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy re-exports for the new modules to avoid import cycles."""
+    if name in {"BudgetGuard", "BudgetExceeded"}:
+        from .budget import BudgetExceeded, BudgetGuard
+
+        return {"BudgetGuard": BudgetGuard, "BudgetExceeded": BudgetExceeded}[name]
+    if name in {"AnthropicAdapter", "OpenAICompatAdapter", "EchoAdapter", "adapter_from_env"}:
+        from .adapters import (
+            AnthropicAdapter,
+            EchoAdapter,
+            OpenAICompatAdapter,
+            adapter_from_env,
+        )
+
+        return {
+            "AnthropicAdapter": AnthropicAdapter,
+            "EchoAdapter": EchoAdapter,
+            "OpenAICompatAdapter": OpenAICompatAdapter,
+            "adapter_from_env": adapter_from_env,
+        }[name]
+    if name in {"FrugalRouter", "RoutingDecision", "NoEligibleModelError"}:
+        from .router import FrugalRouter, NoEligibleModelError, RoutingDecision
+
+        return {
+            "FrugalRouter": FrugalRouter,
+            "RoutingDecision": RoutingDecision,
+            "NoEligibleModelError": NoEligibleModelError,
+        }[name]
+    if name in {"JSONLTelemetry", "read_jsonl"}:
+        from .telemetry import JSONLTelemetry, read_jsonl
+
+        return {"JSONLTelemetry": JSONLTelemetry, "read_jsonl": read_jsonl}[name]
+    if name in {"SkillLoader", "SkillManifest", "Skill", "render_with_skill"}:
+        from .skills import Skill, SkillLoader, SkillManifest, render_with_skill
+
+        return {
+            "SkillLoader": SkillLoader,
+            "SkillManifest": SkillManifest,
+            "Skill": Skill,
+            "render_with_skill": render_with_skill,
+        }[name]
+    if name in {"LeaderboardRunner", "SkillLiftRow"}:
+        from .leaderboard import LeaderboardRunner, SkillLiftRow
+
+        return {"LeaderboardRunner": LeaderboardRunner, "SkillLiftRow": SkillLiftRow}[name]
+    if name == "load_registry_yaml":
+        from .registry import load_registry_yaml
+
+        return load_registry_yaml
+    raise AttributeError(f"module 'frugalmind' has no attribute {name!r}")

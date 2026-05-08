@@ -1,11 +1,42 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-05-08T06:56:23Z",
+  "generated_at": "2026-05-08T13:43:37Z",
   "source": "results",
   "leaderboard": [
     {
       "rank": 1,
+      "model_id": "mistral:latest",
+      "agent_condition": "SeismoDataAgent+skill-v0.1-draft",
+      "suite": "sta_lta.intent_extraction_public_v0",
+      "score": 0.6666666666666666,
+      "quality_percent": 66.66666666666666,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "ollama_mistral-latest_SeismoDataAgent-skill-v0.1-draft.json",
+      "skill_name": "seismo-data-agent",
+      "skill_version": "v0.1-draft"
+    },
+    {
+      "rank": 2,
+      "model_id": "mistral:latest",
+      "agent_condition": "generic-coding-agent",
+      "suite": "sta_lta.intent_extraction_public_v0",
+      "score": 0.5,
+      "quality_percent": 50.0,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "ollama_mistral-latest_generic-coding-agent.json",
+      "skill_name": null,
+      "skill_version": null
+    },
+    {
+      "rank": 3,
       "model_id": "stub-local",
+      "agent_condition": "generic-coding-agent",
       "suite": "sta_lta.intent_extraction_smoke",
       "score": 0.16666666666666666,
       "quality_percent": 16.666666666666664,
@@ -13,7 +44,9 @@
       "n_completed": 6,
       "n_total": 6,
       "efficiency_score": null,
-      "run_file": "stub_eval.json"
+      "run_file": "stub_eval.json",
+      "skill_name": null,
+      "skill_version": null
     }
   ],
   "notes": [

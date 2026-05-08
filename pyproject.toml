@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "frugalmind"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cost-optimized multi-agent evaluation and routing prototype"
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
 dependencies = [
     "PyYAML>=6.0",
 ]
@@ -45,3 +46,9 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = [
+    "E501",  # line length is enforced by formatter
+]

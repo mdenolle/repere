@@ -55,7 +55,7 @@ function renderTable(rows) {
 
   if (!rows.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td colspan="7" class="empty">No leaderboard rows published yet.</td>';
+    tr.innerHTML = '<td colspan="8" class="empty">No leaderboard rows published yet.</td>';
     body.appendChild(tr);
     return;
   }
@@ -65,6 +65,7 @@ function renderTable(rows) {
     const cells = [
       { className: "rank", value: `#${row.rank}` },
       { className: "model", value: row.model_id },
+      { value: row.agent_condition ?? "generic-coding-agent" },
       { value: row.suite },
       { className: "score", value: formatScore(row.score) },
       { className: "mono", value: formatCost(row.cost_usd) },

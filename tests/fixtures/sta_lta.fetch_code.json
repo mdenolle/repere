@@ -1,0 +1,49 @@
+{
+  "schema_version": "0.1",
+  "suite_id": "sta_lta.fetch_code",
+  "n_items": 6,
+  "items": [
+    {
+      "item_index": 0,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2001-02-28T18:54:32.8' minus 7.5 minutes\n  endtime   = '2001-02-28T18:54:32.8' plus  7.5 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "nisqually-2001"
+      }
+    },
+    {
+      "item_index": 1,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2011-03-11T05:46:24.0' minus 30 minutes\n  endtime   = '2011-03-11T05:46:24.0' plus  30 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "tohoku-2011-teleseism"
+      }
+    },
+    {
+      "item_index": 2,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'STAR'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2024-07-04T12:00:00.0' minus 2.5 minutes\n  endtime   = '2024-07-04T12:00:00.0' plus  2.5 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "mt-rainier-swarm-2024-VERIFY"
+      }
+    },
+    {
+      "item_index": 3,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2023-08-15T03:00:00.0' minus 15 minutes\n  endtime   = '2023-08-15T03:00:00.0' plus  15 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "pnsn-quiet-day-VERIFY"
+      }
+    },
+    {
+      "item_index": 4,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'ALCT'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2024-03-12T20:30:00.0' minus 2.5 minutes\n  endtime   = '2024-03-12T20:30:00.0' plus  2.5 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "cascade-quarry-blast-VERIFY"
+      }
+    },
+    {
+      "item_index": 5,
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2024-11-20T09:15:00.0' minus 2.5 minutes\n  endtime   = '2024-11-20T09:15:00.0' plus  2.5 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "gold": {
+        "event_id": "borderline-microseism-VERIFY"
+      }
+    }
+  ]
+}

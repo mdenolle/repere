@@ -1,0 +1,178 @@
+# =============================================================================
+# FrugalMind model registry
+# =============================================================================
+# Tier definitions for cost-aware routing. Cost rates are USD per 1K tokens.
+# Local models are priced at 0.0 because the marginal monetary cost of an
+# Ollama/vLLM call on hardware you already pay for is ~zero; if you want to
+# attribute electricity or amortized GPU rental, override at registry-load
+# time.
+#
+# Tiers:
+#   - nano:    < 2B params, instant on CPU, weakest reasoning
+#   - small:   2-9B params, common open-weight chat models
+#   - medium:  9-35B params, stronger reasoning, slower on CPU
+#   - big:     35-200B params, top open-weight tier or distilled frontier
+#   - cloud:   API-served frontier or near-frontier models
+#
+# Cost values are recorded as of public list prices when this file was written.
+# Re-validate before any benchmark publication; provider list prices change.
+# =============================================================================
+
+schema_version: 0.1
+
+models:
+
+  # ---- nano: tiny local models ---------------------------------------------
+  - id: qwen2.5:0.5b
+    family: qwen2.5
+    tier: nano
+    size_b: 0.5
+    context_window: 32000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: alibaba
+      license: apache-2.0
+      notes: "Smoke-test floor model; rarely passes intent extraction."
+
+  - id: gemma2:2b
+    family: gemma2
+    tier: nano
+    size_b: 2.0
+    context_window: 8192
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: google
+      license: gemma
+
+  # ---- small: 7-9B open weights --------------------------------------------
+  - id: mistral:7b
+    family: mistral
+    tier: small
+    size_b: 7.0
+    context_window: 32000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: mistral-ai
+      license: apache-2.0
+
+  - id: llama3.1:8b
+    family: llama3.1
+    tier: small
+    size_b: 8.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: meta
+      license: llama3
+
+  - id: qwen2.5:7b
+    family: qwen2.5
+    tier: small
+    size_b: 7.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: alibaba
+      license: apache-2.0
+
+  # ---- medium: 14-35B open weights -----------------------------------------
+  - id: qwen2.5:14b
+    family: qwen2.5
+    tier: medium
+    size_b: 14.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+
+  - id: gemma2:27b
+    family: gemma2
+    tier: medium
+    size_b: 27.0
+    context_window: 8192
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+
+  # ---- big: 70B+ open weights ----------------------------------------------
+  - id: llama3.3:70b
+    family: llama3.3
+    tier: big
+    size_b: 70.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      provider: meta
+      license: llama3
+      notes: "Strong open-weight ceiling; needs ~48GB GPU at 4-bit."
+
+  # ---- cloud: API-served frontier and near-frontier ------------------------
+  - id: claude-haiku-4-5-20251001
+    family: claude-4
+    tier: cloud
+    size_b: null
+    context_window: 200000
+    backend: anthropic
+    cost_per_1k_in: 0.001
+    cost_per_1k_out: 0.005
+    metadata:
+      provider: anthropic
+      list_price_date: "2026-05-08"
+
+  - id: claude-sonnet-4-6
+    family: claude-4
+    tier: cloud
+    size_b: null
+    context_window: 200000
+    backend: anthropic
+    cost_per_1k_in: 0.003
+    cost_per_1k_out: 0.015
+    metadata:
+      provider: anthropic
+      list_price_date: "2026-05-08"
+
+  - id: claude-opus-4-6
+    family: claude-4
+    tier: cloud
+    size_b: null
+    context_window: 200000
+    backend: anthropic
+    cost_per_1k_in: 0.015
+    cost_per_1k_out: 0.075
+    metadata:
+      provider: anthropic
+      list_price_date: "2026-05-08"
+
+  - id: gpt-4o-mini
+    family: gpt-4o
+    tier: cloud
+    size_b: null
+    context_window: 128000
+    backend: openai
+    cost_per_1k_in: 0.00015
+    cost_per_1k_out: 0.0006
+    metadata:
+      provider: openai
+
+  - id: gpt-4o
+    family: gpt-4o
+    tier: cloud
+    size_b: null
+    context_window: 128000
+    backend: openai
+    cost_per_1k_in: 0.0025
+    cost_per_1k_out: 0.01
+    metadata:
+      provider: openai

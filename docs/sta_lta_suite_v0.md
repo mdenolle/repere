@@ -2,6 +2,8 @@
 
 The first concrete `EvalSuite` for FrugalMind. Tests every step of the pipeline a small geophysics team would run on incoming seismic data: intent parsing → FDSN fetch → STA/LTA detection → plotting → reporting. Each step is graded independently against ground truth.
 
+For the scientific motivation and the planned local/regional-vs-teleseismic source-explanation tests, see `docs/stalta_benchmark_rationale.md`.
+
 ## What's in the box
 
 | File | Purpose |

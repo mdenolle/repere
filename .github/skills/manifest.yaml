@@ -1,0 +1,46 @@
+# =============================================================================
+# FrugalMind skills manifest
+# =============================================================================
+# Binds skill directories (each containing a SKILL.md) to one or more suite IDs.
+# Used by SkillLoader/LeaderboardRunner to pick the right skill automatically.
+# Add new skills by creating a directory under `.github/skills/<name>/` with a
+# SKILL.md and listing the suite IDs it should attach to.
+# =============================================================================
+
+schema_version: 0.1
+skills_dir: "."
+
+skills:
+  - name: stalta-detection
+    suites:
+      - sta_lta.intent_extraction
+      - sta_lta.fetch_code
+      - sta_lta.trigger_code
+      - sta_lta.plot
+      - sta_lta.report
+    notes: |
+      Full-pipeline skill. Use this when the agent runs the entire STA/LTA
+      benchmark end to end. Per-task narrow skills below override per suite
+      when both are present in a run configuration.
+
+  - name: obspy-fdsn-fetch
+    suites:
+      - sta_lta.fetch_code
+    notes: "Narrow skill: only the FDSN fetch step."
+
+  - name: seismic-plotting
+    suites:
+      - sta_lta.plot
+    notes: "Narrow skill: only the matplotlib plot step."
+
+  - name: seismic-report
+    suites:
+      - sta_lta.report
+    notes: "Narrow skill: only the one-paragraph report step."
+
+  - name: seismo-data-agent
+    suites: []
+    notes: |
+      Legacy skill kept for back-compat with existing leaderboard rows
+      tagged `SeismoDataAgent+skill-v0.1-draft`. New work should use
+      `stalta-detection` instead.
