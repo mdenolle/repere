@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-05-08T06:56:23Z",
+  "source": "results",
+  "leaderboard": [
+    {
+      "rank": 1,
+      "model_id": "stub-local",
+      "suite": "sta_lta.intent_extraction_smoke",
+      "score": 0.16666666666666666,
+      "quality_percent": 16.666666666666664,
+      "cost_usd": 0.0,
+      "n_completed": 6,
+      "n_total": 6,
+      "efficiency_score": null,
+      "run_file": "stub_eval.json"
+    }
+  ],
+  "notes": [
+    "Public leaderboard data may use smoke tests until private golden-set scores are approved for release."
+  ]
+}

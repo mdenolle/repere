@@ -9,6 +9,7 @@ from pathlib import Path
 from frugalmind_suites.sta_lta import STALTAIntentExtractionSuite
 
 from . import EvalRunner, Generation, ModelCard, ModelRegistry
+from .leaderboard import export_leaderboard
 
 
 def _run_stub_eval(results_dir: Path) -> Path:
@@ -71,9 +72,19 @@ def main(argv: list[str] | None = None) -> int:
     smoke = subparsers.add_parser("smoke-eval", help="Run a deterministic stub eval")
     smoke.add_argument("--results-dir", default="results", type=Path)
 
+    leaderboard = subparsers.add_parser(
+        "export-leaderboard", help="Export static leaderboard JSON from eval results"
+    )
+    leaderboard.add_argument("--results-dir", default="results", type=Path)
+    leaderboard.add_argument("--output", default="site/data/leaderboard.json", type=Path)
+
     args = parser.parse_args(argv)
     if args.command == "smoke-eval":
         path = _run_stub_eval(args.results_dir)
+        print(f"Wrote {path}")
+        return 0
+    if args.command == "export-leaderboard":
+        path = export_leaderboard(args.results_dir, args.output)
         print(f"Wrote {path}")
         return 0
     return 1

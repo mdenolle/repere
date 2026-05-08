@@ -30,5 +30,6 @@ full = { features = ["dev", "geo", "plot"], solve-group = "default" }
 [tasks]
 test = "pytest"
 smoke-eval = "frugalmind smoke-eval"
+export-leaderboard = "frugalmind export-leaderboard"
 lint = "ruff check src tests"
 format = "ruff format src tests"

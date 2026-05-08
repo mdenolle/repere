@@ -8,6 +8,7 @@ The current repository contains:
 - The first benchmark suite, STA/LTA seismic detection, in `src/frugalmind_suites/sta_lta`.
 - Public sample fixtures for local development.
 - A private-golden-data policy for hidden evaluation sets.
+- A static leaderboard app in `site/` for GitHub Pages.
 - Manual CI scaffolding for smoke tests and future scheduled evals.
 
 ## Why this exists
@@ -32,6 +33,7 @@ frugalmind/
 │       └── sta_lta/                 # First scientific benchmark suite
 ├── tests/                           # Deterministic smoke tests
 ├── docs/                            # Archived suite docs and design notes
+├── site/                            # GitHub Pages leaderboard
 ├── .github/workflows/               # Manual CI scaffold
 ├── pyproject.toml                   # Python package metadata
 ├── pixi.toml                        # Primary development environment
@@ -48,11 +50,14 @@ Install Pixi, then run:
 pixi install
 pixi run test
 pixi run smoke-eval
+pixi run export-leaderboard
 ```
 
 `pixi run test` runs only deterministic tests. It does not need ObsPy, network access, model-provider credentials, or private goldens.
 
 `pixi run smoke-eval` runs a local stub evaluation and writes an ignored JSON result under `results/`.
+
+`pixi run export-leaderboard` converts local JSON results into `site/data/leaderboard.json` for the static leaderboard.
 
 ## Conda fallback
 
@@ -64,6 +69,7 @@ conda activate frugalmind
 python -m pip install -e .
 python -m pytest
 python -m frugalmind.cli smoke-eval
+python -m frugalmind.cli export-leaderboard
 ```
 
 ## Current benchmark suite
@@ -94,6 +100,19 @@ Policy:
 ## Manual evals now, weekly later
 
 The initial workflow is manual by design. The GitHub Actions scaffold supports `workflow_dispatch` and runs smoke tests by default. A weekly schedule is included as a commented scaffold for later activation once costs, secrets, and private data access are configured.
+
+## Live leaderboard
+
+The static leaderboard lives in `site/` and is deployed by `.github/workflows/pages.yml` using GitHub Pages. On each push to `main`, the workflow runs tests, generates a public smoke leaderboard, and deploys the static site artifact.
+
+To update the leaderboard locally:
+
+```bash
+pixi run smoke-eval
+pixi run export-leaderboard
+```
+
+For GitHub, set Pages to deploy from GitHub Actions if it is not already enabled in repository settings. Private golden-set results should only be exported into the public site after human approval.
 
 ## Roadmap
 
