@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+.pixi/
+env/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Evaluation outputs
+results/
+runs/
+artifacts/
+
+# Private/full golden datasets
+data/private/
+data/golden_private/
+**/data/private/
+**/data/golden_private/
+
+# Notebooks and OS files
+.ipynb_checkpoints/
+.DS_Store

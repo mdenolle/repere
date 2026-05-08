@@ -1,0 +1,34 @@
+[workspace]
+name = "frugalmind"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+python = ">=3.10"
+pyyaml = ">=6.0"
+pytest = ">=8.0"
+pip = "*"
+
+[pypi-dependencies]
+frugalmind = { path = ".", editable = true }
+
+[feature.dev.dependencies]
+ruff = ">=0.4"
+
+[feature.geo.dependencies]
+obspy = ">=1.4"
+
+[feature.plot.dependencies]
+matplotlib = ">=3.8"
+numpy = ">=1.26"
+scikit-image = ">=0.22"
+
+[environments]
+default = { features = ["dev"], solve-group = "default" }
+full = { features = ["dev", "geo", "plot"], solve-group = "default" }
+
+[tasks]
+test = "pytest"
+smoke-eval = "frugalmind smoke-eval"
+lint = "ruff check src tests"
+format = "ruff format src tests"

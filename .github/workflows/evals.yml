@@ -1,0 +1,46 @@
+name: FrugalMind evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Evaluation mode"
+        required: true
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - private-full
+  # Enable after private golden data access, provider credentials, and budgets are configured.
+  # schedule:
+  #   - cron: "0 12 * * 1"
+
+jobs:
+  smoke:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Run deterministic tests
+        run: pixi run test
+
+      - name: Run stub eval
+        run: pixi run smoke-eval
+
+  private-full:
+    name: Private full eval placeholder
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'private-full' }}
+    steps:
+      - name: Explain disabled private eval
+        run: |
+          echo "Private full evals are scaffolded but not enabled yet."
+          echo "Configure provider secrets, private golden access, and budgets before activating."

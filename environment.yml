@@ -1,0 +1,16 @@
+name: frugalmind
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - pip
+  - pyyaml>=6.0
+  - pytest>=8.0
+  - ruff>=0.4
+  # Optional full-suite runtime dependencies:
+  # - obspy>=1.4
+  # - matplotlib>=3.8
+  # - numpy>=1.26
+  # - scikit-image>=0.22
+  - pip:
+      - -e .

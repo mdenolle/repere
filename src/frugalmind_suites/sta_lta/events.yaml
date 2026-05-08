@@ -1,0 +1,130 @@
+# =============================================================================
+# STA/LTA golden suite — canonical public sample events truth set
+# =============================================================================
+# Each event below seeds five suite items (one per TaskKind in the pipeline:
+# extraction, fetch_code, trigger_code, plot, report). Events span four
+# categories so the suite covers both positive and negative detection cases.
+# =============================================================================
+
+schema_version: 0.1
+
+events:
+
+  - id: nisqually-2001
+    category: regional_earthquake
+    label: "M6.8 Nisqually deep intraslab earthquake"
+    origin_time: "2001-02-28T18:54:32.8"
+    latitude: 47.149
+    longitude: -122.727
+    depth_km: 51.7
+    magnitude: 6.8
+    catalog_id: uw10262801
+    expected_detection: true
+    recommended_stations:
+      - {network: UW, station: LON,  location: "",   channel: BHZ}
+      - {network: UW, station: RPW,  location: "",   channel: BHZ}
+      - {network: UW, station: ALCT, location: "",   channel: BHZ}
+    suggested_window_min: 15
+    stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
+    notes: |
+      Deep PNW intraslab earthquake, well-recorded across PNSN. Used as the
+      "easy win" — any model that fails on Nisqually is unfit for purpose.
+
+  - id: tohoku-2011-teleseism
+    category: teleseism
+    label: "M9.1 Tōhoku, recorded as teleseism in PNW"
+    origin_time: "2011-03-11T05:46:24.0"
+    latitude: 38.297
+    longitude: 142.373
+    depth_km: 29.0
+    magnitude: 9.1
+    catalog_id: official20110311054624120_30
+    expected_detection: true
+    recommended_stations:
+      - {network: UW, station: LON,  location: "",   channel: BHZ}
+    suggested_window_min: 60
+    stalta_params: {sta: 5.0, lta: 60.0, on_thresh: 3.0, off_thresh: 1.5}
+    notes: |
+      Tests whether the model adapts STA/LTA windows to long-period
+      teleseismic energy. Default "regional" parameters will miss this.
+
+  - id: mt-rainier-swarm-2024-VERIFY
+    category: regional_earthquake
+    label: "Mt. Rainier shallow swarm, 2024 (placeholder — verify dates)"
+    origin_time: "2024-07-04T12:00:00.0"
+    latitude: 46.853
+    longitude: -121.760
+    depth_km: 2.5
+    magnitude: 1.8
+    catalog_id: TBD
+    expected_detection: true
+    recommended_stations:
+      - {network: UW, station: STAR, location: "",   channel: EHZ}
+      - {network: UW, station: PARA, location: "",   channel: EHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
+    notes: |
+      Small-magnitude near-station event. Tests whether the model picks
+      sensible STA/LTA windows for high-frequency local sources.
+      DATE/CATALOG_ID NEEDS VERIFICATION before benchmark publication.
+
+  - id: pnsn-quiet-day-VERIFY
+    category: noise_day
+    label: "Quiet day on UW.LON — no events expected"
+    origin_time: "2023-08-15T03:00:00.0"
+    latitude: null
+    longitude: null
+    depth_km: null
+    magnitude: null
+    catalog_id: null
+    expected_detection: false
+    recommended_stations:
+      - {network: UW, station: LON,  location: "",   channel: BHZ}
+    suggested_window_min: 30
+    stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
+    notes: |
+      NEGATIVE CASE. Model should run STA/LTA, report no triggers above
+      threshold, and explicitly state "no events detected." A model that
+      hallucinates a detection here scores 0 on the report task.
+
+  - id: cascade-quarry-blast-VERIFY
+    category: quarry_blast
+    label: "Routine quarry blast flagged in PNSN catalog (placeholder)"
+    origin_time: "2024-03-12T20:30:00.0"
+    latitude: 47.5
+    longitude: -121.9
+    depth_km: 0.0
+    magnitude: 1.5
+    catalog_id: TBD
+    expected_detection: true
+    recommended_stations:
+      - {network: UW, station: ALCT, location: "",   channel: EHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
+    notes: |
+      Anthropogenic source. STA/LTA will trigger; the test is whether the
+      report correctly identifies it as a blast rather than a tectonic earthquake.
+      Catalog entry NEEDS VERIFICATION before publication.
+
+  - id: borderline-microseism-VERIFY
+    category: regional_earthquake
+    label: "Low-SNR small event near detection threshold (placeholder)"
+    origin_time: "2024-11-20T09:15:00.0"
+    latitude: 47.0
+    longitude: -122.5
+    depth_km: 25.0
+    magnitude: 1.2
+    catalog_id: TBD
+    expected_detection: true
+    recommended_stations:
+      - {network: UW, station: LON,  location: "",   channel: BHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 1.0, lta: 8.0, on_thresh: 3.0, off_thresh: 1.5}
+    notes: |
+      Calibration probe. With default thresholds this event might or might
+      not trigger. Used to identify models that overfit to "easy" cases.
+      EVENT NEEDS VERIFICATION.
+
+# v0.1 inventory: 6 public sample events × 5 task suites = 30 graded items.
+# Expansion target: 12-15 public/private events covering volcano-hosted
+# seismicity, slow-slip events, and ocean-bottom microseism intervals.
