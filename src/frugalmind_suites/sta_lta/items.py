@@ -160,29 +160,65 @@ def _load_events(
         data = yaml.safe_load(f)
     events = data.get("events", [])
     for ev in events:
+        eid = ev.get("id", "<unknown>")
+
+        # Top-level fields read by at least one suite or by the loader itself.
         for required in (
             "id",
             "category",
+            "label",
+            "origin_time",
             "expected_detection",
             "recommended_stations",
             "suggested_window_min",
+            "stalta_params",
             "split",
             "visibility",
         ):
             if required not in ev:
                 raise ValueError(
-                    f"Event {ev.get('id', '<unknown>')} missing required key {required!r}"
+                    f"Event {eid!r} missing required key {required!r}"
                 )
+
+        # Nested fields read by STALTATriggerCodeSuite.
+        if not isinstance(ev["stalta_params"], dict):
+            raise ValueError(
+                f"Event {eid!r}: stalta_params must be a mapping; "
+                f"got {type(ev['stalta_params']).__name__}"
+            )
+        for sta_key in ("sta", "lta", "on_thresh", "off_thresh"):
+            if sta_key not in ev["stalta_params"]:
+                raise ValueError(
+                    f"Event {eid!r}: stalta_params missing required key {sta_key!r}"
+                )
+
+        # Nested fields read by every suite that names a station.
+        if not isinstance(ev["recommended_stations"], list) or not ev["recommended_stations"]:
+            raise ValueError(
+                f"Event {eid!r}: recommended_stations must be a non-empty list"
+            )
+        for i, st in enumerate(ev["recommended_stations"]):
+            if not isinstance(st, dict):
+                raise ValueError(
+                    f"Event {eid!r}: recommended_stations[{i}] must be a mapping"
+                )
+            for st_key in ("network", "station", "location", "channel"):
+                if st_key not in st:
+                    raise ValueError(
+                        f"Event {eid!r}: recommended_stations[{i}] missing key {st_key!r}"
+                    )
+
         if ev["split"] not in VALID_SPLITS:
             raise ValueError(
-                f"Event {ev['id']!r}: split must be one of {VALID_SPLITS}, "
+                f"Event {eid!r}: split must be one of {VALID_SPLITS}, "
                 f"got {ev['split']!r}"
             )
         if ev["visibility"] not in VALID_VISIBILITIES:
             raise ValueError(
-                f"Event {ev['id']!r}: visibility must be one of "
+                f"Event {eid!r}: visibility must be one of "
                 f"{VALID_VISIBILITIES}, got {ev['visibility']!r}"
             )
+
         # cutoff_date: fill from default rule if missing; normalise format if present.
         if "cutoff_date" in ev and ev["cutoff_date"] is not None:
             ev["cutoff_date"] = _normalise_cutoff_date(ev["cutoff_date"])

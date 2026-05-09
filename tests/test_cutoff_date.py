@@ -85,6 +85,7 @@ def test_loader_fills_cutoff_date_when_missing(tmp_path):
                     {"network": "UW", "station": "X", "location": "", "channel": "BHZ"},
                 ],
                 "suggested_window_min": 10,
+                "stalta_params": {"sta": 2.0, "lta": 10.0, "on_thresh": 3.5, "off_thresh": 1.5},
                 # cutoff_date intentionally omitted.
             },
             {
@@ -99,6 +100,7 @@ def test_loader_fills_cutoff_date_when_missing(tmp_path):
                     {"network": "UW", "station": "X", "location": "", "channel": "BHZ"},
                 ],
                 "suggested_window_min": 10,
+                "stalta_params": {"sta": 2.0, "lta": 10.0, "on_thresh": 3.5, "off_thresh": 1.5},
             },
         ],
     }))
@@ -126,6 +128,7 @@ def test_loader_normalises_explicit_cutoff_date_string(tmp_path):
                     {"network": "UW", "station": "X", "location": "", "channel": "BHZ"},
                 ],
                 "suggested_window_min": 10,
+                "stalta_params": {"sta": 2.0, "lta": 10.0, "on_thresh": 3.5, "off_thresh": 1.5},
             },
         ],
     }))
@@ -151,6 +154,7 @@ def test_loader_rejects_malformed_cutoff_date(tmp_path):
                     {"network": "UW", "station": "X", "location": "", "channel": "BHZ"},
                 ],
                 "suggested_window_min": 10,
+                "stalta_params": {"sta": 2.0, "lta": 10.0, "on_thresh": 3.5, "off_thresh": 1.5},
             },
         ],
     }))
