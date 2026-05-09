@@ -303,6 +303,11 @@ class LeaderboardRunner:
             card_openness = (
                 getattr(card, "metadata", {}) or {}
             ).get("openness") if hasattr(card, "metadata") else None
+            # Skill-lift always exercises the `full` arm with the skill loaded,
+            # so the row's toolset reflects that skill-rendered surface
+            # ("custom-interface" in AstaBench's vocabulary), not "standard".
+            # The `none` arm is the comparison baseline; the SkillLiftRow's
+            # toolset attribute describes what was tested, which is the skill.
             rows.append(
                 SkillLiftRow(
                     model_id=str(card.id),
@@ -317,7 +322,7 @@ class LeaderboardRunner:
                     cost_lift_pct=cost_lift_pct,
                     n_total=int(none["n_total"]),
                     openness=_resolve_openness(card_openness),
-                    toolset=DEFAULT_TOOLSET,
+                    toolset="custom-interface",
                 )
             )
         return rows

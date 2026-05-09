@@ -79,12 +79,13 @@ def _explode_skill_lift_rows(
             "run_file": source_file,
             "openness": openness,
         }
+        none_condition = "generic-coding-agent"
         out.append({
             **base,
-            "agent_condition": "generic-coding-agent",
+            "agent_condition": none_condition,
             "score": row["score_none"],
             "cost_usd": row["cost_none_usd"],
-            "toolset": "standard",
+            "toolset": _toolset_for_condition(none_condition),
         })
         full_condition = f"{row['skill_name']}+skill-{row['skill_version']}"
         out.append({
