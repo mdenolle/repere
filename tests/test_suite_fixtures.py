@@ -66,9 +66,15 @@ def test_live_suite_matches_committed_fixture(suite_id, split):
     )
     live_items = list(suite.items())
     live_events = _load_events(split=split)
-    assert len(live_items) == fixture["n_items"], (
-        f"{suite_id} (split={split}): live suite has {len(live_items)} items "
-        f"but fixture has {fixture['n_items']}; regenerate with "
+    # All three must agree in length; otherwise zip() below silently truncates
+    # at the shortest and we miss drift on trailing items. The assertion is
+    # currently true by construction (suite._events() calls the same _load_events
+    # under the hood) but a future refactor — e.g. P2.1 InspectAI migration —
+    # could decouple them, so check explicitly.
+    assert len(live_events) == len(live_items) == fixture["n_items"], (
+        f"{suite_id} (split={split}): length mismatch — "
+        f"live_events={len(live_events)}, live_items={len(live_items)}, "
+        f"fixture['n_items']={fixture['n_items']}; regenerate with "
         f"`python scripts/build_suite_fixtures.py`"
     )
     for ev, live, fixed in zip(live_events, live_items, fixture["items"]):
