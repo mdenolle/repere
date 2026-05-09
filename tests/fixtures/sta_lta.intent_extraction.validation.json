@@ -10,12 +10,12 @@
         "event_id": "nisqually-2001",
         "cutoff_date": "2001-03-07"
       },
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2001-03-07\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LAWT..ENZ\nSuggested window: ±7.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2001-03-07\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
-        "station": "LON",
+        "station": "LAWT",
         "location": "",
-        "channel": "BHZ",
+        "channel": "ENZ",
         "starttime": "2001-02-28T18:47:02.800000+00:00",
         "endtime": "2001-02-28T19:02:02.800000+00:00"
       }

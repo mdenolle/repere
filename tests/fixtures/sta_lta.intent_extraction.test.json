@@ -7,65 +7,65 @@
     {
       "item_index": 0,
       "metadata": {
-        "event_id": "mt-rainier-swarm-2024-VERIFY",
-        "cutoff_date": "2024-07-11"
+        "event_id": "mt-rainier-swarm-2026",
+        "cutoff_date": "2025-07-18"
       },
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Mt. Rainier shallow swarm, 2024 (placeholder — verify dates)\nOrigin time (UTC): 2024-07-04T12:00:00.0\nSuggested station: UW.STAR..EHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2024-07-11\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Mt. Rainier shallow swarm, 2025\nOrigin time (UTC): 2025-07-11T21:23:04+02:00\nSuggested station: UW.STAR..EHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2025-07-18\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
         "station": "STAR",
         "location": "",
         "channel": "EHZ",
-        "starttime": "2024-07-04T11:57:30+00:00",
-        "endtime": "2024-07-04T12:02:30+00:00"
+        "starttime": "2025-07-11T21:20:34+02:00",
+        "endtime": "2025-07-11T21:25:34+02:00"
       }
     },
     {
       "item_index": 1,
       "metadata": {
         "event_id": "pnsn-quiet-day-VERIFY",
-        "cutoff_date": "2023-08-14"
+        "cutoff_date": "2026-05-08"
       },
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Quiet day on UW.LON — no events expected\nOrigin time (UTC): 2023-08-15T03:00:00.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±15 minutes around origin.\nCutoff date for catalog/metadata queries: 2023-08-14\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Quiet day on UW.LON — no events expected\nOrigin time (UTC): 2026-05-09T03:00:00.0\nSuggested station: UW.LO2..BHZ\nSuggested window: ±15 minutes around origin.\nCutoff date for catalog/metadata queries: 2026-05-08\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
-        "station": "LON",
+        "station": "LO2",
         "location": "",
         "channel": "BHZ",
-        "starttime": "2023-08-15T02:45:00+00:00",
-        "endtime": "2023-08-15T03:15:00+00:00"
+        "starttime": "2026-05-09T02:45:00+00:00",
+        "endtime": "2026-05-09T03:15:00+00:00"
       }
     },
     {
       "item_index": 2,
       "metadata": {
         "event_id": "cascade-quarry-blast-VERIFY",
-        "cutoff_date": "2024-03-19"
+        "cutoff_date": "2003-11-14"
       },
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Routine quarry blast flagged in PNSN catalog (placeholder)\nOrigin time (UTC): 2024-03-12T20:30:00.0\nSuggested station: UW.ALCT..EHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2024-03-19\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Routine quarry blast flagged in PNSN catalog (placeholder)\nOrigin time (UTC): 2003-11-07T23:46:0.0\nSuggested station: UW.LCW..EHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2003-11-14\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
-        "station": "ALCT",
+        "station": "LCW",
         "location": "",
         "channel": "EHZ",
-        "starttime": "2024-03-12T20:27:30+00:00",
-        "endtime": "2024-03-12T20:32:30+00:00"
+        "starttime": "2003-11-07T23:43:30+00:00",
+        "endtime": "2003-11-07T23:48:30+00:00"
       }
     },
     {
       "item_index": 3,
       "metadata": {
-        "event_id": "borderline-microseism-VERIFY",
-        "cutoff_date": "2024-11-27"
+        "event_id": "low-lf-volcano-snr",
+        "cutoff_date": "2025-09-08"
       },
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Low-SNR small event near detection threshold (placeholder)\nOrigin time (UTC): 2024-11-20T09:15:00.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2024-11-27\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: Low-SNR LF volcanic event near detection threshold at Mt St Helens\nOrigin time (UTC): 2025/09/01 02:27:48\nSuggested station: CC.SUG..BHZ\nSuggested window: ±2.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2025-09-08\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
-        "network": "UW",
-        "station": "LON",
+        "network": "CC",
+        "station": "SUG",
         "location": "",
         "channel": "BHZ",
-        "starttime": "2024-11-20T09:12:30+00:00",
-        "endtime": "2024-11-20T09:17:30+00:00"
+        "starttime": "2025-09-01T02:25:18+00:00",
+        "endtime": "2025-09-01T02:30:18+00:00"
       }
     }
   ]

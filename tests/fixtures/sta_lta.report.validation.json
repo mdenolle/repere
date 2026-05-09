@@ -10,7 +10,7 @@
         "event_id": "nisqually-2001",
         "cutoff_date": "2001-03-07"
       },
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ reported triggers near 2001-02-28T18:54:32.8.\n\nCutoff date for catalog cross-reference: 2001-03-07.",
+      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LAWT channel ENZ reported triggers near 2001-02-28T18:54:32.8.\n\nCutoff date for catalog cross-reference: 2001-03-07.",
       "gold": {
         "event_id": "nisqually-2001",
         "category": "regional_earthquake"

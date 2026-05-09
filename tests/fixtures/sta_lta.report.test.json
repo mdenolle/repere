@@ -7,22 +7,22 @@
     {
       "item_index": 0,
       "metadata": {
-        "event_id": "mt-rainier-swarm-2024-VERIFY",
-        "cutoff_date": "2024-07-11"
+        "event_id": "mt-rainier-swarm-2026",
+        "cutoff_date": "2025-07-18"
       },
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.STAR channel EHZ reported triggers near 2024-07-04T12:00:00.0.\n\nCutoff date for catalog cross-reference: 2024-07-11.",
+      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.STAR channel EHZ reported triggers near 2025-07-11T21:23:04+02:00.\n\nCutoff date for catalog cross-reference: 2025-07-18.",
       "gold": {
-        "event_id": "mt-rainier-swarm-2024-VERIFY",
-        "category": "regional_earthquake"
+        "event_id": "mt-rainier-swarm-2026",
+        "category": "local_earthquake"
       }
     },
     {
       "item_index": 1,
       "metadata": {
         "event_id": "pnsn-quiet-day-VERIFY",
-        "cutoff_date": "2023-08-14"
+        "cutoff_date": "2026-05-08"
       },
-      "prompt": "Write a one-paragraph technical report describing the result below. Be precise about what was and was not observed.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ during the test window: 0 triggers above threshold.\n\nCutoff date for catalog cross-reference: 2023-08-14.",
+      "prompt": "Write a one-paragraph technical report describing the result below. Be precise about what was and was not observed.\n\nDetection result:\nSTA/LTA on UW.LO2 channel BHZ during the test window: 0 triggers above threshold.\n\nCutoff date for catalog cross-reference: 2026-05-08.",
       "gold": {
         "event_id": "pnsn-quiet-day-VERIFY",
         "category": "noise_day"
@@ -32,9 +32,9 @@
       "item_index": 2,
       "metadata": {
         "event_id": "cascade-quarry-blast-VERIFY",
-        "cutoff_date": "2024-03-19"
+        "cutoff_date": "2003-11-14"
       },
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.ALCT channel EHZ reported triggers near 2024-03-12T20:30:00.0.\n\nCutoff date for catalog cross-reference: 2024-03-19.",
+      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LCW channel EHZ reported triggers near 2003-11-07T23:46:0.0.\n\nCutoff date for catalog cross-reference: 2003-11-14.",
       "gold": {
         "event_id": "cascade-quarry-blast-VERIFY",
         "category": "quarry_blast"
@@ -43,13 +43,13 @@
     {
       "item_index": 3,
       "metadata": {
-        "event_id": "borderline-microseism-VERIFY",
-        "cutoff_date": "2024-11-27"
+        "event_id": "low-lf-volcano-snr",
+        "cutoff_date": "2025-09-08"
       },
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ reported triggers near 2024-11-20T09:15:00.0.\n\nCutoff date for catalog cross-reference: 2024-11-27.",
+      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on CC.SUG channel BHZ reported triggers near 2025/09/01 02:27:48.\n\nCutoff date for catalog cross-reference: 2025-09-08.",
       "gold": {
-        "event_id": "borderline-microseism-VERIFY",
-        "category": "regional_earthquake"
+        "event_id": "low-lf-volcano-snr",
+        "category": "volcanic_earthquake"
       }
     }
   ]
