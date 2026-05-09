@@ -304,20 +304,20 @@ Leaderboard rows include an `agent_condition` field so a raw `generic-coding-age
 
 ## Roadmap
 
-Done:
+The current plan is in [`ROADMAP.md`](ROADMAP.md) — three phases of work
+aligning FrugalMind with [AstaBench](https://allenai.org/asta/bench) and
+[InspectAI](https://inspect.aisi.org.uk/) standards while keeping
+FrugalMind's distinct identity (skills system, frugality-first framing,
+parametric truth set, negative-case discipline). Each item is a candidate
+GitHub issue under the `astabench-alignment` label; bootstrap them with:
 
-- Provider adapters for Anthropic Messages API and OpenAI-compatible chat completions.
-- `FrugalRouter` with per-task quality floors, EMA score updates, and budget integration.
-- `BudgetGuard` and `JSONLTelemetry` modules.
-- 13-model registry (`config/models.yaml`) with cost metadata across nano/small/medium/big/cloud tiers.
-- Skill system: `SkillLoader` with `none`/`instructions`/`full` modes, `manifest.yaml` binding skills to suites, four full skills (`stalta-detection`, `obspy-fdsn-fetch`, `seismic-plotting`, `seismic-report`).
-- `LeaderboardRunner` that computes per-model **skill lift** between baseline and skill-loaded conditions.
+```bash
+bash scripts/create_roadmap_issues.sh           # all items
+bash scripts/create_roadmap_issues.sh --dry-run # preview only
+bash scripts/create_roadmap_issues.sh --only P1.1 P1.3
+```
 
-Next:
-
-- Validate all public sample events against source catalogs (lift the four `VERIFY` placeholders).
-- Add private full-suite golden datasets.
-- Add additional scientific and engineering benchmark suites beyond STA/LTA.
-- Hook the `FrugalRouter` into a real benchmark loop (currently independent of `EvalRunner`).
-- Promote the legacy `seismo-data-agent` rows in the leaderboard to `stalta-detection` once verified.
-- Enable weekly evals once the manual workflow is stable.
+The script is idempotent: re-running it updates existing issues by `[Px.y]`
+title prefix rather than creating duplicates. New issues should follow the
+roadmap-item template at
+[`.github/ISSUE_TEMPLATE/roadmap_item.yml`](.github/ISSUE_TEMPLATE/roadmap_item.yml).
