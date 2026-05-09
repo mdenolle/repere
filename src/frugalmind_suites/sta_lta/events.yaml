@@ -4,9 +4,33 @@
 # Each event below seeds five suite items (one per TaskKind in the pipeline:
 # extraction, fetch_code, trigger_code, plot, report). Events span four
 # categories so the suite covers both positive and negative detection cases.
+#
+# Schema (per event)
+#   id                       (required)  catalog id, kebab-case
+#   category                 (required)  regional_earthquake | teleseism |
+#                                        noise_day | quarry_blast | volcanic_lp
+#   label                    (required)  short human-readable label
+#   origin_time              (required)  ISO-8601 UTC, fractional seconds OK
+#   latitude / longitude     (optional)  WGS-84; null for pure-noise windows
+#   depth_km / magnitude     (optional)  null where not applicable
+#   catalog_id               (optional)  authoritative catalog id (e.g. uw10262801)
+#   expected_detection       (required)  bool; positive vs negative case
+#   recommended_stations     (required)  list of {network, station, location, channel}
+#   suggested_window_min     (required)  symmetric window around origin_time
+#   stalta_params            (required)  sta, lta, on_thresh, off_thresh
+#   split                    (required)  validation | test
+#                              validation = open development set; ships in git.
+#                              test       = held-out set; goldens may be private.
+#   visibility               (required)  public | private
+#                              public  = items + goldens may be committed.
+#                              private = goldens live under FM_STALTA_GOLDEN_DIR.
+#   notes                    (optional)  free-text rationale and provenance
+#
+# Suites filter by split. `STALTAIntentExtractionSuite(split="validation")`
+# emits only validation events; the FM_STALTA_SPLIT env var sets the default.
 # =============================================================================
 
-schema_version: 0.1
+schema_version: 0.2
 
 events:
 
@@ -20,6 +44,8 @@ events:
     magnitude: 6.8
     catalog_id: uw10262801
     expected_detection: true
+    split: validation
+    visibility: public
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
       - {network: UW, station: RPW,  location: "",   channel: BHZ}
@@ -40,6 +66,8 @@ events:
     magnitude: 9.1
     catalog_id: official20110311054624120_30
     expected_detection: true
+    split: validation
+    visibility: public
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 60
@@ -58,6 +86,8 @@ events:
     magnitude: 1.8
     catalog_id: TBD
     expected_detection: true
+    split: test
+    visibility: private
     recommended_stations:
       - {network: UW, station: STAR, location: "",   channel: EHZ}
       - {network: UW, station: PARA, location: "",   channel: EHZ}
@@ -78,6 +108,8 @@ events:
     magnitude: null
     catalog_id: null
     expected_detection: false
+    split: test
+    visibility: private
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 30
@@ -97,6 +129,8 @@ events:
     magnitude: 1.5
     catalog_id: TBD
     expected_detection: true
+    split: test
+    visibility: private
     recommended_stations:
       - {network: UW, station: ALCT, location: "",   channel: EHZ}
     suggested_window_min: 5
@@ -116,6 +150,8 @@ events:
     magnitude: 1.2
     catalog_id: TBD
     expected_detection: true
+    split: test
+    visibility: private
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 5
@@ -125,6 +161,8 @@ events:
       not trigger. Used to identify models that overfit to "easy" cases.
       EVENT NEEDS VERIFICATION.
 
-# v0.1 inventory: 6 public sample events × 5 task suites = 30 graded items.
-# Expansion target: 12-15 public/private events covering volcano-hosted
-# seismicity, slow-slip events, and ocean-bottom microseism intervals.
+# v0.2 inventory: 6 events total = 2 validation/public + 4 test/private.
+# Each event seeds 5 suite items; total = 10 validation + 20 test = 30 graded items.
+# Expansion target (P3.2): 30-50 events covering volcano-hosted seismicity,
+# slow-slip events, OBS microseism intervals, and induced seismicity, with
+# additional validation entries authored once verified against catalogs.

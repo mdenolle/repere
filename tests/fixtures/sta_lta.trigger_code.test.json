@@ -1,26 +1,11 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "suite_id": "sta_lta.trigger_code",
-  "n_items": 6,
+  "split": "test",
+  "n_items": 4,
   "items": [
     {
       "item_index": 0,
-      "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=2.0s, lta=10.0s.\n  3. Picks triggers using on_thresh=3.5, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
-      "gold": {
-        "event_id": "nisqually-2001",
-        "expected_detection": true
-      }
-    },
-    {
-      "item_index": 1,
-      "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=5.0s, lta=60.0s.\n  3. Picks triggers using on_thresh=3.0, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
-      "gold": {
-        "event_id": "tohoku-2011-teleseism",
-        "expected_detection": true
-      }
-    },
-    {
-      "item_index": 2,
       "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=0.5s, lta=8.0s.\n  3. Picks triggers using on_thresh=4.0, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
       "gold": {
         "event_id": "mt-rainier-swarm-2024-VERIFY",
@@ -28,7 +13,7 @@
       }
     },
     {
-      "item_index": 3,
+      "item_index": 1,
       "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=2.0s, lta=10.0s.\n  3. Picks triggers using on_thresh=3.5, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
       "gold": {
         "event_id": "pnsn-quiet-day-VERIFY",
@@ -36,7 +21,7 @@
       }
     },
     {
-      "item_index": 4,
+      "item_index": 2,
       "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=0.5s, lta=8.0s.\n  3. Picks triggers using on_thresh=4.0, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
       "gold": {
         "event_id": "cascade-quarry-blast-VERIFY",
@@ -44,7 +29,7 @@
       }
     },
     {
-      "item_index": 5,
+      "item_index": 3,
       "prompt": "Assume `st` is an `obspy.Stream` already loaded into memory. Write a Python snippet that:\n  1. Detrends and filters `st` (1-20 Hz bandpass).\n  2. Runs classic recursive STA/LTA on st[0] with sta=1.0s, lta=8.0s.\n  3. Picks triggers using on_thresh=3.0, off_thresh=1.5.\n  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) so the test harness can verify the result.\n\nUse obspy.signal.trigger.classic_sta_lta and trigger_onset.",
       "gold": {
         "event_id": "borderline-microseism-VERIFY",

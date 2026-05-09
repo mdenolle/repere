@@ -1,16 +1,22 @@
-"""Dump {prompt, gold} pairs for the four parametric STA/LTA suites.
+"""Dump {prompt, gold} pairs for the four parametric STA/LTA suites,
+one JSON per (suite, split) pair.
 
 The plot suite is excluded — its gold is a PNG file, handled by
 scripts/build_plot_goldens.py. The other four suites are parametric over
-events.yaml. Dumping their (prompt, gold) pairs lets reviewers see what the
-benchmark actually asks for without running Python, and lets a drift test
-catch unintended changes to either the prompt template or the gold construction.
+events.yaml. Dumping their (prompt, gold) pairs lets reviewers see what
+the benchmark actually asks for without running Python, and lets a drift
+test catch unintended changes to either the prompt template or the gold
+construction.
 
-Outputs:
-    tests/fixtures/sta_lta.intent_extraction.json
-    tests/fixtures/sta_lta.fetch_code.json
-    tests/fixtures/sta_lta.trigger_code.json
-    tests/fixtures/sta_lta.report.json
+Outputs (default): one JSON per (suite, split) under tests/fixtures/, e.g.
+    tests/fixtures/sta_lta.intent_extraction.validation.json
+    tests/fixtures/sta_lta.intent_extraction.test.json
+    tests/fixtures/sta_lta.fetch_code.validation.json
+    tests/fixtures/sta_lta.fetch_code.test.json
+    ...
+
+Each fixture lists only events from that split, so reviewers and drift
+tests see exactly what `STALTAIntentExtractionSuite(split=...)` would emit.
 """
 
 from __future__ import annotations
@@ -29,13 +35,14 @@ from frugalmind_suites.sta_lta import (  # noqa: E402
     STALTAReportSuite,
     STALTATriggerCodeSuite,
 )
+from frugalmind_suites.sta_lta.items import VALID_SPLITS  # noqa: E402
 
 
-SUITES: dict[str, object] = {
-    "sta_lta.intent_extraction": STALTAIntentExtractionSuite(),
-    "sta_lta.fetch_code": STALTAFetchCodeSuite(),
-    "sta_lta.trigger_code": STALTATriggerCodeSuite(),
-    "sta_lta.report": STALTAReportSuite(),
+SUITE_FACTORIES: dict[str, type] = {
+    "sta_lta.intent_extraction": STALTAIntentExtractionSuite,
+    "sta_lta.fetch_code": STALTAFetchCodeSuite,
+    "sta_lta.trigger_code": STALTATriggerCodeSuite,
+    "sta_lta.report": STALTAReportSuite,
 }
 
 
@@ -48,7 +55,7 @@ def _coerce_gold(gold) -> object:
         return repr(gold)
 
 
-def dump_suite(suite_id: str, suite, out_path: Path) -> Path:
+def dump_suite(suite_id: str, suite, *, split: str, out_path: Path) -> Path:
     items = []
     for idx, (prompt, gold, _scorer) in enumerate(suite.items()):
         items.append({
@@ -57,8 +64,9 @@ def dump_suite(suite_id: str, suite, out_path: Path) -> Path:
             "gold": _coerce_gold(gold),
         })
     payload = {
-        "schema_version": "0.1",
+        "schema_version": "0.2",
         "suite_id": suite_id,
+        "split": split,
         "n_items": len(items),
         "items": items,
     }
@@ -80,18 +88,27 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Only dump these suite ids",
     )
+    parser.add_argument(
+        "--splits",
+        nargs="*",
+        default=list(VALID_SPLITS),
+        choices=list(VALID_SPLITS),
+        help=f"Splits to dump; default: {' '.join(VALID_SPLITS)}",
+    )
     args = parser.parse_args(argv)
 
-    suite_ids = args.only or list(SUITES)
+    suite_ids = args.only or list(SUITE_FACTORIES)
     written: list[Path] = []
     for sid in suite_ids:
-        if sid not in SUITES:
+        if sid not in SUITE_FACTORIES:
             print(f"WARN: unknown suite id {sid!r}; skipping", file=sys.stderr)
             continue
-        out = args.output_dir / f"{sid}.json"
-        dump_suite(sid, SUITES[sid], out)
-        written.append(out)
-        print(f"Wrote {out}")
+        for split in args.splits:
+            suite = SUITE_FACTORIES[sid](split=split)
+            out = args.output_dir / f"{sid}.{split}.json"
+            dump_suite(sid, suite, split=split, out_path=out)
+            written.append(out)
+            print(f"Wrote {out}")
     print(f"\n{len(written)} fixtures written to {args.output_dir}")
     return 0
 
