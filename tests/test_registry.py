@@ -67,9 +67,18 @@ def test_sorted_by_cost_ranks_cheapest_first(tmp_path):
 
 
 def test_invalid_tier_in_yaml_rejected(tmp_path):
-    bad = {"schema_version": 0.1, "models": [
-        {"id": "x", "family": "x", "tier": "huge", "context_window": 1024, "backend": "anthropic"}
-    ]}
+    bad = {
+        "schema_version": 0.1,
+        "models": [
+            {
+                "id": "x",
+                "family": "x",
+                "tier": "huge",
+                "context_window": 1024,
+                "backend": "anthropic",
+            }
+        ],
+    }
     p = tmp_path / "bad.yaml"
     p.write_text(yaml.safe_dump(bad))
     with pytest.raises(ValueError):
@@ -77,10 +86,25 @@ def test_invalid_tier_in_yaml_rejected(tmp_path):
 
 
 def test_duplicate_id_rejected(tmp_path):
-    dup = {"schema_version": 0.1, "models": [
-        {"id": "m", "family": "f", "tier": "small", "context_window": 1024, "backend": "ollama"},
-        {"id": "m", "family": "f", "tier": "small", "context_window": 1024, "backend": "ollama"},
-    ]}
+    dup = {
+        "schema_version": 0.1,
+        "models": [
+            {
+                "id": "m",
+                "family": "f",
+                "tier": "small",
+                "context_window": 1024,
+                "backend": "ollama",
+            },
+            {
+                "id": "m",
+                "family": "f",
+                "tier": "small",
+                "context_window": 1024,
+                "backend": "ollama",
+            },
+        ],
+    }
     p = tmp_path / "dup.yaml"
     p.write_text(yaml.safe_dump(dup))
     with pytest.raises(ValueError):
@@ -88,9 +112,12 @@ def test_duplicate_id_rejected(tmp_path):
 
 
 def test_missing_required_keys_rejected(tmp_path):
-    incomplete = {"schema_version": 0.1, "models": [
-        {"id": "x", "tier": "small"}  # missing family, context_window, backend
-    ]}
+    incomplete = {
+        "schema_version": 0.1,
+        "models": [
+            {"id": "x", "tier": "small"}  # missing family, context_window, backend
+        ],
+    }
     p = tmp_path / "bad.yaml"
     p.write_text(yaml.safe_dump(incomplete))
     with pytest.raises(ValueError):

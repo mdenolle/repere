@@ -29,6 +29,10 @@ data/private/
 data/golden_private/
 **/data/private/
 **/data/golden_private/
+goldens/
+
+# Notebook waveform cache
+.waveform_cache/
 
 # Notebooks and OS files
 .ipynb_checkpoints/

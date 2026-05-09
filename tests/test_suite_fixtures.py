@@ -95,17 +95,11 @@ def test_live_suite_matches_committed_fixture(suite_id, split):
 def test_each_split_has_expected_event_count(split, expected):
     suite = STALTAIntentExtractionSuite(split=split)
     items = list(suite.items())
-    assert len(items) == expected, (
-        f"split={split} should have {expected} items; got {len(items)}"
-    )
+    assert len(items) == expected, f"split={split} should have {expected} items; got {len(items)}"
 
 
 def test_all_eight_fixtures_are_committed():
-    expected = {
-        f"{sid}.{split}.json"
-        for sid in SUITE_FACTORIES
-        for split in VALID_SPLITS
-    }
+    expected = {f"{sid}.{split}.json" for sid in SUITE_FACTORIES for split in VALID_SPLITS}
     have = {p.name for p in FIXTURES_DIR.glob("*.json")}
     missing = expected - have
     extra = have - expected

@@ -142,6 +142,7 @@ def export_leaderboard(results_dir: Path, output_path: Path) -> Path:
 # LeaderboardRunner: skill-lift benchmark
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class SkillLiftRow:
     """One row of a skill-lift leaderboard.

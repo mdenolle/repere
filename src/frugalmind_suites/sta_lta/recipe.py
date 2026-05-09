@@ -31,10 +31,10 @@ import numpy as np
 
 DEFAULT_STALTA = {
     "regional_earthquake": dict(filter_band=(1.0, 20.0), sta=2.0, lta=10.0, on=3.5, off=1.5),
-    "teleseism":           dict(filter_band=(0.02, 0.5), sta=5.0, lta=60.0, on=3.0, off=1.5),
-    "noise_day":           dict(filter_band=(1.0, 20.0), sta=2.0, lta=10.0, on=3.5, off=1.5),
-    "quarry_blast":        dict(filter_band=(1.0, 20.0), sta=0.5, lta=8.0,  on=4.0, off=1.5),
-    "volcanic_lp":         dict(filter_band=(0.5, 5.0),  sta=1.0, lta=12.0, on=3.5, off=1.5),
+    "teleseism": dict(filter_band=(0.02, 0.5), sta=5.0, lta=60.0, on=3.0, off=1.5),
+    "noise_day": dict(filter_band=(1.0, 20.0), sta=2.0, lta=10.0, on=3.5, off=1.5),
+    "quarry_blast": dict(filter_band=(1.0, 20.0), sta=0.5, lta=8.0, on=4.0, off=1.5),
+    "volcanic_lp": dict(filter_band=(0.5, 5.0), sta=1.0, lta=12.0, on=3.5, off=1.5),
 }
 
 
@@ -42,14 +42,15 @@ DEFAULT_STALTA = {
 # Plotting recipe — pure numpy in/out so it can run with or without ObsPy
 # -----------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CanonicalPlotInput:
-    times: np.ndarray         # seconds since trace start
-    waveform: np.ndarray      # detrended/filtered counts
-    cft: np.ndarray           # STA/LTA characteristic function, same shape as waveform
+    times: np.ndarray  # seconds since trace start
+    waveform: np.ndarray  # detrended/filtered counts
+    cft: np.ndarray  # STA/LTA characteristic function, same shape as waveform
     trigger_indices: Iterable[int]
-    station_label: str        # e.g. "UW.LON"
-    event_label: str          # e.g. "M6.8 Nisqually deep intraslab earthquake"
+    station_label: str  # e.g. "UW.LON"
+    event_label: str  # e.g. "M6.8 Nisqually deep intraslab earthquake"
     on_thresh: float
     no_events: bool = False
 
@@ -97,6 +98,7 @@ def render_canonical_plot(arr: CanonicalPlotInput, out_path: str | Path) -> Path
 # Real-data path: ObsPy stream → CanonicalPlotInput
 # -----------------------------------------------------------------------------
 
+
 def stream_to_canonical_input(
     stream: Any,
     *,
@@ -123,7 +125,9 @@ def stream_to_canonical_input(
 
     cft = classic_sta_lta(tr.data, sta_n, lta_n)
     triggers = trigger_onset(cft, on_thresh, off_thresh)
-    trigger_indices = [int(on) for on, _off in (triggers.tolist() if hasattr(triggers, "tolist") else triggers)]
+    trigger_indices = [
+        int(on) for on, _off in (triggers.tolist() if hasattr(triggers, "tolist") else triggers)
+    ]
 
     station = tr.stats
     station_label = f"{station.network}.{station.station}"
@@ -143,6 +147,7 @@ def stream_to_canonical_input(
 # -----------------------------------------------------------------------------
 # Synthetic-data path: deterministic placeholder when network is unavailable
 # -----------------------------------------------------------------------------
+
 
 def synthetic_canonical_input(
     *,
@@ -178,15 +183,19 @@ def synthetic_canonical_input(
         # peak above on_thresh for typical (sta=2s, lta=10s, on=3.5) settings.
         burst_center = int(0.4 * n)
         burst_width = int(3.0 * sampling_rate_hz)
-        burst_idx = np.arange(max(0, burst_center - burst_width), min(n, burst_center + burst_width))
+        burst_idx = np.arange(
+            max(0, burst_center - burst_width), min(n, burst_center + burst_width)
+        )
         burst_t = (burst_idx - burst_center) / sampling_rate_hz
-        amp = 30.0 * (1 - 2 * (np.pi * 2.0 * burst_t) ** 2) * np.exp(-((np.pi * 2.0 * burst_t) ** 2))
+        amp = (
+            30.0 * (1 - 2 * (np.pi * 2.0 * burst_t) ** 2) * np.exp(-((np.pi * 2.0 * burst_t) ** 2))
+        )
         waveform[burst_idx] += amp
 
     # Compute STA/LTA on the synthetic trace using a simple boxcar formulation
     sta_n = max(1, int(sta_s * sampling_rate_hz))
     lta_n = max(sta_n + 1, int(lta_s * sampling_rate_hz))
-    sq = waveform ** 2
+    sq = waveform**2
     # cumulative-sum trick for boxcar means
     csum = np.concatenate(([0.0], np.cumsum(sq)))
     sta = (csum[sta_n:] - csum[:-sta_n]) / sta_n
@@ -196,7 +205,9 @@ def synthetic_canonical_input(
     sta = sta[pad:]
     cft = np.zeros_like(waveform)
     valid_end = lta.shape[0]
-    cft[lta_n - 1: lta_n - 1 + valid_end] = sta[:valid_end] / np.where(lta[:valid_end] > 0, lta[:valid_end], 1.0)
+    cft[lta_n - 1 : lta_n - 1 + valid_end] = sta[:valid_end] / np.where(
+        lta[:valid_end] > 0, lta[:valid_end], 1.0
+    )
 
     triggers: list[int] = []
     above = cft > on_thresh

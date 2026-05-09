@@ -51,6 +51,7 @@ def _without(field: str) -> dict:
 
 # ---- Top-level required fields ------------------------------------------
 
+
 @pytest.mark.parametrize(
     "field",
     [
@@ -74,6 +75,7 @@ def test_loader_rejects_missing_top_level_field(tmp_path, field):
 
 # ---- stalta_params nested validation ------------------------------------
 
+
 def test_loader_rejects_non_mapping_stalta_params(tmp_path):
     ev = dict(GOOD_EVENT)
     ev["stalta_params"] = [1.0, 2.0, 3.0]
@@ -92,6 +94,7 @@ def test_loader_rejects_missing_stalta_param(tmp_path, missing):
 
 
 # ---- recommended_stations nested validation -----------------------------
+
 
 def test_loader_rejects_empty_recommended_stations(tmp_path):
     ev = dict(GOOD_EVENT)
@@ -121,6 +124,7 @@ def test_loader_rejects_station_missing_field(tmp_path, missing):
 
 # ---- Error messages mention the offending event id ----------------------
 
+
 def test_error_message_includes_event_id(tmp_path):
     """Validation error must surface the event id so debugging is fast."""
     ev = dict(GOOD_EVENT, id="my-broken-event")
@@ -131,6 +135,7 @@ def test_error_message_includes_event_id(tmp_path):
 
 
 # ---- Top-level shape: events list and each entry must be a mapping ------
+
 
 def test_loader_rejects_non_list_events_field(tmp_path):
     p = tmp_path / "events.yaml"
@@ -163,6 +168,7 @@ def test_non_mapping_entry_error_includes_index(tmp_path):
 
 
 # ---- Sanity: the GOOD_EVENT itself loads cleanly ------------------------
+
 
 def test_good_event_loads_without_error(tmp_path):
     p = _write([dict(GOOD_EVENT)], tmp_path)

@@ -62,7 +62,9 @@ def split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     return meta, body.strip()
 
 
-def validate_frontmatter(meta: dict[str, Any], *, source: str | Path = "<unknown>") -> dict[str, Any]:
+def validate_frontmatter(
+    meta: dict[str, Any], *, source: str | Path = "<unknown>"
+) -> dict[str, Any]:
     """Ensure required fields are present and apply defaults."""
     missing = [k for k in _REQUIRED_FRONTMATTER if k not in meta]
     if missing:
@@ -77,6 +79,7 @@ def validate_frontmatter(meta: dict[str, Any], *, source: str | Path = "<unknown
 # ---------------------------------------------------------------------------
 # Skill objects
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class Skill:
@@ -112,6 +115,7 @@ class Skill:
 # SkillLoader and manifest
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SkillLoader:
     """Discover and load skills from a directory tree.
@@ -144,14 +148,10 @@ class SkillLoader:
         ex_dir = root / "examples"
 
         references_text = tuple(
-            (ref_dir / r).read_text(encoding="utf-8")
-            for r in references
-            if (ref_dir / r).exists()
+            (ref_dir / r).read_text(encoding="utf-8") for r in references if (ref_dir / r).exists()
         )
         examples_text = tuple(
-            (ex_dir / e).read_text(encoding="utf-8")
-            for e in examples
-            if (ex_dir / e).exists()
+            (ex_dir / e).read_text(encoding="utf-8") for e in examples if (ex_dir / e).exists()
         )
 
         return Skill(

@@ -1310,8 +1310,8 @@ packages:
   timestamp: 1774298702053
 - pypi: ./
   name: frugalmind
-  version: 0.1.0
-  sha256: 8255563894921f88db7c07094e457e33a4f69dcbc3a61f66289508a7a7cacc5d
+  version: 0.2.0
+  sha256: 969d5f9f9ce26ca56b40cb5bb01c7c2688fbe9dfbd8bf65d353bc63929791c71
   requires_dist:
   - pyyaml>=6.0
   - pytest>=8.0 ; extra == 'test'
