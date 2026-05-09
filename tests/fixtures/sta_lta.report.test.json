@@ -1,26 +1,11 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "suite_id": "sta_lta.report",
-  "n_items": 6,
+  "split": "test",
+  "n_items": 4,
   "items": [
     {
       "item_index": 0,
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ reported triggers near 2001-02-28T18:54:32.8.",
-      "gold": {
-        "event_id": "nisqually-2001",
-        "category": "regional_earthquake"
-      }
-    },
-    {
-      "item_index": 1,
-      "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ reported triggers near 2011-03-11T05:46:24.0.",
-      "gold": {
-        "event_id": "tohoku-2011-teleseism",
-        "category": "teleseism"
-      }
-    },
-    {
-      "item_index": 2,
       "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.STAR channel EHZ reported triggers near 2024-07-04T12:00:00.0.",
       "gold": {
         "event_id": "mt-rainier-swarm-2024-VERIFY",
@@ -28,7 +13,7 @@
       }
     },
     {
-      "item_index": 3,
+      "item_index": 1,
       "prompt": "Write a one-paragraph technical report describing the result below. Be precise about what was and was not observed.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ during the test window: 0 triggers above threshold.",
       "gold": {
         "event_id": "pnsn-quiet-day-VERIFY",
@@ -36,7 +21,7 @@
       }
     },
     {
-      "item_index": 4,
+      "item_index": 2,
       "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.ALCT channel EHZ reported triggers near 2024-03-12T20:30:00.0.",
       "gold": {
         "event_id": "cascade-quarry-blast-VERIFY",
@@ -44,7 +29,7 @@
       }
     },
     {
-      "item_index": 5,
+      "item_index": 3,
       "prompt": "Write a one-paragraph technical report describing the detection result below. Mention the origin time, the station, and any inferred magnitude. Be precise.\n\nDetection result:\nSTA/LTA on UW.LON channel BHZ reported triggers near 2024-11-20T09:15:00.0.",
       "gold": {
         "event_id": "borderline-microseism-VERIFY",

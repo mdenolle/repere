@@ -29,6 +29,34 @@ _DEFAULT_EVENTS = Path(__file__).parent / "events.yaml"
 EVENTS_PATH = Path(os.environ.get("FM_STALTA_EVENTS", _DEFAULT_EVENTS))
 
 
+VALID_SPLITS = ("validation", "test")
+VALID_VISIBILITIES = ("public", "private")
+
+
+def _resolve_split(split: str | None) -> str | None:
+    """Honour FM_STALTA_SPLIT when caller passed nothing; validate when present."""
+    if split is None:
+        env = os.environ.get("FM_STALTA_SPLIT")
+        if env in (None, "", "all"):
+            return None
+        split = env
+    if split not in VALID_SPLITS:
+        raise ValueError(
+            f"split must be one of {VALID_SPLITS} or None; got {split!r}"
+        )
+    return split
+
+
+def _resolve_visibility(visibility: str | None) -> str | None:
+    if visibility is None:
+        return None
+    if visibility not in VALID_VISIBILITIES:
+        raise ValueError(
+            f"visibility must be one of {VALID_VISIBILITIES} or None; got {visibility!r}"
+        )
+    return visibility
+
+
 _FRAC_RE = re.compile(r"(\.\d+)(?=([+-]\d{2}:?\d{2}|Z|$))")
 
 
@@ -54,8 +82,24 @@ def parse_origin_time(value: str) -> datetime:
     return dt
 
 
-def _load_events(path: Path = EVENTS_PATH) -> list[dict]:
-    """Load and validate the events file."""
+def _load_events(
+    path: Path = EVENTS_PATH,
+    *,
+    split: str | None = None,
+    visibility: str | None = None,
+) -> list[dict]:
+    """Load and validate the events file, optionally filtered by split/visibility.
+
+    `split=None` (default) returns every event. `split="validation"` and
+    `split="test"` filter to those subsets. The `FM_STALTA_SPLIT` environment
+    variable supplies a default when no `split` is passed; set it to "all"
+    or unset it to disable.
+
+    `visibility` works the same way for public vs private events.
+    """
+    split = _resolve_split(split)
+    visibility = _resolve_visibility(visibility)
+
     with open(path) as f:
         data = yaml.safe_load(f)
     events = data.get("events", [])
@@ -66,15 +110,51 @@ def _load_events(path: Path = EVENTS_PATH) -> list[dict]:
             "expected_detection",
             "recommended_stations",
             "suggested_window_min",
+            "split",
+            "visibility",
         ):
             if required not in ev:
                 raise ValueError(
                     f"Event {ev.get('id', '<unknown>')} missing required key {required!r}"
                 )
+        if ev["split"] not in VALID_SPLITS:
+            raise ValueError(
+                f"Event {ev['id']!r}: split must be one of {VALID_SPLITS}, "
+                f"got {ev['split']!r}"
+            )
+        if ev["visibility"] not in VALID_VISIBILITIES:
+            raise ValueError(
+                f"Event {ev['id']!r}: visibility must be one of "
+                f"{VALID_VISIBILITIES}, got {ev['visibility']!r}"
+            )
+    if split is not None:
+        events = [ev for ev in events if ev["split"] == split]
+    if visibility is not None:
+        events = [ev for ev in events if ev["visibility"] == visibility]
     return events
 
 
-class STALTAIntentExtractionSuite(DenolleGroupSuite):
+class _SplitAwareSuite(DenolleGroupSuite):
+    """Mixin: filters events by ``split`` and ``visibility`` at items() time.
+
+    All five STA/LTA suites accept the same two keyword args. Defaults to
+    "no filter"; set the env var ``FM_STALTA_SPLIT`` for a process-wide default.
+    """
+
+    def __init__(
+        self,
+        *,
+        split: str | None = None,
+        visibility: str | None = None,
+    ) -> None:
+        self.split = _resolve_split(split)
+        self.visibility = _resolve_visibility(visibility)
+
+    def _events(self) -> list[dict]:
+        return _load_events(split=self.split, visibility=self.visibility)
+
+
+class STALTAIntentExtractionSuite(_SplitAwareSuite):
     """Natural-language request to structured FDSN query."""
 
     task_kind = TaskKind.EXTRACTION
@@ -82,7 +162,7 @@ class STALTAIntentExtractionSuite(DenolleGroupSuite):
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
         from datetime import timedelta
 
-        for ev in _load_events():
+        for ev in self._events():
             station = ev["recommended_stations"][0]
             t0_str = ev["origin_time"]
             t0 = parse_origin_time(t0_str)
@@ -114,13 +194,13 @@ class STALTAIntentExtractionSuite(DenolleGroupSuite):
             yield (prompt, gold, scorer)
 
 
-class STALTAFetchCodeSuite(DenolleGroupSuite):
+class STALTAFetchCodeSuite(_SplitAwareSuite):
     """Structured request to ObsPy waveform-fetching code."""
 
     task_kind = TaskKind.CODE_GENERATION
 
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
-        for ev in _load_events():
+        for ev in self._events():
             station = ev["recommended_stations"][0]
             prompt = (
                 "Write a Python snippet using ObsPy that fetches a waveform "
@@ -148,13 +228,13 @@ class STALTAFetchCodeSuite(DenolleGroupSuite):
             yield (prompt, gold, scorer)
 
 
-class STALTATriggerCodeSuite(DenolleGroupSuite):
+class STALTATriggerCodeSuite(_SplitAwareSuite):
     """Loaded ObsPy stream to STA/LTA trigger code."""
 
     task_kind = TaskKind.CODE_GENERATION
 
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
-        for ev in _load_events():
+        for ev in self._events():
             p = ev["stalta_params"]
             prompt = (
                 "Assume `st` is an `obspy.Stream` already loaded into memory. "
@@ -187,7 +267,7 @@ class STALTATriggerCodeSuite(DenolleGroupSuite):
             yield (prompt, gold, scorer)
 
 
-class STALTAPlotSuite(DenolleGroupSuite):
+class STALTAPlotSuite(_SplitAwareSuite):
     """Plot waveform and STA/LTA triggers against approved goldens."""
 
     task_kind = TaskKind.PLOTTING
@@ -196,7 +276,7 @@ class STALTAPlotSuite(DenolleGroupSuite):
         golden_dir = Path(
             os.environ.get("FM_STALTA_GOLDEN_DIR", Path(__file__).parent / "data" / "golden")
         )
-        for ev in _load_events():
+        for ev in self._events():
             golden = golden_dir / f"{ev['id']}.png"
             station = ev["recommended_stations"][0]
             prompt = (
@@ -227,13 +307,13 @@ class STALTAPlotSuite(DenolleGroupSuite):
             yield (prompt, gold, scorer)
 
 
-class STALTAReportSuite(DenolleGroupSuite):
+class STALTAReportSuite(_SplitAwareSuite):
     """STA/LTA detection result to concise technical report."""
 
     task_kind = TaskKind.REPORT_DRAFTING
 
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
-        for ev in _load_events():
+        for ev in self._events():
             station = ev["recommended_stations"][0]
             stationstr = f"{station['network']}.{station['station']}"
 

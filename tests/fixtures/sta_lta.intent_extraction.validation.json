@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.2",
+  "suite_id": "sta_lta.intent_extraction",
+  "split": "validation",
+  "n_items": 2,
+  "items": [
+    {
+      "item_index": 0,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2001-02-28T18:47:02.800000+00:00",
+        "endtime": "2001-02-28T19:02:02.800000+00:00"
+      }
+    },
+    {
+      "item_index": 1,
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M9.1 Tōhoku, recorded as teleseism in PNW\nOrigin time (UTC): 2011-03-11T05:46:24.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±30 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "gold": {
+        "network": "UW",
+        "station": "LON",
+        "location": "",
+        "channel": "BHZ",
+        "starttime": "2011-03-11T05:16:24+00:00",
+        "endtime": "2011-03-11T06:16:24+00:00"
+      }
+    }
+  ]
+}

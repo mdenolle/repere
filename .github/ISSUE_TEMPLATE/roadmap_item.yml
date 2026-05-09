@@ -1,0 +1,91 @@
+name: Roadmap item
+description: New work that aligns with the FrugalMind ROADMAP.md structure.
+title: "[Px.y] <short title>"
+labels: ["astabench-alignment"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for any non-trivial work. Keep the same fields the
+        roadmap uses so the planning view (`ROADMAP.md`) and the execution view
+        (this issue) stay aligned. For one-PR fixes, skip the template.
+
+  - type: input
+    id: roadmap-id
+    attributes:
+      label: Roadmap ID
+      description: e.g. P1.3 (Phase 1, item 3). New items get the next free number.
+      placeholder: "Px.y"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence. What does done look like?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Short paragraph. Which AstaBench / InspectAI standard does this track?
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: Bulleted list of files / code / tests that will exist when this is done.
+      placeholder: |
+        - `path/to/new_file.py`
+        - `tests/test_new_thing.py`
+        - Updated `README.md` section
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Bulleted observable criteria — test names, leaderboard fields, behaviours a reviewer can check.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort
+      options:
+        - "S (≤1 day)"
+        - "M (2–5 days)"
+        - "L (≥1 week)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - "framework"
+        - "skills"
+        - "data"
+        - "scoring"
+        - "site"
+        - "agents"
+        - "infra"
+    validations:
+      required: true
+
+  - type: textarea
+    id: depends-on
+    attributes:
+      label: Depends on
+      description: Other roadmap items this work blocks on. Use Px.y refs and link them.
+      placeholder: "P1.1, P2.1"
+    validations:
+      required: false
