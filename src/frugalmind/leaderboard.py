@@ -19,9 +19,59 @@ import json
 DEFAULT_SUITE = "sta_lta.intent_extraction"
 
 
+# ---------------------------------------------------------------------------
+# AstaBench-style categorical metadata for leaderboard rows
+#
+# Two axes determine whether two rows are comparable:
+#   - openness: how the model+code is distributed.
+#   - toolset:  what the agent had access to during the run.
+#
+# Categories track AstaBench's submission vocabulary so a future cross-bench
+# comparison stays apples-to-apples. See `docs/leaderboard_conditions.md`.
+# ---------------------------------------------------------------------------
+
+VALID_OPENNESS = (
+    "open-source-open-weight",   # code + weights public (e.g. Llama 3.x, Qwen)
+    "open-source-closed-weight", # open code, closed weights (rare)
+    "closed-source-api",         # API-only access (Anthropic, OpenAI)
+    "closed-source-ui",          # UI-only access (e.g. some web chat tools)
+    "unknown",                   # safe default when none of the above is asserted
+)
+
+VALID_TOOLSET = (
+    "standard",         # only the tools the suite provides in state.tools
+    "custom-interface", # custom tools, but with the same capability constraints
+    "custom",           # tools beyond the standard or custom-interface envelope
+    "unknown",
+)
+
+DEFAULT_OPENNESS = "unknown"
+DEFAULT_TOOLSET = "standard"
+
+
+def _resolve_openness(value: Any) -> str:
+    if value in (None, ""):
+        return DEFAULT_OPENNESS
+    s = str(value)
+    return s if s in VALID_OPENNESS else DEFAULT_OPENNESS
+
+
+def _resolve_toolset(value: Any) -> str:
+    if value in (None, ""):
+        return DEFAULT_TOOLSET
+    s = str(value)
+    return s if s in VALID_TOOLSET else DEFAULT_TOOLSET
+
+
 @dataclass(frozen=True)
 class LeaderboardRow:
-    """One public leaderboard row."""
+    """One public leaderboard row.
+
+    `openness` and `toolset` follow AstaBench's submission vocabulary so two
+    rows aren't compared apples-to-oranges. Default ``toolset`` is
+    ``"standard"``; default ``openness`` is ``"unknown"`` and should be
+    overridden via the model card's ``metadata.openness`` field.
+    """
 
     rank: int
     model_id: str
@@ -34,6 +84,8 @@ class LeaderboardRow:
     n_total: int
     efficiency_score: float | None
     run_file: str
+    openness: str = DEFAULT_OPENNESS
+    toolset: str = DEFAULT_TOOLSET
     skill_name: str | None = None
     skill_version: str | None = None
 
@@ -110,6 +162,8 @@ def build_leaderboard(
                 n_total=int(result.get("n_total", 0)),
                 efficiency_score=efficiency,
                 run_file=str(result.get("run_file", "unknown")),
+                openness=_resolve_openness(result.get("openness")),
+                toolset=_resolve_toolset(result.get("toolset")),
                 skill_name=result.get("skill_name"),
                 skill_version=result.get("skill_version"),
             )
@@ -164,6 +218,8 @@ class SkillLiftRow:
     cost_full_usd: float
     cost_lift_pct: float | None
     n_total: int
+    openness: str = DEFAULT_OPENNESS
+    toolset: str = DEFAULT_TOOLSET
 
 
 @dataclass
@@ -244,6 +300,9 @@ class LeaderboardRunner:
                 cost_lift_pct = (cost_full - cost_none) / cost_none * 100.0
             else:
                 cost_lift_pct = None
+            card_openness = (
+                getattr(card, "metadata", {}) or {}
+            ).get("openness") if hasattr(card, "metadata") else None
             rows.append(
                 SkillLiftRow(
                     model_id=str(card.id),
@@ -257,6 +316,8 @@ class LeaderboardRunner:
                     cost_full_usd=cost_full,
                     cost_lift_pct=cost_lift_pct,
                     n_total=int(none["n_total"]),
+                    openness=_resolve_openness(card_openness),
+                    toolset=DEFAULT_TOOLSET,
                 )
             )
         return rows

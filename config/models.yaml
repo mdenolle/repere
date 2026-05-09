@@ -32,6 +32,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: alibaba
       license: apache-2.0
       notes: "Smoke-test floor model; rarely passes intent extraction."
@@ -45,6 +46,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: google
       license: gemma
 
@@ -58,6 +60,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: mistral-ai
       license: apache-2.0
 
@@ -70,6 +73,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: meta
       license: llama3
 
@@ -82,6 +86,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: alibaba
       license: apache-2.0
 
@@ -94,6 +99,10 @@ models:
     backend: ollama
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: alibaba
+      license: apache-2.0
 
   - id: gemma2:27b
     family: gemma2
@@ -103,6 +112,10 @@ models:
     backend: ollama
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: google
+      license: gemma
 
   # ---- big: 70B+ open weights ----------------------------------------------
   - id: llama3.3:70b
@@ -114,6 +127,7 @@ models:
     cost_per_1k_in: 0.0
     cost_per_1k_out: 0.0
     metadata:
+      openness: open-source-open-weight
       provider: meta
       license: llama3
       notes: "Strong open-weight ceiling; needs ~48GB GPU at 4-bit."
@@ -128,6 +142,7 @@ models:
     cost_per_1k_in: 0.001
     cost_per_1k_out: 0.005
     metadata:
+      openness: closed-source-api
       provider: anthropic
       list_price_date: "2026-05-08"
 
@@ -140,6 +155,7 @@ models:
     cost_per_1k_in: 0.003
     cost_per_1k_out: 0.015
     metadata:
+      openness: closed-source-api
       provider: anthropic
       list_price_date: "2026-05-08"
 
@@ -152,6 +168,7 @@ models:
     cost_per_1k_in: 0.015
     cost_per_1k_out: 0.075
     metadata:
+      openness: closed-source-api
       provider: anthropic
       list_price_date: "2026-05-08"
 
@@ -164,6 +181,7 @@ models:
     cost_per_1k_in: 0.00015
     cost_per_1k_out: 0.0006
     metadata:
+      openness: closed-source-api
       provider: openai
 
   - id: gpt-4o
@@ -175,4 +193,5 @@ models:
     cost_per_1k_in: 0.0025
     cost_per_1k_out: 0.01
     metadata:
+      openness: closed-source-api
       provider: openai
