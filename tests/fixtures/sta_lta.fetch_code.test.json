@@ -7,21 +7,21 @@
     {
       "item_index": 0,
       "metadata": {
-        "event_id": "mt-rainier-swarm-2024-VERIFY",
-        "cutoff_date": "2024-07-11"
+        "event_id": "mt-rainier-swarm-2026",
+        "cutoff_date": "2025-07-18"
       },
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'STAR'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2024-07-04T12:00:00.0' minus 2.5 minutes\n  endtime   = '2024-07-04T12:00:00.0' plus  2.5 minutes\n  cutoff_date = '2024-07-11'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'STAR'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2025-07-11T21:23:04+02:00' minus 2.5 minutes\n  endtime   = '2025-07-11T21:23:04+02:00' plus  2.5 minutes\n  cutoff_date = '2025-07-18'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
-        "event_id": "mt-rainier-swarm-2024-VERIFY"
+        "event_id": "mt-rainier-swarm-2026"
       }
     },
     {
       "item_index": 1,
       "metadata": {
         "event_id": "pnsn-quiet-day-VERIFY",
-        "cutoff_date": "2023-08-14"
+        "cutoff_date": "2026-05-08"
       },
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2023-08-15T03:00:00.0' minus 15 minutes\n  endtime   = '2023-08-15T03:00:00.0' plus  15 minutes\n  cutoff_date = '2023-08-14'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LO2'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2026-05-09T03:00:00.0' minus 15 minutes\n  endtime   = '2026-05-09T03:00:00.0' plus  15 minutes\n  cutoff_date = '2026-05-08'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
         "event_id": "pnsn-quiet-day-VERIFY"
       }
@@ -30,9 +30,9 @@
       "item_index": 2,
       "metadata": {
         "event_id": "cascade-quarry-blast-VERIFY",
-        "cutoff_date": "2024-03-19"
+        "cutoff_date": "2003-11-14"
       },
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'ALCT'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2024-03-12T20:30:00.0' minus 2.5 minutes\n  endtime   = '2024-03-12T20:30:00.0' plus  2.5 minutes\n  cutoff_date = '2024-03-19'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LCW'\n  location = ''\n  channel = 'EHZ'\n  starttime = '2003-11-07T23:46:0.0' minus 2.5 minutes\n  endtime   = '2003-11-07T23:46:0.0' plus  2.5 minutes\n  cutoff_date = '2003-11-14'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
         "event_id": "cascade-quarry-blast-VERIFY"
       }
@@ -40,12 +40,12 @@
     {
       "item_index": 3,
       "metadata": {
-        "event_id": "borderline-microseism-VERIFY",
-        "cutoff_date": "2024-11-27"
+        "event_id": "low-lf-volcano-snr",
+        "cutoff_date": "2025-09-08"
       },
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2024-11-20T09:15:00.0' minus 2.5 minutes\n  endtime   = '2024-11-20T09:15:00.0' plus  2.5 minutes\n  cutoff_date = '2024-11-27'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'CC'\n  station = 'SUG'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2025/09/01 02:27:48' minus 2.5 minutes\n  endtime   = '2025/09/01 02:27:48' plus  2.5 minutes\n  cutoff_date = '2025-09-08'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
-        "event_id": "borderline-microseism-VERIFY"
+        "event_id": "low-lf-volcano-snr"
       }
     }
   ]

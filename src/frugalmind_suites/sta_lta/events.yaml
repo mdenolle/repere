@@ -100,7 +100,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
-    cutoff_date: "2024-07-12"
+    cutoff_date: "2025-07-18"
     recommended_stations:
       - {network: UW, station: STAR, location: "",   channel: EHZ}
       - {network: CC, station: PARA, location: "",   channel: BHZ}
@@ -123,7 +123,7 @@ events:
     expected_detection: false
     split: test
     visibility: private
-    cutoff_date: "2026-05-09"
+    cutoff_date: "2026-05-08"
     recommended_stations:
       - {network: UW, station: LO2,  location: "",   channel: BHZ}
     suggested_window_min: 30
@@ -151,7 +151,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
-    cutoff_date: "2024-03-19"
+    cutoff_date: "2003-11-14"
     recommended_stations:
       - {network: UW, station: LCW, location: "",   channel: EHZ}
     suggested_window_min: 5
@@ -172,7 +172,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
-    cutoff_date: "2025-09-02"
+    cutoff_date: "2025-09-08"
     recommended_stations:
       - {network: CC, station: SUG,  location: "",   channel: BHZ}
     suggested_window_min: 5
