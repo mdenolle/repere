@@ -130,6 +130,38 @@ def test_error_message_includes_event_id(tmp_path):
         _load_events(p)
 
 
+# ---- Top-level shape: events list and each entry must be a mapping ------
+
+def test_loader_rejects_non_list_events_field(tmp_path):
+    p = tmp_path / "events.yaml"
+    p.write_text(yaml.safe_dump({"schema_version": 0.3, "events": "not-a-list"}))
+    with pytest.raises(ValueError, match="`events` must be a list"):
+        _load_events(p)
+
+
+@pytest.mark.parametrize(
+    "bad_entry, label",
+    [
+        ("just-a-string", "string"),
+        (["network", "UW"], "list"),
+        (42, "scalar"),
+        (None, "null"),
+    ],
+)
+def test_loader_rejects_non_mapping_event_entry(tmp_path, bad_entry, label):
+    """A stray non-mapping entry must raise ValueError with the index, not AttributeError."""
+    p = _write([dict(GOOD_EVENT), bad_entry], tmp_path)
+    with pytest.raises(ValueError, match=r"events\[1\] must be a mapping"):
+        _load_events(p)
+
+
+def test_non_mapping_entry_error_includes_index(tmp_path):
+    p = _write(["bare-string", dict(GOOD_EVENT)], tmp_path)
+    # Index 0 is the offender; the message must say so.
+    with pytest.raises(ValueError, match=r"events\[0\] must be a mapping"):
+        _load_events(p)
+
+
 # ---- Sanity: the GOOD_EVENT itself loads cleanly ------------------------
 
 def test_good_event_loads_without_error(tmp_path):

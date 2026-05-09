@@ -159,8 +159,17 @@ def _load_events(
     with open(path) as f:
         data = yaml.safe_load(f)
     events = data.get("events", [])
-    for ev in events:
-        eid = ev.get("id", "<unknown>")
+    if not isinstance(events, list):
+        raise ValueError(
+            f"events.yaml `events` must be a list; got {type(events).__name__}"
+        )
+    for idx, ev in enumerate(events):
+        if not isinstance(ev, dict):
+            raise ValueError(
+                f"events.yaml events[{idx}] must be a mapping; "
+                f"got {type(ev).__name__} ({ev!r:.80})"
+            )
+        eid = ev.get("id", f"<unknown @ events[{idx}]>")
 
         # Top-level fields read by at least one suite or by the loader itself.
         for required in (
