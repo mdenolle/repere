@@ -25,11 +25,15 @@ def test_export_leaderboard_writes_json(tmp_path):
     results_dir = tmp_path / "results"
     output = tmp_path / "site" / "data" / "leaderboard.json"
     main(["smoke-eval", "--results-dir", str(results_dir)])
-    rc = main([
-        "export-leaderboard",
-        "--results-dir", str(results_dir),
-        "--output", str(output),
-    ])
+    rc = main(
+        [
+            "export-leaderboard",
+            "--results-dir",
+            str(results_dir),
+            "--output",
+            str(output),
+        ]
+    )
     assert rc == 0
     payload = json.loads(output.read_text())
     assert payload["leaderboard"], "leaderboard payload must contain rows"

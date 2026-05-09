@@ -113,10 +113,26 @@ def test_committed_public_goldens_exist_and_match_recipe():
     or in the synthetic-data generator.
     """
     for event_id, has_event, sta, lta, on, off, station, label in (
-        ("nisqually-2001", True, 2.0, 10.0, 3.5, 1.5, "UW.LON",
-         "M6.8 Nisqually deep intraslab earthquake"),
-        ("tohoku-2011-teleseism", True, 5.0, 60.0, 3.0, 1.5, "UW.LON",
-         "M9.1 Tōhoku, recorded as teleseism in PNW"),
+        (
+            "nisqually-2001",
+            True,
+            2.0,
+            10.0,
+            3.5,
+            1.5,
+            "UW.LON",
+            "M6.8 Nisqually deep intraslab earthquake",
+        ),
+        (
+            "tohoku-2011-teleseism",
+            True,
+            5.0,
+            60.0,
+            3.0,
+            1.5,
+            "UW.LON",
+            "M9.1 Tōhoku, recorded as teleseism in PNW",
+        ),
     ):
         golden = PUBLIC_GOLDENS / f"{event_id}.png"
         assert golden.exists(), f"public golden missing: {golden}"

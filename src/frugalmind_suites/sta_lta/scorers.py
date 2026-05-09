@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Callable
 import json
 import re
+from collections.abc import Callable
+from datetime import datetime, timezone
+from typing import Any
 
 from .sandbox import extract_code, run_snippet
 
@@ -198,3 +199,68 @@ def make_report_scorer(
         return max(0.0, min(1.0, score - penalty))
 
     return scorer
+
+
+# ---------------------------------------------------------------------------
+# Serializable scorer spec → callable
+#
+# Each suite records its scorer as a JSON-friendly dict in the curated
+# benchmark JSONL. ``make_scorer_from_spec`` reconstructs the callable so
+# items() and export_rows() share a single source of truth.
+# ---------------------------------------------------------------------------
+
+
+_PREDICATES: dict[str, Callable[[Any], bool]] = {
+    "int_ge_1": lambda x: isinstance(x, int) and x >= 1,
+    "int_eq_0": lambda x: isinstance(x, int) and x == 0,
+    "float_gt_0": lambda x: isinstance(x, (int, float)) and x > 0,
+}
+
+
+def make_scorer_from_spec(spec: dict[str, Any]) -> Callable[[str, Any], float]:
+    """Reconstruct a scorer callable from a JSON-serializable spec.
+
+    Spec shape::
+
+        {"name": "<scorer_name>", "config": {...}}
+
+    Recognised names: ``json_extraction``, ``code_execution``, ``plot_ssim``,
+    ``report``, ``zero`` (always returns 0.0; used for items whose golden
+    PNG is missing).
+    """
+    name = spec["name"]
+    config = dict(spec.get("config", {}))
+
+    if name == "json_extraction":
+        return make_json_extraction_scorer(
+            required_fields=config["required_fields"],
+            field_tolerances=config.get("field_tolerances"),
+        )
+    if name == "code_execution":
+        predicate_specs = config.get("artifact_predicates", {})
+        predicates = {k: _PREDICATES[v] for k, v in predicate_specs.items()}
+        return make_code_execution_scorer(
+            required_calls=config["required_calls"],
+            expected_artifact_keys=config["expected_artifact_keys"],
+            artifact_predicates=predicates,
+            timeout_s=config.get("timeout_s", 30.0),
+        )
+    if name == "plot_ssim":
+        return make_plot_ssim_scorer(
+            golden_png_path=config["golden_png_path"],
+            ssim_threshold=config.get("ssim_threshold", 0.85),
+            timeout_s=config.get("timeout_s", 60.0),
+        )
+    if name == "report":
+        return make_report_scorer(
+            expected_detection=config["expected_detection"],
+            origin_time_iso=config.get("origin_time_iso"),
+            origin_time_tolerance_s=config.get("origin_time_tolerance_s", 60.0),
+            magnitude=config.get("magnitude"),
+            magnitude_tolerance=config.get("magnitude_tolerance", 0.5),
+            forbidden_terms=config.get("forbidden_terms"),
+            required_terms=config.get("required_terms"),
+        )
+    if name == "zero":
+        return lambda _out, _gold: 0.0
+    raise ValueError(f"unknown scorer name: {name!r}")

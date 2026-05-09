@@ -6,6 +6,7 @@ self-contained and re-runs cleanly from a fresh kernel.
 | File | What it shows |
 | --- | --- |
 | [`01_skill_lift_quickstart.ipynb`](01_skill_lift_quickstart.ipynb) | Three small models (mistral:7b, llama3.1:8b, qwen2.5:7b) running the public STA/LTA intent-extraction suite under `none` vs `full` skill conditions, with per-model skill-lift output. |
+| [`02_stalta_golden_explorer.ipynb`](02_stalta_golden_explorer.ipynb) | Interactive golden-dataset builder: fetch waveforms from FDSN for every event in `events.yaml`, plot waveform + STA/LTA characteristic function, tune parameters, and export per-event YAML annotations to `goldens/annotations/`. |
 
 ## Launching
 

@@ -64,21 +64,25 @@ class JSONLTelemetry(AbstractContextManager):
     def __enter__(self) -> "JSONLTelemetry":
         self._handle = open(self._path, "a", encoding="utf-8")
         if self._write_run_header:
-            self._write({
-                "type": "run_start",
-                "ts": _utc_now_iso(),
-                "metadata": self._run_metadata,
-            })
+            self._write(
+                {
+                    "type": "run_start",
+                    "ts": _utc_now_iso(),
+                    "metadata": self._run_metadata,
+                }
+            )
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
         if self._handle is not None:
             try:
-                self._write({
-                    "type": "run_end",
-                    "ts": _utc_now_iso(),
-                    "ok": exc_type is None,
-                })
+                self._write(
+                    {
+                        "type": "run_end",
+                        "ts": _utc_now_iso(),
+                        "ok": exc_type is None,
+                    }
+                )
             finally:
                 self._handle.close()
                 self._handle = None

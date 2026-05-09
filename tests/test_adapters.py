@@ -15,7 +15,9 @@ from frugalmind.adapters import (
 )
 
 
-def _card(model_id: str, backend: str, in_rate: float = 0.001, out_rate: float = 0.002) -> ModelCard:
+def _card(
+    model_id: str, backend: str, in_rate: float = 0.001, out_rate: float = 0.002
+) -> ModelCard:
     return ModelCard(
         id=model_id,
         family="test",
@@ -43,18 +45,21 @@ class _FakeHTTPResponse:
 
 def _make_transport(captured: list, body: dict):
     def _transport(request, timeout=None):
-        captured.append({
-            "url": request.full_url,
-            "headers": dict(request.headers),
-            "body": json.loads(request.data.decode()),
-            "method": request.get_method(),
-        })
+        captured.append(
+            {
+                "url": request.full_url,
+                "headers": dict(request.headers),
+                "body": json.loads(request.data.decode()),
+                "method": request.get_method(),
+            }
+        )
         return _FakeHTTPResponse(body)
 
     return _transport
 
 
 # --- EchoAdapter ----------------------------------------------------------------
+
 
 def test_echo_adapter_uses_canned_text_and_pricing():
     card = _card("echo-7b", "openai-compat", 0.001, 0.002)
@@ -87,6 +92,7 @@ def test_echo_adapter_response_fn_takes_prompt():
 
 
 # --- AnthropicAdapter -----------------------------------------------------------
+
 
 def test_anthropic_adapter_posts_messages_and_parses_response():
     card = _card("claude-haiku-4-5", "anthropic", 1.0, 5.0)
@@ -130,6 +136,7 @@ def test_anthropic_adapter_falls_back_when_usage_missing():
 
 
 # --- OpenAICompatAdapter --------------------------------------------------------
+
 
 def test_openai_compat_adapter_posts_chat_completions():
     card = _card("mistral:7b", "ollama", 0.0, 0.0)
@@ -206,6 +213,7 @@ def test_openai_compat_extra_headers_and_body_pass_through():
 
 
 # --- adapter_from_env -----------------------------------------------------------
+
 
 def test_adapter_from_env_picks_anthropic(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-anth")

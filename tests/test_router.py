@@ -11,18 +11,42 @@ from frugalmind.router import FrugalRouter, NoEligibleModelError
 def _registry() -> ModelRegistry:
     """Three-card registry: cheap weak, mid OK, expensive strong."""
     r = ModelRegistry()
-    r.register(ModelCard(
-        id="cheap-weak", family="cheap", size_b=1, context_window=4096, backend="ollama",
-        cost_per_1k_in=0.0, cost_per_1k_out=0.0, metadata={"tier": "nano"},
-    ))
-    r.register(ModelCard(
-        id="mid-ok", family="mid", size_b=7, context_window=8192, backend="openai",
-        cost_per_1k_in=0.001, cost_per_1k_out=0.002, metadata={"tier": "small"},
-    ))
-    r.register(ModelCard(
-        id="strong-expensive", family="big", size_b=70, context_window=200000, backend="anthropic",
-        cost_per_1k_in=0.015, cost_per_1k_out=0.075, metadata={"tier": "cloud"},
-    ))
+    r.register(
+        ModelCard(
+            id="cheap-weak",
+            family="cheap",
+            size_b=1,
+            context_window=4096,
+            backend="ollama",
+            cost_per_1k_in=0.0,
+            cost_per_1k_out=0.0,
+            metadata={"tier": "nano"},
+        )
+    )
+    r.register(
+        ModelCard(
+            id="mid-ok",
+            family="mid",
+            size_b=7,
+            context_window=8192,
+            backend="openai",
+            cost_per_1k_in=0.001,
+            cost_per_1k_out=0.002,
+            metadata={"tier": "small"},
+        )
+    )
+    r.register(
+        ModelCard(
+            id="strong-expensive",
+            family="big",
+            size_b=70,
+            context_window=200000,
+            backend="anthropic",
+            cost_per_1k_in=0.015,
+            cost_per_1k_out=0.075,
+            metadata={"tier": "cloud"},
+        )
+    )
     return r
 
 

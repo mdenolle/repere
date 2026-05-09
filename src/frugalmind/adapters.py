@@ -48,9 +48,7 @@ def _http_post_json(
             body = response.read().decode("utf-8")
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace") if exc.fp else ""
-        raise RuntimeError(
-            f"HTTP {exc.code} from {url}: {body[:500]}"
-        ) from exc
+        raise RuntimeError(f"HTTP {exc.code} from {url}: {body[:500]}") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(f"Request to {url} failed: {exc.reason}") from exc
     if not body:
@@ -82,7 +80,9 @@ class EchoAdapter:
         return self.response_text
 
     def estimate_cost(self, prompt: str, *, max_output_tokens: int = 256, **_: Any) -> float:
-        in_rate = self.cost_per_1k_in if self.cost_per_1k_in is not None else self._card.cost_per_1k_in
+        in_rate = (
+            self.cost_per_1k_in if self.cost_per_1k_in is not None else self._card.cost_per_1k_in
+        )
         out_rate = (
             self.cost_per_1k_out if self.cost_per_1k_out is not None else self._card.cost_per_1k_out
         )
@@ -93,7 +93,9 @@ class EchoAdapter:
         text = self._resolve_text(prompt)
         in_tokens = _approx_token_count(prompt)
         out_tokens = _approx_token_count(text)
-        in_rate = self.cost_per_1k_in if self.cost_per_1k_in is not None else self._card.cost_per_1k_in
+        in_rate = (
+            self.cost_per_1k_in if self.cost_per_1k_in is not None else self._card.cost_per_1k_in
+        )
         out_rate = (
             self.cost_per_1k_out if self.cost_per_1k_out is not None else self._card.cost_per_1k_out
         )
@@ -136,7 +138,9 @@ class AnthropicAdapter:
             "content-type": "application/json",
         }
 
-    def estimate_cost(self, prompt: str, *, max_output_tokens: int | None = None, **_: Any) -> float:
+    def estimate_cost(
+        self, prompt: str, *, max_output_tokens: int | None = None, **_: Any
+    ) -> float:
         in_tokens = _approx_token_count(prompt)
         out_tokens = max_output_tokens if max_output_tokens is not None else self.default_max_tokens
         return (
@@ -220,7 +224,9 @@ class OpenAICompatAdapter:
             h.update(self.extra_headers)
         return h
 
-    def estimate_cost(self, prompt: str, *, max_output_tokens: int | None = None, **_: Any) -> float:
+    def estimate_cost(
+        self, prompt: str, *, max_output_tokens: int | None = None, **_: Any
+    ) -> float:
         in_tokens = _approx_token_count(prompt)
         out_tokens = max_output_tokens if max_output_tokens is not None else self.default_max_tokens
         return (

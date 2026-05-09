@@ -7,6 +7,8 @@
 #
 # Requirements:
 #   - `gh` CLI authenticated (`gh auth status`)
+#   - `jq` (parses gh JSON output)
+#   - `python3` (extracts roadmap sections and slugs anchors)
 #   - Run from a clone of the repo (the script reads ROADMAP.md from the cwd)
 #
 # Usage:
@@ -34,6 +36,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 command -v gh >/dev/null || { echo "gh CLI is required"; exit 1; }
+command -v jq >/dev/null || { echo "jq is required (parses gh JSON output)"; exit 1; }
+command -v python3 >/dev/null || { echo "python3 is required (parses ROADMAP.md sections and slugs anchors)"; exit 1; }
 [[ -f "$ROADMAP" ]] || { echo "ROADMAP.md not found at $ROADMAP"; exit 1; }
 
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
@@ -105,6 +109,19 @@ import re, sys, json
 roadmap_path = sys.argv[1]
 text = open(roadmap_path).read()
 sections = re.split(r"^## (?=P\d+\.\d+ · )", text, flags=re.MULTILINE)
+
+
+def gh_slug(heading: str) -> str:
+    """Mirror GitHub's heading-anchor rule: lowercase, drop punctuation
+    (including '.', backticks, '·'), whitespace -> '-', collapse runs."""
+    s = heading.lower()
+    # Keep word chars (letters, digits, underscore), whitespace, and '-'; drop the rest.
+    s = re.sub(r"[^\w\s-]", "", s, flags=re.UNICODE)
+    s = re.sub(r"\s+", "-", s)
+    s = re.sub(r"-+", "-", s)
+    return s.strip("-")
+
+
 items = []
 for sec in sections[1:]:
     lines = sec.splitlines()
@@ -122,12 +139,15 @@ for sec in sections[1:]:
         milestone = "Phase 3 — Pivots"
     else:
         milestone = ""
-    # Extract Effort and Area heuristically (look for `Effort` and `Area` lines).
+    # Extract Effort heuristically (look for `Effort` line).
     effort_match = re.search(r"Effort\*\*\s*([SML])", body)
     effort = effort_match.group(1) if effort_match else "M"
+    # GitHub-compatible anchor for the section heading exactly as rendered.
+    anchor = gh_slug(f"{pid} · {title}")
     items.append({
         "id": pid, "title": title, "body": body,
         "milestone": milestone, "effort": effort,
+        "anchor": anchor,
     })
 print(json.dumps(items))
 PY
@@ -162,6 +182,7 @@ for i in $(seq 0 $((count-1))); do
   body=$(jq -r ".[$i].body" <<< "$ITEMS_JSON")
   milestone=$(jq -r ".[$i].milestone" <<< "$ITEMS_JSON")
   effort=$(jq -r ".[$i].effort" <<< "$ITEMS_JSON")
+  anchor=$(jq -r ".[$i].anchor" <<< "$ITEMS_JSON")
 
   if ! select_item "$pid"; then
     continue
@@ -171,7 +192,7 @@ for i in $(seq 0 $((count-1))); do
   prefix="[$pid]"
 
   body_with_link=$(printf "%s\n\n---\n_Source: [ROADMAP.md](../blob/main/ROADMAP.md#%s)_\n" \
-    "$body" "$(echo "$pid · $title" | tr '[:upper:] ·' '[:lower:]--')")
+    "$body" "$anchor")
 
   existing=$(issue_number_for_prefix "$prefix" || true)
   if [[ -n "$existing" ]]; then

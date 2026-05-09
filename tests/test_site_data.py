@@ -27,8 +27,14 @@ def test_leaderboard_json_has_required_fields():
     rows = payload["leaderboard"]
     assert rows, "leaderboard.json must contain at least one row"
     required = {
-        "rank", "model_id", "agent_condition", "suite", "score",
-        "cost_usd", "n_completed", "n_total",
+        "rank",
+        "model_id",
+        "agent_condition",
+        "suite",
+        "score",
+        "cost_usd",
+        "n_completed",
+        "n_total",
     }
     for row in rows:
         missing = required - set(row)
@@ -44,9 +50,16 @@ def test_skill_lift_json_has_required_fields_when_present():
     rows = payload["rows"]
     assert rows, "skill_lift.json must contain at least one row when present"
     required = {
-        "model_id", "suite", "skill_name", "skill_version",
-        "score_none", "score_full", "lift",
-        "cost_none_usd", "cost_full_usd", "n_total",
+        "model_id",
+        "suite",
+        "skill_name",
+        "skill_version",
+        "score_none",
+        "score_full",
+        "lift",
+        "cost_none_usd",
+        "cost_full_usd",
+        "n_total",
     }
     for row in rows:
         missing = required - set(row)

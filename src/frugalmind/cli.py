@@ -20,6 +20,7 @@ from typing import Any
 from frugalmind_suites.sta_lta import STALTAIntentExtractionSuite
 
 from . import EvalRunner, Generation, ModelCard, ModelRegistry
+from .export import export_suites
 from .leaderboard import (
     LeaderboardRunner,
     export_leaderboard,
@@ -27,7 +28,6 @@ from .leaderboard import (
 )
 from .registry import load_registry_yaml
 from .skills import SkillLoader, SkillManifest, render_with_skill
-
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILLS_DIR = ROOT / ".github" / "skills"
@@ -137,7 +137,9 @@ def _run_stub_eval(results_dir: Path) -> Path:
     return path
 
 
-def _resolve_skill_for_intent(skill_name: str | None, condition: str | None) -> tuple[str | None, str]:
+def _resolve_skill_for_intent(
+    skill_name: str | None, condition: str | None
+) -> tuple[str | None, str]:
     """Return (skill_name, agent_condition) following both new and legacy flags."""
     # Back-compat: --condition seismo-skill maps to legacy seismo-data-agent.
     if skill_name is None:
@@ -188,7 +190,10 @@ def _run_ollama_intent_eval(
         else:
             full_prompt = render_with_skill(prompt, skill_obj, mode=skill_mode)  # type: ignore[arg-type]
         text, latency_s = _ollama_generate(
-            model=model, prompt=full_prompt, host=host, timeout_s=timeout_s,
+            model=model,
+            prompt=full_prompt,
+            host=host,
+            timeout_s=timeout_s,
         )
         item_score = float(scorer(text, gold))
         scores.append(item_score)
@@ -202,7 +207,9 @@ def _run_ollama_intent_eval(
             }
         )
 
-    skill_version = getattr(skill_obj, "version", "v0.1-draft" if resolved_skill_name == "seismo-data-agent" else None)
+    skill_version = getattr(
+        skill_obj, "version", "v0.1-draft" if resolved_skill_name == "seismo-data-agent" else None
+    )
 
     result = {
         "model_id": model,
@@ -229,15 +236,17 @@ def _list_models(args: argparse.Namespace) -> int:
     registry = load_registry_yaml(args.registry)
     rows = []
     for c in registry.list():
-        rows.append({
-            "id": c.id,
-            "family": c.family,
-            "tier": c.metadata.get("tier"),
-            "backend": c.backend,
-            "size_b": c.size_b,
-            "cost_per_1k_in": c.cost_per_1k_in,
-            "cost_per_1k_out": c.cost_per_1k_out,
-        })
+        rows.append(
+            {
+                "id": c.id,
+                "family": c.family,
+                "tier": c.metadata.get("tier"),
+                "backend": c.backend,
+                "size_b": c.size_b,
+                "cost_per_1k_in": c.cost_per_1k_in,
+                "cost_per_1k_out": c.cost_per_1k_out,
+            }
+        )
     print(json.dumps(rows, indent=2))
     return 0
 
@@ -251,12 +260,14 @@ def _list_skills(_: argparse.Namespace) -> int:
     out = []
     for name in manifest.names() + [n for n in skills if n not in manifest.names()]:
         skill = skills.get(name)
-        out.append({
-            "name": name,
-            "version": getattr(skill, "version", None),
-            "task_kind": getattr(skill, "task_kind", None),
-            "suites": manifest.suites_for_skill(name),
-        })
+        out.append(
+            {
+                "name": name,
+                "version": getattr(skill, "version", None),
+                "task_kind": getattr(skill, "task_kind", None),
+                "suites": manifest.suites_for_skill(name),
+            }
+        )
     print(json.dumps(out, indent=2))
     return 0
 
@@ -311,6 +322,45 @@ def _run_skill_lift(args: argparse.Namespace) -> int:
     return 0
 
 
+def _all_registered_suites() -> list[Any]:
+    """Return one instance of every benchmark suite known to the package.
+
+    Add new suite families to this function as they are introduced; the
+    ``export-suite`` CLI walks the returned list when ``--suite`` is omitted.
+    """
+    from frugalmind_suites.sta_lta import ALL_SUITES as STA_LTA_SUITES
+
+    return list(STA_LTA_SUITES)
+
+
+def _resolve_suites(suite_ids: list[str] | None) -> list[Any]:
+    """Pick one or more registered suites by their ``<dataset_id>.<suite_id>`` key."""
+    all_suites = _all_registered_suites()
+    if not suite_ids:
+        return all_suites
+    by_key = {f"{s.dataset_id}.{s.suite_id}": s for s in all_suites}
+    selected: list[Any] = []
+    for sid in suite_ids:
+        if sid not in by_key:
+            available = ", ".join(sorted(by_key)) or "(none)"
+            raise SystemExit(f"Unknown suite {sid!r}. Available: {available}")
+        selected.append(by_key[sid])
+    return selected
+
+
+def _run_export_suite(args: argparse.Namespace) -> int:
+    suites = _resolve_suites(args.suite)
+
+    if args.visibility != "all":
+        for s in suites:
+            # All current STA/LTA suites accept visibility= via _SplitAwareSuite.
+            s.visibility = args.visibility  # type: ignore[attr-defined]
+
+    manifest = export_suites(suites, out_dir=args.out, version=args.version)
+    print(json.dumps(manifest, indent=2))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="FrugalMind local eval helpers")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -352,12 +402,14 @@ def main(argv: list[str] | None = None) -> int:
     ollama.add_argument("--timeout-s", default=180.0, type=float)
 
     list_models = subparsers.add_parser(
-        "list-models", help="List registered model cards from a models.yaml file",
+        "list-models",
+        help="List registered model cards from a models.yaml file",
     )
     list_models.add_argument("--registry", default=DEFAULT_MODELS_YAML, type=Path)
 
     list_skills_p = subparsers.add_parser(
-        "list-skills", help="List skills declared in .github/skills/ and their suite bindings",
+        "list-skills",
+        help="List skills declared in .github/skills/ and their suite bindings",
     )
     list_skills_p.set_defaults(_handler=_list_skills)
 
@@ -367,6 +419,35 @@ def main(argv: list[str] | None = None) -> int:
     )
     skill_lift.add_argument("--skill", default="stalta-detection")
     skill_lift.add_argument("--output", default=Path("results/skill_lift.json"), type=Path)
+
+    export_suite_p = subparsers.add_parser(
+        "export-suite",
+        help="Export curated (prompt, gold) JSONL artifacts for one or more suites",
+    )
+    export_suite_p.add_argument(
+        "--suite",
+        action="append",
+        default=None,
+        help="Fully-qualified suite id, e.g. 'sta_lta.intent_extraction'. "
+        "Repeat to export multiple. Omit to export every registered suite.",
+    )
+    export_suite_p.add_argument(
+        "--out",
+        default=Path("datasets"),
+        type=Path,
+        help="Root output directory; files land under <out>/<dataset_id>/<version>/",
+    )
+    export_suite_p.add_argument(
+        "--version",
+        default=None,
+        help="Override version tag (default: each suite's own .version attribute).",
+    )
+    export_suite_p.add_argument(
+        "--visibility",
+        choices=["public", "private", "all"],
+        default="all",
+        help="Filter rows by visibility (default: all).",
+    )
 
     args = parser.parse_args(argv)
     if args.command == "smoke-eval":
@@ -395,6 +476,8 @@ def main(argv: list[str] | None = None) -> int:
         return _list_skills(args)
     if args.command == "run-skill-lift":
         return _run_skill_lift(args)
+    if args.command == "export-suite":
+        return _run_export_suite(args)
     return 1
 
 

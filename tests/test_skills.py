@@ -142,13 +142,15 @@ def test_manifest_from_yaml_binds_skills_to_suites(tmp_path):
     _write_skill(tmp_path, name="beta-skill")
     manifest_path = tmp_path / "manifest.yaml"
     manifest_path.write_text(
-        yaml.safe_dump({
-            "skills_dir": ".",
-            "skills": [
-                {"name": "alpha-skill", "suites": ["sta_lta.intent_extraction"]},
-                {"name": "beta-skill", "suites": ["sta_lta.fetch_code", "sta_lta.report"]},
-            ],
-        })
+        yaml.safe_dump(
+            {
+                "skills_dir": ".",
+                "skills": [
+                    {"name": "alpha-skill", "suites": ["sta_lta.intent_extraction"]},
+                    {"name": "beta-skill", "suites": ["sta_lta.fetch_code", "sta_lta.report"]},
+                ],
+            }
+        )
     )
     manifest = SkillManifest.from_yaml(manifest_path)
     assert manifest.skill_for_suite("sta_lta.intent_extraction") == "alpha-skill"

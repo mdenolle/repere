@@ -8,11 +8,12 @@ smoke tests, and future provider-backed evaluation runners.
 
 from __future__ import annotations
 
+import os
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Iterable, Protocol
-import os
+from typing import Any, Protocol
 
 
 class TaskKind(str, Enum):
@@ -25,12 +26,35 @@ class TaskKind(str, Enum):
 
 
 class DenolleGroupSuite:
-    """Base class for benchmark suites."""
+    """Base class for benchmark suites.
+
+    Subclasses set ``task_kind`` (required at runtime) and the trio
+    ``dataset_id``/``suite_id``/``version`` (required to export curated
+    rows to the canonical JSONL format used by the leaderboard and HF).
+    """
 
     task_kind: TaskKind
+    # Identity used by the standard exporter (frugalmind.export). Suites that
+    # never need export can leave these as None, but every benchmark intended
+    # for the leaderboard should populate all three.
+    dataset_id: str | None = None
+    suite_id: str | None = None
+    version: str = "v0.1"
 
     def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
         raise NotImplementedError
+
+    def export_rows(self) -> Iterable[Any]:
+        """Yield :class:`frugalmind.export.BenchmarkRow` objects for curation.
+
+        Default implementation raises so suites are forced to declare the
+        scorer spec explicitly — that spec is what makes the JSONL artifact
+        self-contained and shippable to Hugging Face.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not implement export_rows(); "
+            "see frugalmind.export.BenchmarkRow"
+        )
 
 
 @dataclass(frozen=True)
@@ -127,9 +151,13 @@ class EvalRunner:
         self.adapter_factory = adapter_factory
         self.per_model_budget_usd = per_model_budget_usd
         self.total_budget_usd = total_budget_usd
-        self.budget = budget if budget is not None else BudgetGuard(
-            per_model_usd=per_model_budget_usd,
-            total_usd=total_budget_usd,
+        self.budget = (
+            budget
+            if budget is not None
+            else BudgetGuard(
+                per_model_usd=per_model_budget_usd,
+                total_usd=total_budget_usd,
+            )
         )
         self.telemetry = telemetry
         self.skill_name = skill_name

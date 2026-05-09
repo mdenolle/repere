@@ -29,10 +29,17 @@ class _ToySuite(DenolleGroupSuite):
 
 def _registry() -> ModelRegistry:
     r = ModelRegistry()
-    r.register(ModelCard(
-        id="echo-yes", family="echo", size_b=1, context_window=2048,
-        backend="ollama", cost_per_1k_in=0.001, cost_per_1k_out=0.001,
-    ))
+    r.register(
+        ModelCard(
+            id="echo-yes",
+            family="echo",
+            size_b=1,
+            context_window=2048,
+            backend="ollama",
+            cost_per_1k_in=0.001,
+            cost_per_1k_out=0.001,
+        )
+    )
     return r
 
 

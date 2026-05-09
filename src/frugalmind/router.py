@@ -70,7 +70,9 @@ class FrugalRouter:
         cards: Iterable[ModelCard] | None = None,
     ) -> list[ModelCard]:
         pool = list(cards) if cards is not None else self.registry.list()
-        return sorted_by_cost(self.registry, output_tokens_assumed=self.output_tokens_assumed, cards=pool)
+        return sorted_by_cost(
+            self.registry, output_tokens_assumed=self.output_tokens_assumed, cards=pool
+        )
 
     def decide(
         self,
@@ -83,7 +85,9 @@ class FrugalRouter:
         floor = self.quality_floors.get(task_kind)
         for card in self.candidates(task_kind, cards=cards):
             adapter = self.adapter_factory(card)
-            est = adapter.estimate_cost(prompt, max_output_tokens=max_output_tokens or self.output_tokens_assumed)
+            est = adapter.estimate_cost(
+                prompt, max_output_tokens=max_output_tokens or self.output_tokens_assumed
+            )
             if not self.budget.can_afford(card.id, est):
                 continue
             score = self.historical_score(card.id, task_kind)
@@ -115,7 +119,9 @@ class FrugalRouter:
                     without_history.append(c)
             for c in with_history + without_history:
                 adapter = self.adapter_factory(c)
-                est = adapter.estimate_cost(prompt, max_output_tokens=max_output_tokens or self.output_tokens_assumed)
+                est = adapter.estimate_cost(
+                    prompt, max_output_tokens=max_output_tokens or self.output_tokens_assumed
+                )
                 if self.budget.can_afford(c.id, est):
                     return RoutingDecision(
                         model_id=c.id,

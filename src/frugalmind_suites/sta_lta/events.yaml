@@ -58,9 +58,8 @@ events:
     visibility: public
     cutoff_date: "2001-03-07"
     recommended_stations:
-      - {network: UW, station: LON,  location: "",   channel: BHZ}
-      - {network: UW, station: RPW,  location: "",   channel: BHZ}
-      - {network: UW, station: ALCT, location: "",   channel: BHZ}
+      - {network: UW, station: LAWT,  location: "",   channel: ENZ}
+      - {network: UW, station: PCMD,  location: "",   channel: ENZ}
     suggested_window_min: 15
     stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
     notes: |
@@ -82,28 +81,29 @@ events:
     cutoff_date: "2011-03-18"
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
+      - {network: UW, station: RATT,  location: "",   channel: BHZ}
     suggested_window_min: 60
     stalta_params: {sta: 5.0, lta: 60.0, on_thresh: 3.0, off_thresh: 1.5}
     notes: |
       Tests whether the model adapts STA/LTA windows to long-period
       teleseismic energy. Default "regional" parameters will miss this.
 
-  - id: mt-rainier-swarm-2024-VERIFY
-    category: regional_earthquake
-    label: "Mt. Rainier shallow swarm, 2024 (placeholder — verify dates)"
-    origin_time: "2024-07-04T12:00:00.0"
-    latitude: 46.853
-    longitude: -121.760
-    depth_km: 2.5
-    magnitude: 1.8
-    catalog_id: TBD
+  - id: mt-rainier-swarm-2026
+    category: local_earthquake
+    label: "Mt. Rainier shallow swarm, 2025"
+    origin_time: "2025-07-11T21:23:04+02:00"
+    latitude: 46.8437
+    longitude: -121.763
+    depth_km: -2.4
+    magnitude: 2.4
+    catalog_id: 62139727
     expected_detection: true
     split: test
     visibility: private
-    cutoff_date: "2024-07-11"
+    cutoff_date: "2024-07-12"
     recommended_stations:
       - {network: UW, station: STAR, location: "",   channel: EHZ}
-      - {network: UW, station: PARA, location: "",   channel: EHZ}
+      - {network: CC, station: PARA, location: "",   channel: BHZ}
     suggested_window_min: 5
     stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
     notes: |
@@ -114,7 +114,7 @@ events:
   - id: pnsn-quiet-day-VERIFY
     category: noise_day
     label: "Quiet day on UW.LON — no events expected"
-    origin_time: "2023-08-15T03:00:00.0"
+    origin_time: "2026-05-09T03:00:00.0"
     latitude: null
     longitude: null
     depth_km: null
@@ -123,9 +123,9 @@ events:
     expected_detection: false
     split: test
     visibility: private
-    cutoff_date: "2023-08-14"
+    cutoff_date: "2026-05-09"
     recommended_stations:
-      - {network: UW, station: LON,  location: "",   channel: BHZ}
+      - {network: UW, station: LO2,  location: "",   channel: BHZ}
     suggested_window_min: 30
     stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
     notes: |
@@ -133,49 +133,53 @@ events:
       threshold, and explicitly state "no events detected." A model that
       hallucinates a detection here scores 0 on the report task.
 
+
+# 2003/11/07 11:46:59 PM GMT+1
+# Coordinates
+# 46.7415, -122.7733
+# Depth
+# 0.63 mi
   - id: cascade-quarry-blast-VERIFY
     category: quarry_blast
     label: "Routine quarry blast flagged in PNSN catalog (placeholder)"
-    origin_time: "2024-03-12T20:30:00.0"
-    latitude: 47.5
-    longitude: -121.9
-    depth_km: 0.0
-    magnitude: 1.5
-    catalog_id: TBD
+    origin_time: "2003-11-07T23:46:0.0"
+    latitude: 46.7415
+    longitude: -122.7733
+    depth_km: 1.0
+    magnitude: 3.2
+    catalog_id: 10589593
     expected_detection: true
     split: test
     visibility: private
     cutoff_date: "2024-03-19"
     recommended_stations:
-      - {network: UW, station: ALCT, location: "",   channel: EHZ}
+      - {network: UW, station: LCW, location: "",   channel: EHZ}
     suggested_window_min: 5
     stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
     notes: |
       Anthropogenic source. STA/LTA will trigger; the test is whether the
-      report correctly identifies it as a blast rather than a tectonic earthquake.
-      Catalog entry NEEDS VERIFICATION before publication.
+      report correctly identifies it as a blast rather than a tectonic earthquake.  
 
-  - id: borderline-microseism-VERIFY
-    category: regional_earthquake
-    label: "Low-SNR small event near detection threshold (placeholder)"
-    origin_time: "2024-11-20T09:15:00.0"
-    latitude: 47.0
-    longitude: -122.5
+  - id: low-lf-volcano-snr
+    category: volcanic_earthquake
+    label: "Low-SNR LF volcanic event near detection threshold at Mt St Helens"
+    origin_time: "2025/09/01 02:27:48"
+    latitude: 46.1708
+    longitude: -122.1343
     depth_km: 25.0
-    magnitude: 1.2
-    catalog_id: TBD
+    magnitude: 0.4
+    catalog_id: 62171487
     expected_detection: true
     split: test
     visibility: private
-    cutoff_date: "2024-11-27"
+    cutoff_date: "2025-09-02"
     recommended_stations:
-      - {network: UW, station: LON,  location: "",   channel: BHZ}
+      - {network: CC, station: SUG,  location: "",   channel: BHZ}
     suggested_window_min: 5
     stalta_params: {sta: 1.0, lta: 8.0, on_thresh: 3.0, off_thresh: 1.5}
     notes: |
       Calibration probe. With default thresholds this event might or might
       not trigger. Used to identify models that overfit to "easy" cases.
-      EVENT NEEDS VERIFICATION.
 
 # v0.2 inventory: 6 events total = 2 validation/public + 4 test/private.
 # Each event seeds 5 suite items; total = 10 validation + 20 test = 30 graded items.

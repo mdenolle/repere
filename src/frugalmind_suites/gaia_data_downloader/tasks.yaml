@@ -1,0 +1,631 @@
+# =============================================================================
+# GAIA data-downloader golden suite — canonical truth set
+# =============================================================================
+# Each task below specifies a single coding problem for the
+# `gaia-data-downloader` agent: produce a Python script that downloads a
+# constrained slice of an upstream geoscience dataset under given CLI
+# constraints. The agent's output is a *script*; scoring is by sandboxed
+# execution + structural-checksum + trajectory analysis.
+#
+# Source of truth for task wording lives in GitHub issues on
+# `uw-ssec/gaia-agentic-ai` labelled `golden-task` (see provenance.yaml).
+# This file is the frozen, hash-pinned snapshot consumed by the eval harness.
+# It is rebuilt by `scripts/sync_gaia_tasks.py` from that issue label.
+#
+# Schema (per task)
+#   id                       (required)  stable kebab-case id (gaia-dl-NNN)
+#   issue_url                (required)  link back to the authoring issue
+#   domain                   (required)  seismic | hydrology | dem | climate | cross
+#   difficulty               (required)  easy | medium | hard
+#   split                    (required)  validation | test
+#                              validation = open development set; ships in git.
+#                              test       = held-out set; goldens are private.
+#   visibility               (required)  public | private
+#                              public  = task wording committed.
+#                              private = wording lives under FM_GAIA_GOLDEN_DIR.
+#   prompt                   (required)  the user message handed to the agent
+#   expected_tools           (required)  list of tool/skill names the agent
+#                              should reasonably use (for tool-efficiency score).
+#   required_cli_args        (required)  CLI flags the generated script must expose.
+#   expected_files           (required)  list of {glob, min, max} for structural
+#                              checksum scoring. Public tasks NEVER list
+#                              byte-equal targets here; that's a private-only field.
+#   checksum_strategy        (required)  structural | exact | range
+#   data_source_url          (required)  upstream endpoint(s); for documentation
+#   timeout_s                (required)  sandbox timeout in seconds
+#   contamination_risk       (required)  low | medium | high
+#                              high-risk tasks should default to visibility:private
+#   cutoff_date              (optional)  YYYY-MM-DD; date past which a
+#                              retrieval-augmented agent must not query.
+#                              Defaults applied by the loader where omitted.
+#   notes                    (optional)  rationale and provenance
+#
+# Suites filter by split. The FM_GAIA_SPLIT env var sets the default.
+# Inventory (v0.1):
+#   30 tasks total = 25 public/validation + 5 private/test
+#   Difficulty: 10 easy / 15 medium / 5 hard
+#   Domains:    7 seismic / 7 hydrology / 6 dem / 8 climate / 2 cross
+# =============================================================================
+
+schema_version: 0.1
+
+tasks:
+
+  # ---------------------------------------------------------------------------
+  # Easy (10) — single source, single variable, single time slice.
+  # ---------------------------------------------------------------------------
+
+  - id: gaia-dl-001
+    domain: seismic
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download 1 day of vertical-component broadband seismic data
+      (channel BHZ, sampling rate >= 20 Hz) for IRIS station IU.ANMO
+      on 2024-01-15. Save as MiniSEED. Keep only the requested channel.
+    expected_tools: [obspy, fdsn]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/IU.ANMO.*.BHZ.*.mseed", min: 1, max: 4}
+    checksum_strategy: structural
+    data_source_url: https://service.iris.edu/fdsnws/dataselect/1/
+    timeout_s: 300
+    contamination_risk: low
+    notes: Smoke test for IRIS FDSN dataselect.
+
+  - id: gaia-dl-002
+    domain: seismic
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download the USGS earthquake catalog for the Pacific Northwest
+      (lat 42-49, lon -125 to -116) over the last 30 days, magnitude >= 3.0.
+      Save as a single GeoJSON file.
+    expected_tools: [libcomcat, requests]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/usgs_catalog_*.geojson", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://earthquake.usgs.gov/fdsnws/event/1/
+    timeout_s: 180
+    contamination_risk: low
+    notes: USGS Comcat smoke test.
+
+  - id: gaia-dl-003
+    domain: seismic
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download station metadata (StationXML) for the entire IU network,
+      valid as of 2024-01-01, with response information (level=response).
+    expected_tools: [obspy, fdsn]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/IU.*.xml", min: 1, max: 2}
+    checksum_strategy: structural
+    data_source_url: https://service.iris.edu/fdsnws/station/1/
+    timeout_s: 180
+    contamination_risk: low
+    notes: StationXML retrieval.
+
+  - id: gaia-dl-004
+    domain: hydrology
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download daily mean streamflow for USGS gauge 12200500 (Skagit River
+      near Mount Vernon) for water year 2023 (2022-10-01 to 2023-09-30) as a CSV.
+    expected_tools: [dataretrieval, requests]
+    required_cli_args: ["--time-spans", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/usgs_12200500_*.csv", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://waterservices.usgs.gov/nwis/dv/
+    timeout_s: 180
+    contamination_risk: low
+    notes: USGS NWIS daily values.
+
+  - id: gaia-dl-005
+    domain: hydrology
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download daily SNOTEL data for Stevens Pass site (ID 791) for water
+      year 2023, parameters: SWE depth and snow depth. Save as CSV.
+    expected_tools: [ulmo, requests]
+    required_cli_args: ["--time-spans", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/snotel_791_*.csv", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://www.nrcs.usda.gov/wps/portal/wcc/home/
+    timeout_s: 180
+    contamination_risk: low
+    notes: SNOTEL via NRCS web service.
+
+  - id: gaia-dl-006
+    domain: hydrology
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download CAMELS basin attributes (topography, climate, soil) for
+      HUC8 basin 17110008. Save as a single CSV per category.
+    expected_tools: [requests]
+    required_cli_args: ["--output-directory"]
+    expected_files:
+      - {glob: "out/camels_17110008_*.csv", min: 3, max: 8}
+    checksum_strategy: structural
+    data_source_url: https://gdex.ucar.edu/dataset/camels.html
+    timeout_s: 180
+    contamination_risk: low
+    notes: CAMELS attribute pull.
+
+  - id: gaia-dl-007
+    domain: dem
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download a 1-meter USGS 3DEP DEM tile for a 1km x 1km bbox around
+      lat 47.6062 lon -122.3321 (downtown Seattle). Save as GeoTIFF.
+    expected_tools: [py3dep, requests]
+    required_cli_args: ["--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/dem_3dep_*.tif", min: 1, max: 4}
+    checksum_strategy: structural
+    data_source_url: https://www.usgs.gov/3d-elevation-program
+    timeout_s: 300
+    contamination_risk: low
+    notes: USGS 3DEP single-tile.
+
+  - id: gaia-dl-008
+    domain: dem
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download an SRTM 30m global DEM tile for a 1deg x 1deg bbox containing
+      Mt. Rainier (lat 46-47, lon -122 to -121). Save as GeoTIFF.
+    expected_tools: [elevation, requests]
+    required_cli_args: ["--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/srtm_*.tif", min: 1, max: 2}
+    checksum_strategy: structural
+    data_source_url: https://lpdaac.usgs.gov/products/srtmgl1v003/
+    timeout_s: 300
+    contamination_risk: low
+    notes: SRTM via the elevation package.
+
+  - id: gaia-dl-009
+    domain: climate
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download ERA5 single-level 2m temperature for 2024-06-15 over a bbox
+      of the contiguous US (lat 25-50, lon -125 to -67). Save as NetCDF.
+    expected_tools: [cdsapi]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/era5_t2m_*.nc", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://cds.climate.copernicus.eu/
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Requires CDS API key.
+
+  - id: gaia-dl-010
+    domain: climate
+    difficulty: easy
+    split: validation
+    visibility: public
+    prompt: |
+      Download MODIS MOD13Q1 NDVI 16-day composite tile h09v04 for
+      2023-08-13. Save as HDF.
+    expected_tools: [earthaccess, requests]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/MOD13Q1*.hdf", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://lpdaac.usgs.gov/products/mod13q1v061/
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Requires Earthdata Login.
+
+  # ---------------------------------------------------------------------------
+  # Medium (15) — multi-file or QC, less-common packages, spatial masks.
+  # ---------------------------------------------------------------------------
+
+  - id: gaia-dl-011
+    domain: seismic
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      For the M6.4 Ferndale CA earthquake on 2022-12-20 (lat 40.525
+      lon -124.423), download a 5-minute window of three-component data
+      starting 30 s before origin time from all BK-network stations within
+      200 km, as MiniSEED, organized by station.
+    expected_tools: [obspy, fdsn]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/BK.*/*.mseed", min: 10, max: 200}
+    checksum_strategy: structural
+    data_source_url: https://service.iris.edu/fdsnws/
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Multi-station event window with spatial mask.
+
+  - id: gaia-dl-012
+    domain: seismic
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download 1 hour of BHZ ambient noise data for 2024-01-15 02:00 UTC
+      from 5 stations in the IU network. Demean, taper, bandpass 0.05-0.5 Hz,
+      decimate to 5 Hz. Save one MiniSEED per station.
+    expected_tools: [obspy, fdsn]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/IU.*.processed.mseed", min: 5, max: 5}
+    checksum_strategy: structural
+    data_source_url: https://service.iris.edu/
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Tests preprocessing inside the download script.
+
+  - id: gaia-dl-013
+    domain: seismic
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download the USGS aftershock catalog for the 2019 M7.1 Ridgecrest
+      mainshock (event id ci38457511) covering the 30 days following origin,
+      within 100 km. Save as CSV.
+    expected_tools: [libcomcat, requests]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/ridgecrest_aftershocks_*.csv", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://earthquake.usgs.gov/
+    timeout_s: 300
+    contamination_risk: medium
+    notes: Aftershock window query with spatial radius.
+
+  - id: gaia-dl-014
+    domain: hydrology
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download daily streamflow for ALL active USGS streamgauges in
+      HUC8 17110005 (Stillaguamish) for water year 2023. Save one CSV per gauge.
+    expected_tools: [dataretrieval, requests]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/usgs_*.csv", min: 5, max: 50}
+    checksum_strategy: structural
+    data_source_url: https://waterservices.usgs.gov/nwis/dv/
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Multi-gauge bulk download with HUC mask.
+
+  - id: gaia-dl-015
+    domain: hydrology
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download CONUS404 hourly precipitation for July 2023 over the
+      Snoqualmie River basin (provided GeoJSON). Save as Zarr.
+    expected_tools: [intake, xarray, s3fs]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/conus404_precip_*.zarr", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://registry.opendata.aws/wrf-conus404/
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: S3 cloud-optimized read with spatial mask.
+
+  - id: gaia-dl-016
+    domain: hydrology
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download NLDAS-2 hourly forcing (precip, temperature, shortwave) for
+      water year 2023 over a small Idaho basin (provided GeoJSON). Save as
+      one NetCDF per variable.
+    expected_tools: [earthaccess, xarray]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/nldas2_*.nc", min: 3, max: 3}
+    checksum_strategy: structural
+    data_source_url: https://disc.gsfc.nasa.gov/
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: Requires Earthdata Login + spatial subset.
+
+  - id: gaia-dl-017
+    domain: dem
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download and mosaic USGS 3DEP 10m tiles covering the Snoqualmie River
+      basin (provided GeoJSON). Save the merged GeoTIFF.
+    expected_tools: [py3dep, rioxarray]
+    required_cli_args: ["--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/dem_snoqualmie_mosaic.tif", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://www.usgs.gov/3d-elevation-program
+    timeout_s: 900
+    contamination_risk: medium
+    notes: Multi-tile mosaic from a polygon.
+
+  - id: gaia-dl-018
+    domain: dem
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download a 30m DEM for Mt. Hood (provided GeoJSON), then compute and
+      save slope and aspect rasters as GeoTIFFs.
+    expected_tools: [py3dep, richdem, rioxarray]
+    required_cli_args: ["--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/mthood_dem.tif", min: 1, max: 1}
+      - {glob: "out/mthood_slope.tif", min: 1, max: 1}
+      - {glob: "out/mthood_aspect.tif", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://www.usgs.gov/3d-elevation-program
+    timeout_s: 900
+    contamination_risk: medium
+    notes: Chained preprocessing inside the download script.
+
+  - id: gaia-dl-019
+    domain: dem
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download ICESat-2 ATL03 photon data for ground tracks crossing a
+      50 km x 50 km bbox over Greenland on 2023-07-01. Save as HDF5 per granule.
+    expected_tools: [icepyx, earthaccess]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/ATL03_*.h5", min: 1, max: 20}
+    checksum_strategy: structural
+    data_source_url: https://nsidc.org/data/atl03
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: Requires Earthdata Login + icepyx.
+
+  - id: gaia-dl-020
+    domain: climate
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download ERA5 pressure-level (250, 500, 850 hPa) U/V wind for
+      January 2024 over the North Atlantic (lat 20-70, lon -80 to 0).
+      Save one NetCDF per pressure level.
+    expected_tools: [cdsapi]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/era5_pl_*.nc", min: 3, max: 3}
+    checksum_strategy: structural
+    data_source_url: https://cds.climate.copernicus.eu/
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: Multi-level multivariable.
+
+  - id: gaia-dl-021
+    domain: climate
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download CMIP6 SSP585 daily precipitation from the GFDL-ESM4 model,
+      ensemble r1i1p1f1, for the year 2099, over the contiguous US. Save
+      as Zarr from the cloud catalog.
+    expected_tools: [intake-esm, xarray, gcsfs]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/cmip6_pr_gfdl_2099.zarr", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://catalog.pangeo.io/master/cmip6.html
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: CMIP6 cloud catalog query.
+
+  - id: gaia-dl-022
+    domain: climate
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download GPM IMERG monthly final-run precipitation for July 2023,
+      global. Save as a single NetCDF.
+    expected_tools: [earthaccess, requests]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/3B-MO.MS.MRG.3IMERG.*.nc4", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://gpm.nasa.gov/data/imerg
+    timeout_s: 600
+    contamination_risk: medium
+    notes: Requires Earthdata Login.
+
+  - id: gaia-dl-023
+    domain: climate
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download and mosaic NOAA Stage IV hourly precipitation grids for
+      2023-07-15 (24 hourly files). Save the merged daily total as a GeoTIFF.
+    expected_tools: [requests, rioxarray]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/stageiv_2023-07-15_total.tif", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://data.eol.ucar.edu/dataset/21.093
+    timeout_s: 900
+    contamination_risk: medium
+    notes: Multi-file mosaic + daily aggregation.
+
+  - id: gaia-dl-024
+    domain: climate
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      Download MODIS MOD11A1 daily land surface temperature (LST_Day_1km)
+      for tile h08v05 for July 2023. Save one HDF per day.
+    expected_tools: [earthaccess, requests]
+    required_cli_args: ["--time-spans", "--output-directory", "--parameters-to-keep"]
+    expected_files:
+      - {glob: "out/MOD11A1*.hdf", min: 28, max: 31}
+    checksum_strategy: structural
+    data_source_url: https://lpdaac.usgs.gov/products/mod11a1v061/
+    timeout_s: 1200
+    contamination_risk: medium
+    notes: Daily MODIS pull.
+
+  - id: gaia-dl-025
+    domain: cross
+    difficulty: medium
+    split: validation
+    visibility: public
+    prompt: |
+      For the 2018 Hurricane Florence event (2018-09-14 landfall), download
+      both: ERA5 sea-level pressure for 2018-09-10 to 2018-09-18 over the
+      Carolina coast, AND IRIS BHZ data from station IU.HRV. Save ERA5 as
+      NetCDF and seismic as MiniSEED.
+    expected_tools: [cdsapi, obspy, fdsn]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/era5_msl_florence.nc", min: 1, max: 1}
+      - {glob: "out/IU.HRV.*.BHZ.*.mseed", min: 1, max: 20}
+    checksum_strategy: structural
+    data_source_url: https://cds.climate.copernicus.eu/;https://service.iris.edu/
+    timeout_s: 1500
+    contamination_risk: high
+    notes: Cross-domain orchestration; tests agent ability to coordinate two backends.
+
+  # ---------------------------------------------------------------------------
+  # Hard (5) — multi-source orchestration, format conversion, chained
+  # preprocessing. All in test/private split by policy (contamination_risk=high).
+  # ---------------------------------------------------------------------------
+
+  - id: gaia-dl-026
+    domain: seismic
+    difficulty: hard
+    split: test
+    visibility: private
+    prompt: |
+      Download 6 hours of DAS data (channels 1000-2000, sampling 500 Hz)
+      from the FORGE Utah experiment for 2023-04-15 starting 12:00 UTC.
+      Convert vendor TDMS to standardized HDF5 (das2h5 schema) with
+      provenance metadata.
+    expected_tools: [dasdaepy, h5py, numpy]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/forge_das_*.h5", min: 1, max: 24}
+    checksum_strategy: structural
+    data_source_url: https://gdr.openei.org/forge
+    timeout_s: 2400
+    contamination_risk: high
+    notes: Vendor format conversion + provenance — high contamination risk if reference is public.
+
+  - id: gaia-dl-027
+    domain: hydrology
+    difficulty: hard
+    split: test
+    visibility: private
+    prompt: |
+      Build a co-located groundwater + precipitation dataset for HUC8
+      17110007: download all NWIS groundwater-level wells with at least
+      5 years of record AND PRISM monthly precipitation 2000-2023. Spatially
+      join. Save one Parquet per well with time-aligned columns.
+    expected_tools: [dataretrieval, requests, geopandas, pyarrow]
+    required_cli_args: ["--time-spans", "--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/well_*.parquet", min: 10, max: 200}
+    checksum_strategy: structural
+    data_source_url: https://waterdata.usgs.gov/nwis/gw;https://www.prism.oregonstate.edu/
+    timeout_s: 2400
+    contamination_risk: high
+    notes: Multi-source spatial join with QC threshold.
+
+  - id: gaia-dl-028
+    domain: dem
+    difficulty: hard
+    split: test
+    visibility: private
+    prompt: |
+      Download both USGS 3DEP 10m and Copernicus GLO-30 DEM over a shared
+      10km x 10km bbox in the Cascades. Reproject to a common CRS
+      (EPSG:32610), regrid to identical 30m resolution, and save a
+      difference raster (3DEP minus Copernicus) as GeoTIFF.
+    expected_tools: [py3dep, requests, rioxarray, rasterio]
+    required_cli_args: ["--geojson", "--output-directory"]
+    expected_files:
+      - {glob: "out/dem_3dep_30m.tif", min: 1, max: 1}
+      - {glob: "out/dem_cop_30m.tif", min: 1, max: 1}
+      - {glob: "out/dem_diff_30m.tif", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://www.usgs.gov/3d-elevation-program;https://spacedata.copernicus.eu/
+    timeout_s: 2400
+    contamination_risk: high
+    notes: Multi-source DEM consistency check.
+
+  - id: gaia-dl-029
+    domain: climate
+    difficulty: hard
+    split: test
+    visibility: private
+    prompt: |
+      Download CMIP6 SSP585 daily Tmax for the years 2090-2099 from THREE
+      different GCMs (any of: GFDL-ESM4, MPI-ESM1-2-HR, CESM2), ensemble
+      r1i1p1f1, regridded to a common 1deg grid. Save as one Zarr per model.
+    expected_tools: [intake-esm, xarray, xesmf, gcsfs]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/cmip6_tasmax_*.zarr", min: 3, max: 3}
+    checksum_strategy: structural
+    data_source_url: https://catalog.pangeo.io/master/cmip6.html
+    timeout_s: 3600
+    contamination_risk: high
+    notes: Multi-model ensemble + regridding.
+
+  - id: gaia-dl-030
+    domain: cross
+    difficulty: hard
+    split: test
+    visibility: private
+    prompt: |
+      Build a wind-noise-on-seismic dataset for the period 2023-01-01 to
+      2023-01-31: download ERA5 10m wind speed AND BHZ ambient noise for
+      IRIS station IU.COLA, compute hourly seismic noise PSD in the
+      0.5-2 Hz band, time-align with hourly ERA5 wind. Save as a single
+      Parquet with columns [time, wind_ms, noise_psd_db].
+    expected_tools: [cdsapi, obspy, fdsn, pandas, pyarrow]
+    required_cli_args: ["--time-spans", "--output-directory"]
+    expected_files:
+      - {glob: "out/wind_noise_iu_cola_2023-01.parquet", min: 1, max: 1}
+    checksum_strategy: structural
+    data_source_url: https://cds.climate.copernicus.eu/;https://service.iris.edu/
+    timeout_s: 3600
+    contamination_risk: high
+    notes: Flagship cross-domain task — directly tests the GAIA cross-disciplinary thesis.

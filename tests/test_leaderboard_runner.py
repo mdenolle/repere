@@ -27,19 +27,34 @@ class _SkillSensitiveSuite(DenolleGroupSuite):
 def _registry() -> ModelRegistry:
     r = ModelRegistry()
     # cheap (free) and expensive
-    r.register(ModelCard(
-        id="local-7b", family="local", size_b=7, context_window=8192,
-        backend="ollama", cost_per_1k_in=0.0, cost_per_1k_out=0.0,
-    ))
-    r.register(ModelCard(
-        id="cloud-frontier", family="cloud", size_b=None, context_window=200000,
-        backend="anthropic", cost_per_1k_in=0.015, cost_per_1k_out=0.075,
-    ))
+    r.register(
+        ModelCard(
+            id="local-7b",
+            family="local",
+            size_b=7,
+            context_window=8192,
+            backend="ollama",
+            cost_per_1k_in=0.0,
+            cost_per_1k_out=0.0,
+        )
+    )
+    r.register(
+        ModelCard(
+            id="cloud-frontier",
+            family="cloud",
+            size_b=None,
+            context_window=200000,
+            backend="anthropic",
+            cost_per_1k_in=0.015,
+            cost_per_1k_out=0.075,
+        )
+    )
     return r
 
 
 def _factory_for(card):
     """Adapter behaviour: respond INSIGHT only when prompt contains 'GUIDANCE'."""
+
     def _resp(prompt):
         return "INSIGHT" if "GUIDANCE" in prompt else "no idea"
 
