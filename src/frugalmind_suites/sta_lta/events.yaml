@@ -24,13 +24,23 @@
 #   visibility               (required)  public | private
 #                              public  = items + goldens may be committed.
 #                              private = goldens live under FM_STALTA_GOLDEN_DIR.
+#   cutoff_date              (optional)  YYYY-MM-DD; date past which a
+#                              retrieval-augmented agent must not query
+#                              (catalogs, papers, network status pages).
+#                              When omitted, the loader fills it via the
+#                              default rule:
+#                                positive case  → origin_time + 7 days
+#                                negative case  → origin_time - 1 day
+#                              Anchors validity of the item against future
+#                              world updates so freshness can't be a proxy
+#                              for skill.
 #   notes                    (optional)  free-text rationale and provenance
 #
 # Suites filter by split. `STALTAIntentExtractionSuite(split="validation")`
 # emits only validation events; the FM_STALTA_SPLIT env var sets the default.
 # =============================================================================
 
-schema_version: 0.2
+schema_version: 0.3
 
 events:
 
@@ -46,6 +56,7 @@ events:
     expected_detection: true
     split: validation
     visibility: public
+    cutoff_date: "2001-03-07"
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
       - {network: UW, station: RPW,  location: "",   channel: BHZ}
@@ -68,6 +79,7 @@ events:
     expected_detection: true
     split: validation
     visibility: public
+    cutoff_date: "2011-03-18"
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 60
@@ -88,6 +100,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
+    cutoff_date: "2024-07-11"
     recommended_stations:
       - {network: UW, station: STAR, location: "",   channel: EHZ}
       - {network: UW, station: PARA, location: "",   channel: EHZ}
@@ -110,6 +123,7 @@ events:
     expected_detection: false
     split: test
     visibility: private
+    cutoff_date: "2023-08-14"
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 30
@@ -131,6 +145,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
+    cutoff_date: "2024-03-19"
     recommended_stations:
       - {network: UW, station: ALCT, location: "",   channel: EHZ}
     suggested_window_min: 5
@@ -152,6 +167,7 @@ events:
     expected_detection: true
     split: test
     visibility: private
+    cutoff_date: "2024-11-27"
     recommended_stations:
       - {network: UW, station: LON,  location: "",   channel: BHZ}
     suggested_window_min: 5

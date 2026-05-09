@@ -35,7 +35,7 @@ from frugalmind_suites.sta_lta import (  # noqa: E402
     STALTAReportSuite,
     STALTATriggerCodeSuite,
 )
-from frugalmind_suites.sta_lta.items import VALID_SPLITS  # noqa: E402
+from frugalmind_suites.sta_lta.items import VALID_SPLITS, _load_events  # noqa: E402
 
 
 SUITE_FACTORIES: dict[str, type] = {
@@ -56,15 +56,31 @@ def _coerce_gold(gold) -> object:
 
 
 def dump_suite(suite_id: str, suite, *, split: str, out_path: Path) -> Path:
+    """Dump a single (suite, split) pair as JSON.
+
+    Each item carries `metadata` (event_id, cutoff_date) so reviewers and
+    drift tests don't need to parse the prompt string to recover
+    per-event provenance.
+    """
+    events = _load_events(split=split)
+    suite_items = list(suite.items())
+    if len(events) != len(suite_items):
+        raise RuntimeError(
+            f"{suite_id}/{split}: {len(events)} events but {len(suite_items)} suite items"
+        )
     items = []
-    for idx, (prompt, gold, _scorer) in enumerate(suite.items()):
+    for idx, (ev, (prompt, gold, _scorer)) in enumerate(zip(events, suite_items)):
         items.append({
             "item_index": idx,
+            "metadata": {
+                "event_id": ev["id"],
+                "cutoff_date": ev["cutoff_date"],
+            },
             "prompt": prompt,
             "gold": _coerce_gold(gold),
         })
     payload = {
-        "schema_version": "0.2",
+        "schema_version": "0.3",
         "suite_id": suite_id,
         "split": split,
         "n_items": len(items),

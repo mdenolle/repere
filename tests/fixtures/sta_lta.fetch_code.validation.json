@@ -1,19 +1,27 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "suite_id": "sta_lta.fetch_code",
   "split": "validation",
   "n_items": 2,
   "items": [
     {
       "item_index": 0,
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2001-02-28T18:54:32.8' minus 7.5 minutes\n  endtime   = '2001-02-28T18:54:32.8' plus  7.5 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "metadata": {
+        "event_id": "nisqually-2001",
+        "cutoff_date": "2001-03-07"
+      },
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2001-02-28T18:54:32.8' minus 7.5 minutes\n  endtime   = '2001-02-28T18:54:32.8' plus  7.5 minutes\n  cutoff_date = '2001-03-07'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
         "event_id": "nisqually-2001"
       }
     },
     {
       "item_index": 1,
-      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2011-03-11T05:46:24.0' minus 30 minutes\n  endtime   = '2011-03-11T05:46:24.0' plus  30 minutes\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
+      "metadata": {
+        "event_id": "tohoku-2011-teleseism",
+        "cutoff_date": "2011-03-18"
+      },
+      "prompt": "Write a Python snippet using ObsPy that fetches a waveform from the EarthScope FDSN service.\n\n  network = 'UW'\n  station = 'LON'\n  location = ''\n  channel = 'BHZ'\n  starttime = '2011-03-11T05:46:24.0' minus 30 minutes\n  endtime   = '2011-03-11T05:46:24.0' plus  30 minutes\n  cutoff_date = '2011-03-18'  # do not query catalog/inventory after this date\n\nAfter fetching, call record(n_traces=len(st), sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided by the test harness that captures values for scoring.",
       "gold": {
         "event_id": "tohoku-2011-teleseism"
       }

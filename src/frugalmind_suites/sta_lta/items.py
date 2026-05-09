@@ -7,7 +7,7 @@ from it. Adding an event to events.yaml adds 5 graded items automatically.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
 import os
@@ -58,6 +58,62 @@ def _resolve_visibility(visibility: str | None) -> str | None:
 
 
 _FRAC_RE = re.compile(r"(\.\d+)(?=([+-]\d{2}:?\d{2}|Z|$))")
+
+
+# ---------------------------------------------------------------------------
+# Cutoff-date policy
+#
+# `cutoff_date` is the date past which a retrieval-augmented agent must not
+# query (catalogs, papers, network status pages). It anchors the validity of
+# a benchmark item against future world updates: a model that uses fresher
+# information than it would have had at the time is cheating, even if the
+# answer is correct.
+#
+# Default rule (applies when an event omits the field):
+#   - Positive cases (`expected_detection: true`):  origin_time + 7 days
+#       — analysts need ~1 week to publish a definitive catalog entry.
+#   - Negative cases (`expected_detection: false`): origin_time - 1 day
+#       — quiet windows must stay quiet under any future re-cataloguing.
+# ---------------------------------------------------------------------------
+
+DEFAULT_POSITIVE_CUTOFF_DAYS = 7
+DEFAULT_NEGATIVE_CUTOFF_DAYS = -1
+
+
+def default_cutoff_date(event: dict) -> str:
+    """Compute the default `cutoff_date` for an event, as `YYYY-MM-DD`.
+
+    Pure function — does not mutate `event`. Used by `_load_events` to fill
+    in events that omit the field; callers can also use it directly.
+    """
+    if "origin_time" not in event:
+        raise ValueError("event must include `origin_time` to compute cutoff_date")
+    t0 = parse_origin_time(event["origin_time"])
+    delta_days = (
+        DEFAULT_POSITIVE_CUTOFF_DAYS
+        if event.get("expected_detection", True)
+        else DEFAULT_NEGATIVE_CUTOFF_DAYS
+    )
+    return (t0 + timedelta(days=delta_days)).date().isoformat()
+
+
+def _normalise_cutoff_date(value: Any) -> str:
+    """Convert a YAML date or string into `YYYY-MM-DD`.
+
+    PyYAML hands back `datetime.date` for unquoted `2001-02-28`, and `str` for
+    quoted strings. Normalise both shapes so downstream code only sees strings.
+    """
+    if isinstance(value, str):
+        # Validate the shape; tolerate trailing whitespace.
+        s = value.strip()
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", s):
+            raise ValueError(f"cutoff_date must be `YYYY-MM-DD`; got {value!r}")
+        return s
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if hasattr(value, "isoformat"):  # datetime.date
+        return value.isoformat()
+    raise ValueError(f"cutoff_date must be a date or YYYY-MM-DD string; got {value!r}")
 
 
 def parse_origin_time(value: str) -> datetime:
@@ -127,6 +183,11 @@ def _load_events(
                 f"Event {ev['id']!r}: visibility must be one of "
                 f"{VALID_VISIBILITIES}, got {ev['visibility']!r}"
             )
+        # cutoff_date: fill from default rule if missing; normalise format if present.
+        if "cutoff_date" in ev and ev["cutoff_date"] is not None:
+            ev["cutoff_date"] = _normalise_cutoff_date(ev["cutoff_date"])
+        else:
+            ev["cutoff_date"] = default_cutoff_date(ev)
     if split is not None:
         events = [ev for ev in events if ev["split"] == split]
     if visibility is not None:
@@ -175,7 +236,8 @@ class STALTAIntentExtractionSuite(_SplitAwareSuite):
                 f"Task: {ev['label']}\n"
                 f"Origin time (UTC): {t0_str}\n"
                 f"Suggested station: {station['network']}.{station['station']}.{station['location']}.{station['channel']}\n"
-                f"Suggested window: ±{ev['suggested_window_min'] / 2:g} minutes around origin.\n\n"
+                f"Suggested window: ±{ev['suggested_window_min'] / 2:g} minutes around origin.\n"
+                f"Cutoff date for catalog/metadata queries: {ev['cutoff_date']}\n\n"
                 "Return ONLY a JSON object with keys: network, station, location, channel, "
                 "starttime, endtime. Use ISO-8601 timestamps."
             )
@@ -210,7 +272,8 @@ class STALTAFetchCodeSuite(_SplitAwareSuite):
                 f"  location = {station['location']!r}\n"
                 f"  channel = {station['channel']!r}\n"
                 f"  starttime = '{ev['origin_time']}' minus {ev['suggested_window_min'] / 2:g} minutes\n"
-                f"  endtime   = '{ev['origin_time']}' plus  {ev['suggested_window_min'] / 2:g} minutes\n\n"
+                f"  endtime   = '{ev['origin_time']}' plus  {ev['suggested_window_min'] / 2:g} minutes\n"
+                f"  cutoff_date = '{ev['cutoff_date']}'  # do not query catalog/inventory after this date\n\n"
                 "After fetching, call record(n_traces=len(st), "
                 "sampling_rate=st[0].stats.sampling_rate). `record` is a helper provided "
                 "by the test harness that captures values for scoring."
@@ -246,6 +309,7 @@ class STALTATriggerCodeSuite(_SplitAwareSuite):
                 f"off_thresh={p['off_thresh']}.\n"
                 "  4. Calls record(n_triggers=<int>, first_trigger_sample=<int or None>) "
                 "so the test harness can verify the result.\n\n"
+                f"Cutoff date for any catalog/metadata reference: {ev['cutoff_date']}.\n"
                 "Use obspy.signal.trigger.classic_sta_lta and trigger_onset."
             )
             gold = {"event_id": ev["id"], "expected_detection": ev["expected_detection"]}
@@ -289,7 +353,8 @@ class STALTAPlotSuite(_SplitAwareSuite):
                 f"{station['station']}) and event label ({ev['label']}).\n\n"
                 "Save the figure as 'plot.png' in the current working directory. "
                 "Use sta=2s, lta=10s, on=3.5, off=1.5 unless event-specific "
-                "parameters are obvious."
+                "parameters are obvious.\n"
+                f"Cutoff date for any catalog/metadata reference: {ev['cutoff_date']}."
             )
             gold = {"event_id": ev["id"], "golden_path": str(golden)}
             if not golden.exists():
@@ -326,7 +391,8 @@ class STALTAReportSuite(_SplitAwareSuite):
                     "Write a one-paragraph technical report describing the "
                     "detection result below. Mention the origin time, the station, "
                     "and any inferred magnitude. Be precise.\n\n"
-                    f"Detection result:\n{detection_summary}"
+                    f"Detection result:\n{detection_summary}\n\n"
+                    f"Cutoff date for catalog cross-reference: {ev['cutoff_date']}."
                 )
                 if ev["category"] == "quarry_blast":
                     scorer = make_report_scorer(
@@ -352,7 +418,8 @@ class STALTAReportSuite(_SplitAwareSuite):
                 prompt = (
                     "Write a one-paragraph technical report describing the "
                     "result below. Be precise about what was and was not observed.\n\n"
-                    f"Detection result:\n{detection_summary}"
+                    f"Detection result:\n{detection_summary}\n\n"
+                    f"Cutoff date for catalog cross-reference: {ev['cutoff_date']}."
                 )
                 scorer = make_report_scorer(
                     expected_detection=False,
