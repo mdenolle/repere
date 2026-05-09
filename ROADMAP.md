@@ -139,7 +139,7 @@ builds on:
 >
 > **Effort** S
 > **Depends on** none
-> **Tracking** _(issue not yet filed)_
+> **Tracking** branch `p1-3-leaderboard-metadata` · status: implementation complete on branch, awaiting issue file + PR
 
 ## P1.4 · Cost-vs-quality Pareto chart on the leaderboard
 

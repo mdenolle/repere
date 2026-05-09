@@ -385,3 +385,23 @@ tbody tr:hover {
     justify-content: flex-start;
   }
 }
+
+/* AstaBench-style category pills (openness + toolset) */
+.pill {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.pill-open            { background: #e8f5ec; color: #1f6f3d; border-color: #b9dec5; }
+.pill-mixed           { background: #fff4d6; color: #815a07; border-color: #ecd699; }
+.pill-closed          { background: #fde7e7; color: #8d2424; border-color: #f0babd; }
+.pill-unknown         { background: #eef0f3; color: #4f5764; border-color: #d6dbe2; }
+.pill-toolset-standard { background: #e7f0ff; color: #1d4ea3; border-color: #bcd2f5; }
+.pill-toolset-iface    { background: #f0e7ff; color: #5731a3; border-color: #d2bcf5; }
+.pill-toolset-custom   { background: #ffe7f4; color: #8a1f5e; border-color: #f0bcd9; }

@@ -144,3 +144,26 @@ def test_build_skill_lift_leaderboard_handles_no_rows():
     assert payload["leaderboard_kind"] == "skill_lift"
     assert payload["rows"] == []
     assert any("No skill-lift rows" in n for n in payload["notes"])
+
+
+def test_skill_lift_rows_record_custom_interface_toolset():
+    """Skill-lift rows must report toolset='custom-interface' since the runner
+    always exercises the `full` arm with a skill loaded. Reporting 'standard'
+    would mislead anyone comparing AstaBench-style metadata across rows."""
+    reg = _registry()
+    suite = _SkillSensitiveSuite()
+    runner = LeaderboardRunner(
+        suite=suite,
+        suite_id="toy",
+        skill_name="toy-skill",
+        skill_version="v0.1",
+        adapter_factory=_factory_for,
+        prompt_render=_render,
+    )
+    rows = runner.run(reg.list())
+    assert rows, "expected at least one row from the toy registry"
+    for r in rows:
+        assert r.toolset == "custom-interface", (
+            f"{r.model_id}: skill-lift rows must always tag toolset='custom-interface', "
+            f"got {r.toolset!r}"
+        )

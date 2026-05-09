@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-05-08T22:02:02Z",
+  "generated_at": "2026-05-09T23:47:58Z",
   "source": "results/demo_small_models.json",
   "leaderboard_kind": "skill_lift",
   "rows": [
@@ -15,7 +15,9 @@
       "cost_none_usd": 0.0,
       "cost_full_usd": 0.0,
       "cost_lift_pct": null,
-      "n_total": 6
+      "n_total": 6,
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface"
     },
     {
       "model_id": "llama3.1:8b",
@@ -28,7 +30,9 @@
       "cost_none_usd": 0.0,
       "cost_full_usd": 0.0,
       "cost_lift_pct": null,
-      "n_total": 6
+      "n_total": 6,
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface"
     },
     {
       "model_id": "qwen2.5:7b",
@@ -41,7 +45,9 @@
       "cost_none_usd": 0.0,
       "cost_full_usd": 0.0,
       "cost_lift_pct": null,
-      "n_total": 6
+      "n_total": 6,
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface"
     }
   ],
   "notes": [

@@ -48,6 +48,30 @@ function formatDate(value) {
   return `Updated ${parsed.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`;
 }
 
+// Map AstaBench-style openness/toolset categories to short pill labels and CSS classes.
+const OPENNESS_LABELS = {
+  "open-source-open-weight": { short: "open weights", cls: "pill pill-open" },
+  "open-source-closed-weight": { short: "open code", cls: "pill pill-mixed" },
+  "closed-source-api": { short: "API only", cls: "pill pill-closed" },
+  "closed-source-ui": { short: "UI only", cls: "pill pill-closed" },
+  unknown: { short: "unknown", cls: "pill pill-unknown" },
+};
+const TOOLSET_LABELS = {
+  standard: { short: "standard", cls: "pill pill-toolset-standard" },
+  "custom-interface": { short: "custom-iface", cls: "pill pill-toolset-iface" },
+  custom: { short: "custom", cls: "pill pill-toolset-custom" },
+  unknown: { short: "unknown", cls: "pill pill-unknown" },
+};
+
+function appendPill(td, value, lookup) {
+  const meta = lookup[value] ?? lookup.unknown;
+  const span = document.createElement("span");
+  span.className = meta.cls;
+  span.textContent = meta.short;
+  span.title = value ?? "unknown";
+  td.appendChild(span);
+}
+
 function renderSummary(rows) {
   const best = rows.reduce((current, row) => (row.score > (current?.score ?? -1) ? row : current), null);
   const lowest = rows.reduce(
@@ -67,25 +91,41 @@ function renderTable(rows) {
 
   if (!rows.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td colspan="8" class="empty">No leaderboard rows published yet.</td>';
+    tr.innerHTML = '<td colspan="10" class="empty">No leaderboard rows published yet.</td>';
     body.appendChild(tr);
     return;
   }
 
   for (const row of rows) {
     const tr = document.createElement("tr");
-    const cells = [
+    const textCells = [
       { className: "rank", value: `#${row.rank}` },
       { className: "model", value: row.model_id },
       { value: row.agent_condition ?? "generic-coding-agent" },
+    ];
+    for (const cell of textCells) {
+      const td = document.createElement("td");
+      if (cell.className) td.className = cell.className;
+      td.textContent = cell.value;
+      tr.appendChild(td);
+    }
+    // Openness pill
+    const opennessTd = document.createElement("td");
+    appendPill(opennessTd, row.openness ?? "unknown", OPENNESS_LABELS);
+    tr.appendChild(opennessTd);
+    // Toolset pill
+    const toolsetTd = document.createElement("td");
+    appendPill(toolsetTd, row.toolset ?? "unknown", TOOLSET_LABELS);
+    tr.appendChild(toolsetTd);
+
+    const trailing = [
       { value: row.suite },
       { className: "score", value: formatScore(row.score) },
       { className: "mono", value: formatCost(row.cost_usd) },
       { className: "mono", value: `${row.n_completed}/${row.n_total}` },
       { className: "mono", value: formatEfficiency(row.efficiency_score) },
     ];
-
-    for (const cell of cells) {
+    for (const cell of trailing) {
       const td = document.createElement("td");
       if (cell.className) td.className = cell.className;
       td.textContent = cell.value;
@@ -102,15 +142,28 @@ function renderSkillLiftTable(rows) {
 
   if (!rows.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td colspan="9" class="empty">No skill-lift rows published yet.</td>';
+    tr.innerHTML = '<td colspan="11" class="empty">No skill-lift rows published yet.</td>';
     body.appendChild(tr);
     return;
   }
 
   for (const row of rows) {
     const tr = document.createElement("tr");
-    const cells = [
-      { className: "model", value: row.model_id },
+    // Model id (text)
+    const modelTd = document.createElement("td");
+    modelTd.className = "model";
+    modelTd.textContent = row.model_id;
+    tr.appendChild(modelTd);
+    // Openness pill
+    const opennessTd = document.createElement("td");
+    appendPill(opennessTd, row.openness ?? "unknown", OPENNESS_LABELS);
+    tr.appendChild(opennessTd);
+    // Toolset pill
+    const toolsetTd = document.createElement("td");
+    appendPill(toolsetTd, row.toolset ?? "unknown", TOOLSET_LABELS);
+    tr.appendChild(toolsetTd);
+    // Trailing text cells
+    const trailing = [
       { value: `${row.skill_name} ${row.skill_version}` },
       { value: row.suite },
       { className: "mono", value: formatScore(row.score_none) },
@@ -120,8 +173,7 @@ function renderSkillLiftTable(rows) {
       { className: "mono", value: formatCost(row.cost_full_usd) },
       { className: "mono", value: formatCostDelta(row.cost_lift_pct) },
     ];
-
-    for (const cell of cells) {
+    for (const cell of trailing) {
       const td = document.createElement("td");
       if (cell.className) td.className = cell.className;
       td.textContent = cell.value;

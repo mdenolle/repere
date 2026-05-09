@@ -19,6 +19,16 @@ SITE_DATA = REPO_ROOT / "site" / "data"
 SITE_HTML = REPO_ROOT / "site" / "index.html"
 SITE_JS = REPO_ROOT / "site" / "app.js"
 
+# AstaBench-style category vocabularies; rows must use one of these.
+VALID_OPENNESS = {
+    "open-source-open-weight",
+    "open-source-closed-weight",
+    "closed-source-api",
+    "closed-source-ui",
+    "unknown",
+}
+VALID_TOOLSET = {"standard", "custom-interface", "custom", "unknown"}
+
 
 def test_leaderboard_json_has_required_fields():
     payload = json.loads((SITE_DATA / "leaderboard.json").read_text())
@@ -35,10 +45,20 @@ def test_leaderboard_json_has_required_fields():
         "cost_usd",
         "n_completed",
         "n_total",
+        "openness",
+        "toolset",
     }
     for row in rows:
         missing = required - set(row)
         assert not missing, f"row missing keys: {missing}"
+        assert row["openness"] in VALID_OPENNESS, (
+            f"row {row.get('rank')} model {row.get('model_id')!r}: "
+            f"openness={row['openness']!r} not in {sorted(VALID_OPENNESS)}"
+        )
+        assert row["toolset"] in VALID_TOOLSET, (
+            f"row {row.get('rank')} model {row.get('model_id')!r}: "
+            f"toolset={row['toolset']!r} not in {sorted(VALID_TOOLSET)}"
+        )
 
 
 def test_skill_lift_json_has_required_fields_when_present():
@@ -60,11 +80,15 @@ def test_skill_lift_json_has_required_fields_when_present():
         "cost_none_usd",
         "cost_full_usd",
         "n_total",
+        "openness",
+        "toolset",
     }
     for row in rows:
         missing = required - set(row)
         assert not missing, f"row missing keys: {missing}"
         assert row["lift"] == pytest.approx(row["score_full"] - row["score_none"], abs=1e-9)
+        assert row["openness"] in VALID_OPENNESS
+        assert row["toolset"] in VALID_TOOLSET
 
 
 def test_html_selectors_exist_for_every_js_query():
@@ -73,3 +97,43 @@ def test_html_selectors_exist_for_every_js_query():
     ids = set(re.findall(r"querySelector\(['\"]#([\w-]+)['\"]\)", js))
     missing = [i for i in sorted(ids) if f'id="{i}"' not in html]
     assert not missing, f"HTML is missing IDs that JS queries: {missing}"
+
+
+def test_html_has_openness_and_toolset_columns():
+    html = SITE_HTML.read_text()
+    assert "<th scope=\"col\">Openness</th>" in html, (
+        "main leaderboard / skill-lift tables must declare an Openness column"
+    )
+    assert "<th scope=\"col\">Toolset</th>" in html, (
+        "main leaderboard / skill-lift tables must declare a Toolset column"
+    )
+
+
+def test_js_renders_pills_for_categories():
+    js = SITE_JS.read_text()
+    # Pill lookup tables are the contract between JSON values and CSS classes;
+    # if a category disappears from the JS, the rendered cell silently falls
+    # back to "unknown" — fail loudly instead.
+    for key in VALID_OPENNESS - {"unknown"}:
+        assert f'"{key}"' in js, f"app.js missing openness lookup for {key!r}"
+    for key in VALID_TOOLSET - {"unknown"}:
+        assert f'"{key}"' in js, f"app.js missing toolset lookup for {key!r}"
+    # Each lookup table must reference appendPill so pills actually render.
+    assert "appendPill" in js
+    assert "OPENNESS_LABELS" in js
+    assert "TOOLSET_LABELS" in js
+
+
+def test_css_has_pill_classes():
+    css = (REPO_ROOT / "site" / "styles.css").read_text()
+    for cls in (
+        ".pill",
+        ".pill-open",
+        ".pill-mixed",
+        ".pill-closed",
+        ".pill-unknown",
+        ".pill-toolset-standard",
+        ".pill-toolset-iface",
+        ".pill-toolset-custom",
+    ):
+        assert cls in css, f"styles.css missing rule for {cls}"
