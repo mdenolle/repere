@@ -1,12 +1,16 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "suite_id": "sta_lta.intent_extraction",
   "split": "validation",
   "n_items": 2,
   "items": [
     {
       "item_index": 0,
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "metadata": {
+        "event_id": "nisqually-2001",
+        "cutoff_date": "2001-03-07"
+      },
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M6.8 Nisqually deep intraslab earthquake\nOrigin time (UTC): 2001-02-28T18:54:32.8\nSuggested station: UW.LON..BHZ\nSuggested window: ±7.5 minutes around origin.\nCutoff date for catalog/metadata queries: 2001-03-07\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
         "station": "LON",
@@ -18,7 +22,11 @@
     },
     {
       "item_index": 1,
-      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M9.1 Tōhoku, recorded as teleseism in PNW\nOrigin time (UTC): 2011-03-11T05:46:24.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±30 minutes around origin.\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
+      "metadata": {
+        "event_id": "tohoku-2011-teleseism",
+        "cutoff_date": "2011-03-18"
+      },
+      "prompt": "Extract a JSON object describing the FDSN waveform request for this analysis task:\n\nTask: M9.1 Tōhoku, recorded as teleseism in PNW\nOrigin time (UTC): 2011-03-11T05:46:24.0\nSuggested station: UW.LON..BHZ\nSuggested window: ±30 minutes around origin.\nCutoff date for catalog/metadata queries: 2011-03-18\n\nReturn ONLY a JSON object with keys: network, station, location, channel, starttime, endtime. Use ISO-8601 timestamps.",
       "gold": {
         "network": "UW",
         "station": "LON",

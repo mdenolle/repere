@@ -115,7 +115,7 @@ builds on:
 >
 > **Effort** S
 > **Depends on** P1.1 (so we don't churn the YAML twice)
-> **Tracking** _(issue not yet filed)_
+> **Tracking** branch `p1-2-cutoff-date` (stacked on `p1-1-events-yaml-split`) · issue _(file with `bash scripts/create_roadmap_issues.sh --only P1.2`)_ · status: implementation complete on branch, awaiting issue file + PR
 
 ## P1.3 · Add `openness` and `toolset` metadata to leaderboard rows
 

@@ -56,6 +56,8 @@ def _load_fixture(suite_id: str, split: str) -> dict:
 )
 def test_live_suite_matches_committed_fixture(suite_id, split):
     """The live suite at this split must match the per-(suite, split) fixture."""
+    from frugalmind_suites.sta_lta.items import _load_events
+
     suite = SUITE_FACTORIES[suite_id](split=split)
     fixture = _load_fixture(suite_id, split)
     assert fixture["split"] == split, (
@@ -63,12 +65,13 @@ def test_live_suite_matches_committed_fixture(suite_id, split):
         f"(expected {split!r}, got {fixture['split']!r})"
     )
     live_items = list(suite.items())
+    live_events = _load_events(split=split)
     assert len(live_items) == fixture["n_items"], (
         f"{suite_id} (split={split}): live suite has {len(live_items)} items "
         f"but fixture has {fixture['n_items']}; regenerate with "
         f"`python scripts/build_suite_fixtures.py`"
     )
-    for live, fixed in zip(live_items, fixture["items"]):
+    for ev, live, fixed in zip(live_events, live_items, fixture["items"]):
         prompt, gold, _scorer = live
         assert prompt == fixed["prompt"], (
             f"{suite_id} (split={split}) item {fixed['item_index']}: "
@@ -78,6 +81,14 @@ def test_live_suite_matches_committed_fixture(suite_id, split):
             f"{suite_id} (split={split}) item {fixed['item_index']}: "
             "gold drift detected. Regenerate fixtures or revert gold change."
         )
+        # Metadata pass-through: every fixture item must carry event_id and cutoff_date,
+        # and they must match the live event.
+        meta = fixed.get("metadata")
+        assert meta is not None, (
+            f"{suite_id} (split={split}) item {fixed['item_index']}: missing metadata block"
+        )
+        assert meta["event_id"] == ev["id"]
+        assert meta["cutoff_date"] == ev["cutoff_date"]
 
 
 @pytest.mark.parametrize("split,expected", EXPECTED_SPLIT_SIZES.items())
