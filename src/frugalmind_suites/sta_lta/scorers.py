@@ -93,16 +93,22 @@ def _call_judge(
     catalog_facts: str,
     template: str,
 ) -> float:
-    """Render the judge prompt, call the adapter, parse the score."""
-    prompt = template.format(
-        expected_detection=str(expected_detection).lower(),
-        catalog_facts=catalog_facts,
-        model_output=model_output,
-    )
+    """Render the judge prompt, call the adapter, parse the score.
+
+    Any failure — template formatting (KeyError / IndexError / ValueError on
+    a malformed template), adapter exception, or unparseable response —
+    returns 0.0 so the caller's `max(lexical, judge)` semantics keep the
+    lexical score. The judge is opt-in performance, not a correctness
+    requirement.
+    """
     try:
+        prompt = template.format(
+            expected_detection=str(expected_detection).lower(),
+            catalog_facts=catalog_facts,
+            model_output=model_output,
+        )
         gen = adapter.generate(prompt)
     except Exception:
-        # A failed judge call must not blow up the eval run; fall back to 0.
         return 0.0
     text = getattr(gen, "text", None) or (gen if isinstance(gen, str) else "")
     return _parse_judge_score(text)
@@ -270,13 +276,21 @@ def make_report_scorer(
     judge_template: str | None = None
     catalog_facts: str | None = None
     if judge_adapter is not None:
-        judge_template = _load_judge_prompt_template()
-        catalog_facts = _format_catalog_facts(
-            origin_time_iso=origin_time_iso,
-            magnitude=magnitude,
-            required_terms=required_terms,
-            forbidden_terms=forbidden_terms,
-        )
+        # If the prompt file is missing or unreadable (packaging error,
+        # custom install layout, etc.) we silently disable the judge path
+        # rather than aborting eval — the lexical scorer is still reliable.
+        try:
+            judge_template = _load_judge_prompt_template()
+            catalog_facts = _format_catalog_facts(
+                origin_time_iso=origin_time_iso,
+                magnitude=magnitude,
+                required_terms=required_terms,
+                forbidden_terms=forbidden_terms,
+            )
+        except Exception:
+            judge_template = None
+            catalog_facts = None
+            judge_adapter = None  # disable the judge path for this scorer
 
     def _lexical(model_output: str) -> float:
         text_lc = model_output.lower()

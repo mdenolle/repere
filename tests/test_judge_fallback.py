@@ -16,7 +16,6 @@ gate empirically rather than only by output value.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import pytest
 
@@ -139,23 +138,19 @@ def test_threshold_is_exclusive_at_floor():
 
 def test_judge_does_not_demote_when_lexical_already_high_below_threshold():
     """If lexical is below threshold but still > judge, keep lexical."""
-    # Construct a case where lexical = 0.4 (below 0.5 threshold) but the
-    # judge returns only 0.20 — the final score should be 0.4.
+    # Lexical for "Earthquake detected." is 0.4 (the keyword-hit branch).
+    # Threshold is 0.41, so judge IS called; judge returns 0.20.
+    # max(0.4, 0.20) must be 0.4 — the judge does not demote.
     judge = _MockJudge(response='{"score": 20, "reason": "miscalibrated"}')
-    scorer = make_report_scorer(
-        expected_detection=True,
-        judge_adapter=judge,
-        judge_threshold=0.5,
-    )
-    out = "Earthquake detected."  # lexical = 0.4
-    # Force judge to be called by lowering the gate just below 0.4
     scorer_low = make_report_scorer(
         expected_detection=True,
         judge_adapter=judge,
         judge_threshold=0.41,
     )
+    out = "Earthquake detected."  # lexical = 0.4
     score = scorer_low(out, None)
     assert score == pytest.approx(0.4), "max(lexical, judge) — keep the higher value"
+    assert len(judge.calls) == 1, "judge must have been invoked (lexical 0.4 < 0.41)"
 
 
 def test_judge_uplifts_when_higher_than_lexical():
@@ -186,6 +181,50 @@ def test_judge_failure_falls_back_to_lexical():
     out = "Earthquake detected."  # lexical = 0.4
     score = scorer(out, None)
     assert score == pytest.approx(0.4), "judge failure must not change score"
+
+
+def test_template_load_failure_disables_judge_path(monkeypatch):
+    """If the prompt file is missing or unreadable at scorer-build time,
+    the judge path is disabled and the scorer behaves as if no judge was
+    supplied. Eval must not abort."""
+    from frugalmind_suites.sta_lta import scorers as scorers_mod
+
+    def _broken_loader(*_args, **_kwargs):
+        raise FileNotFoundError("simulated missing prompt template")
+
+    monkeypatch.setattr(scorers_mod, "_load_judge_prompt_template", _broken_loader)
+
+    judge = _MockJudge(response='{"score": 99}')
+    scorer = make_report_scorer(
+        expected_detection=True,
+        judge_adapter=judge,
+        judge_threshold=0.5,
+    )
+    out = "Earthquake detected."  # lexical = 0.4 → would normally trigger judge
+    score = scorer(out, None)
+    assert score == pytest.approx(0.4), "scorer must fall back to lexical when template missing"
+    assert judge.calls == [], "judge must not be invoked when template load failed"
+
+
+def test_judge_handles_template_format_errors():
+    """Malformed templates (extra braces, missing placeholders) must not
+    propagate. _call_judge has the brace-rendering inside its try/except so
+    a broken template returns 0.0 instead of raising."""
+    from frugalmind_suites.sta_lta.scorers import _call_judge
+
+    judge = _MockJudge(response='{"score": 80}')
+    # Template with an unknown placeholder — `{not_a_field}` raises KeyError
+    # when `.format()` is called.
+    bad_template = "Score this: {model_output}\nAlso: {not_a_field}"
+    result = _call_judge(
+        judge,
+        model_output="hello",
+        expected_detection=True,
+        catalog_facts="(no catalog facts provided)",
+        template=bad_template,
+    )
+    assert result == 0.0
+    assert judge.calls == [], "adapter must not be called when template formatting fails"
 
 
 @pytest.mark.parametrize(
