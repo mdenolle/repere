@@ -137,3 +137,34 @@ def test_css_has_pill_classes():
         ".pill-toolset-custom",
     ):
         assert cls in css, f"styles.css missing rule for {cls}"
+
+
+# ---------------------------------------------------------------------------
+# Pareto chart panel (P1.4)
+# ---------------------------------------------------------------------------
+
+
+def test_html_has_pareto_chart_panel():
+    html = SITE_HTML.read_text()
+    assert 'id="pareto"' in html, "index.html must declare a Pareto panel"
+    assert 'id="pareto-canvas"' in html, "Pareto panel must include a <canvas id='pareto-canvas'>"
+    assert "cdnjs.cloudflare.com/ajax/libs/Chart.js" in html, (
+        "Chart.js must be loaded from the cdnjs allowlist"
+    )
+
+
+def test_app_js_exposes_pareto_helpers():
+    js = SITE_JS.read_text()
+    assert "function computeParetoFront" in js, (
+        "app.js must define computeParetoFront — the Pareto computation is the "
+        "non-trivial logic worth pinning"
+    )
+    assert "renderParetoChart" in js, "app.js must define renderParetoChart"
+    # The chart wires into both the leaderboard rows and the canvas id.
+    assert "#pareto-canvas" in js
+    assert "Chart" in js  # references the Chart.js global
+
+
+def test_css_has_chart_wrap_rule():
+    css = (REPO_ROOT / "site" / "styles.css").read_text()
+    assert ".chart-wrap" in css, "styles.css missing .chart-wrap layout rule"

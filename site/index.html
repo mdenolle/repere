@@ -16,6 +16,7 @@
     />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" defer></script>
   </head>
   <body>
     <div class="shell">
@@ -82,6 +83,32 @@
             <h2>Workflow ready</h2>
             <p>GitHub Actions can refresh this page manually now and on a weekly schedule later.</p>
           </article>
+        </section>
+
+        <section id="pareto" class="panel" aria-labelledby="pareto-title">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Cost-vs-quality frontier</p>
+              <h2 id="pareto-title">Pareto chart</h2>
+            </div>
+            <div class="metadata">
+              <span id="pareto-generated-at">Loading…</span>
+              <span id="pareto-source-label">data/leaderboard.json</span>
+            </div>
+          </div>
+
+          <p class="lede" style="max-width: 60ch; margin-top: 0.25rem;">
+            Each point is a leaderboard row. Cost is on the x-axis, quality on
+            the y-axis. Solid points are on the Pareto frontier — no other row
+            has both higher score and lower (or equal) cost. Faded points are
+            dominated.
+          </p>
+
+          <div class="chart-wrap">
+            <canvas id="pareto-canvas" height="360"></canvas>
+          </div>
+
+          <p id="pareto-notes" class="notes"></p>
         </section>
 
         <section id="leaderboard" class="panel" aria-labelledby="leaderboard-title">
