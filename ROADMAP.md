@@ -168,6 +168,8 @@ builds on:
 
 ## P1.5 · LLM-judge fallback for the report scorer
 
+> **Tracking** branch `p1-5-judge-fallback` (off main) · status: implementation complete on branch, 20 new tests, 169 total passing
+>
 > **Goal** When the lexical report scorer returns < 0.5, optionally route to
 > an LLM judge with a tight rubric.
 >

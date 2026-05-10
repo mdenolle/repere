@@ -6,9 +6,112 @@ import json
 import re
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any
+from pathlib import Path
+from typing import Any, Protocol
 
 from .sandbox import extract_code, run_snippet
+
+
+# ---------------------------------------------------------------------------
+# Judge fallback for the report scorer
+#
+# AstaBench's report-style scorers escalate from deterministic to LLM-judge
+# for open-ended outputs. FrugalMind's report scorer is purely lexical, which
+# misses well-written but novel phrasings. The judge is **opt-in**: callers
+# pass an adapter; when the lexical score falls below `judge_threshold` the
+# adapter is asked to re-score with a tight rubric. The final score is
+# `max(lexical, judge)` so a model whose lexical score was already OK is
+# never penalised by a judge that happens to be lower.
+#
+# CI never calls the judge — the test suite passes a mock adapter when it
+# wants to exercise the path. The default (`judge_adapter=None`) is byte-
+# identical to the pre-P1.5 scorer.
+# ---------------------------------------------------------------------------
+
+_JUDGE_PROMPT_PATH = Path(__file__).parent / "judge_prompts" / "report_scorer.md"
+
+
+class _JudgeProtocol(Protocol):
+    """Subset of the frugalmind.Adapter interface the judge fallback needs."""
+
+    def generate(self, prompt: str, **kwargs: Any) -> Any: ...
+
+
+def _load_judge_prompt_template(path: Path = _JUDGE_PROMPT_PATH) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _format_catalog_facts(
+    *,
+    origin_time_iso: str | None,
+    magnitude: float | None,
+    required_terms: list[str] | None,
+    forbidden_terms: list[str] | None,
+) -> str:
+    """Render the catalog-truth block of the judge prompt."""
+    lines: list[str] = []
+    if origin_time_iso:
+        lines.append(f"origin_time: {origin_time_iso}")
+    if magnitude is not None:
+        lines.append(f"magnitude: {magnitude}")
+    if required_terms:
+        lines.append(f"required_terms: {required_terms}")
+    if forbidden_terms:
+        lines.append(f"forbidden_terms: {forbidden_terms}")
+    if not lines:
+        lines.append("(no catalog facts provided)")
+    return "\n".join(lines)
+
+
+_RE_JUDGE_SCORE = re.compile(r'"score"\s*:\s*([0-9]+(?:\.[0-9]+)?)')
+
+
+def _parse_judge_score(text: str) -> float:
+    """Extract the integer score from a judge response. Returns score in [0, 1].
+
+    The judge is instructed to emit ``{"score": <0-100>, "reason": "..."}``.
+    We tolerate stray prose around the JSON because real models occasionally
+    add markdown fences. Anything we can't parse maps to 0.0.
+    """
+    if not text:
+        return 0.0
+    match = _RE_JUDGE_SCORE.search(text)
+    if not match:
+        return 0.0
+    try:
+        value = float(match.group(1))
+    except ValueError:
+        return 0.0
+    return max(0.0, min(1.0, value / 100.0))
+
+
+def _call_judge(
+    adapter: _JudgeProtocol,
+    *,
+    model_output: str,
+    expected_detection: bool,
+    catalog_facts: str,
+    template: str,
+) -> float:
+    """Render the judge prompt, call the adapter, parse the score.
+
+    Any failure — template formatting (KeyError / IndexError / ValueError on
+    a malformed template), adapter exception, or unparseable response —
+    returns 0.0 so the caller's `max(lexical, judge)` semantics keep the
+    lexical score. The judge is opt-in performance, not a correctness
+    requirement.
+    """
+    try:
+        prompt = template.format(
+            expected_detection=str(expected_detection).lower(),
+            catalog_facts=catalog_facts,
+            model_output=model_output,
+        )
+        gen = adapter.generate(prompt)
+    except Exception:
+        return 0.0
+    text = getattr(gen, "text", None) or (gen if isinstance(gen, str) else "")
+    return _parse_judge_score(text)
 
 
 def _parse_iso(s: str) -> datetime | None:
@@ -155,12 +258,41 @@ def make_report_scorer(
     magnitude_tolerance: float = 0.5,
     forbidden_terms: list[str] | None = None,
     required_terms: list[str] | None = None,
+    judge_adapter: _JudgeProtocol | None = None,
+    judge_threshold: float = 0.5,
 ) -> Callable[[str, Any], float]:
-    """Score a one-paragraph report against catalog truth."""
+    """Score a one-paragraph report against catalog truth.
+
+    ``judge_adapter`` is an optional fallback. When the lexical score is
+    below ``judge_threshold`` and an adapter is supplied, the judge is
+    invoked with a tight rubric and the final score becomes
+    ``max(lexical, judge)``. With ``judge_adapter=None`` (the default)
+    behaviour is byte-identical to the pre-P1.5 scorer; CI never calls a
+    judge.
+    """
     forbidden = [t.lower() for t in (forbidden_terms or [])]
     required = [t.lower() for t in (required_terms or [])]
 
-    def scorer(model_output: str, gold: Any) -> float:
+    judge_template: str | None = None
+    catalog_facts: str | None = None
+    if judge_adapter is not None:
+        # If the prompt file is missing or unreadable (packaging error,
+        # custom install layout, etc.) we silently disable the judge path
+        # rather than aborting eval — the lexical scorer is still reliable.
+        try:
+            judge_template = _load_judge_prompt_template()
+            catalog_facts = _format_catalog_facts(
+                origin_time_iso=origin_time_iso,
+                magnitude=magnitude,
+                required_terms=required_terms,
+                forbidden_terms=forbidden_terms,
+            )
+        except Exception:
+            judge_template = None
+            catalog_facts = None
+            judge_adapter = None  # disable the judge path for this scorer
+
+    def _lexical(model_output: str) -> float:
         text_lc = model_output.lower()
         penalty = 0.25 * sum(1 for t in forbidden if t in text_lc)
 
@@ -197,6 +329,20 @@ def make_report_scorer(
         if any(t in text_lc for t in required) if required else True:
             score += 0.5
         return max(0.0, min(1.0, score - penalty))
+
+    def scorer(model_output: str, gold: Any) -> float:
+        lexical = _lexical(model_output)
+        if judge_adapter is None or lexical >= judge_threshold:
+            return lexical
+        # Lexical fell below the threshold and a judge is available: re-score.
+        judge_score = _call_judge(
+            judge_adapter,
+            model_output=model_output,
+            expected_detection=expected_detection,
+            catalog_facts=catalog_facts or "",
+            template=judge_template or "",
+        )
+        return max(lexical, judge_score)
 
     return scorer
 
