@@ -22,6 +22,7 @@ the agent can read and react to them.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -65,11 +66,14 @@ def fdsn_get_waveforms() -> Tool:
                 }
             )
 
-        try:
+        def _blocking_fetch():
+            # Client(...) and get_waveforms(...) are synchronous network I/O.
+            # Run them in a worker thread so we don't stall Inspect's event
+            # loop while other in-flight samples make progress.
             c = Client(client, timeout=60)
             t_start = UTCDateTime(starttime)
             t_end = UTCDateTime(endtime)
-            st = c.get_waveforms(
+            return c.get_waveforms(
                 network=network,
                 station=station,
                 location=location,
@@ -78,6 +82,9 @@ def fdsn_get_waveforms() -> Tool:
                 endtime=t_end,
                 attach_response=False,
             )
+
+        try:
+            st = await asyncio.to_thread(_blocking_fetch)
         except Exception as exc:
             return json.dumps({"ok": False, "error": f"{type(exc).__name__}: {exc}"})
 
@@ -125,7 +132,11 @@ def python_session() -> Tool:
         # require frugalmind_suites to be on sys.path at import time.
         from frugalmind_suites.sta_lta.sandbox import run_snippet
 
-        result = run_snippet(code, timeout_s=float(timeout_s))
+        # ``run_snippet`` is built on blocking ``subprocess.run`` calls,
+        # which would block Inspect's event loop for the snippet's full
+        # duration. Offload to a worker thread so other in-flight samples
+        # can keep making progress while this snippet executes.
+        result = await asyncio.to_thread(run_snippet, code, timeout_s=float(timeout_s))
         payload = {
             "ok": result.ok,
             "stdout": (result.stdout or "")[-2000:],  # cap to last 2KB

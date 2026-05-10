@@ -6,7 +6,7 @@ tools (``fdsn_get_waveforms``, ``python_session``, ``record_submit``)
 into it under one Inspect ``@solver`` so any task can run as::
 
     inspect eval src/frugalmind_suites/sta_lta/inspect_tasks.py@fetch_code \\
-        --solver frugalmind/agents/react.py@stalta_react \\
+        --solver src/frugalmind/agents/react.py@stalta_react \\
         --model anthropic/claude-haiku-4-5-20251001
 
 This is the AstaBench reference comparison: same prompts, same scorers,
@@ -76,12 +76,15 @@ def stalta_react(
         Override the default system prompt above. Useful when wiring a
         skill prefix in front of the system message.
     """
-    init: list[Solver] = []
-    if system_prompt is not None or _DEFAULT_SYSTEM_PROMPT:
-        init.append(system_message(system_prompt or _DEFAULT_SYSTEM_PROMPT))
+    # _DEFAULT_SYSTEM_PROMPT is always non-empty, so the system message is
+    # always installed. Callers that explicitly want no system message must
+    # pass system_prompt="" — we treat that as "use the default" rather than
+    # silently dropping the prompt, which would surprise downstream callers.
+    prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
+    init: list[Solver] = [system_message(prompt)]
 
     return basic_agent(
-        init=init or None,
+        init=init,
         tools=all_tools(),
         max_attempts=max_attempts,
         message_limit=message_limit,

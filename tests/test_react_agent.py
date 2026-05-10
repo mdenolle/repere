@@ -1,14 +1,13 @@
-"""Tests for the ReAct multi-step agent baseline (P2.4).
+"""Tests for the ReAct multi-step agent baseline (P2.4) — inspect_ai-gated.
 
-Like the InspectAI substrate tests, this module is gated on ``inspect_ai``
-being installed — contributors who don't pip-install the ``[eval]`` extra
-still see a green suite.
+This module is gated on ``inspect_ai`` being installed via the optional
+``[eval]`` extra. The single descriptor-only contract that must hold even
+**without** the extra lives in ``tests/test_react_descriptor.py``; do not
+move it back here — ``pytest.importorskip`` below would silently skip it.
 
-The three contracts pinned here:
+Three contracts pinned here:
 
-  1. The static ``stalta_tools_dict`` descriptor lists exactly the three
-     tools the solver wires up (and is importable without ``inspect_ai``).
-  2. Each ``@tool`` instantiates as an Inspect ``Tool`` and the three
+  1. Each ``@tool`` instantiates as an Inspect ``Tool`` and the three
      ``execute`` callables behave correctly in isolation:
        * ``record_submit`` echoes its argument verbatim.
        * ``python_session`` runs a trivial snippet end-to-end through the
@@ -16,6 +15,7 @@ The three contracts pinned here:
        * ``fdsn_get_waveforms`` returns a structured ``{"ok": false, ...}``
          error when ``obspy`` is missing — so the model can read the
          failure and keep going.
+  2. ``stalta_tools_dict()`` agrees with the no-extra-required descriptor.
   3. ``stalta_react()`` returns an Inspect ``Solver`` whose construction
      wires the three tools through ``basic_agent`` without raising.
 """
@@ -27,28 +27,11 @@ import json
 
 import pytest
 
-# Importable without inspect_ai — assert this first so a missing extra
-# doesn't silently skip the descriptor contract.
-from frugalmind.agents import stalta_tools_dict
-
-
-def test_stalta_tools_dict_lists_exactly_the_three_react_tools():
-    """The static descriptor is the source of truth for tool availability."""
-    descriptor = stalta_tools_dict()
-    assert set(descriptor) == {"fdsn_get_waveforms", "python_session", "record_submit"}
-    # Each value is a short human-readable description.
-    for name, desc in descriptor.items():
-        assert isinstance(desc, str) and desc, f"{name}: description must be non-empty"
-
-
-# ---------------------------------------------------------------------------
-# Everything below requires inspect_ai. Gate the rest of the module.
-# ---------------------------------------------------------------------------
-
 pytest.importorskip("inspect_ai")
 
 from inspect_ai.tool import Tool  # noqa: E402
 
+from frugalmind.agents import stalta_tools_dict  # noqa: E402
 from frugalmind.agents.react import stalta_react  # noqa: E402
 from frugalmind.agents.tools import (  # noqa: E402
     all_tools,
@@ -179,7 +162,7 @@ def test_fdsn_get_waveforms_returns_structured_error_when_obspy_missing(monkeypa
 
 def test_stalta_react_returns_an_inspect_solver():
     """The factory must produce a real Inspect Solver — that's what
-    `inspect eval --solver frugalmind/agents/react.py@stalta_react` expects."""
+    `inspect eval --solver src/frugalmind/agents/react.py@stalta_react` expects."""
     solver = stalta_react()
     # Like Tool, Solver in inspect_ai is typically a Protocol/callable alias.
     # We assert the weakest contract that matters at the CLI boundary:
