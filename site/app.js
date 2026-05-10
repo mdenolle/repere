@@ -214,8 +214,9 @@ function renderSkillLiftTable(rows) {
 
 // Render the cost-vs-quality scatter into #pareto-canvas using Chart.js.
 // Pareto-front points are highlighted (solid, larger, connected by a line);
-// dominated points are faded.
-function renderParetoChart(rows) {
+// dominated points are faded. Pass `front` (a Set of indices from
+// `computeParetoFront`) to avoid recomputing it; if omitted, compute it here.
+function renderParetoChart(rows, front) {
   const canvas = document.querySelector("#pareto-canvas");
   if (!canvas || typeof Chart === "undefined") return;
   if (window._frugalmindParetoChart) {
@@ -223,7 +224,7 @@ function renderParetoChart(rows) {
   }
   if (!rows.length) return;
 
-  const front = computeParetoFront(rows);
+  if (!front) front = computeParetoFront(rows);
   const points = rows.map((r, i) => ({
     x: Number(r.cost_usd),
     y: Number(r.score) * 100,
@@ -239,12 +240,13 @@ function renderParetoChart(rows) {
 
   const dominatedPoints = points.filter((p) => !p.onFront);
 
-  // Inherit text/border colors from CSS variables so dark mode works.
+  // Inherit text/border colors from the site's CSS variables so the chart
+  // renders legibly against the dark site theme.
   const cssVar = (name) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim() || undefined;
-  const textColor = cssVar("--color-text-primary") || "#1a1a1a";
-  const subtleColor = cssVar("--color-text-secondary") || "#6b7280";
-  const borderColor = cssVar("--color-border-tertiary") || "#e5e7eb";
+  const textColor = cssVar("--text") || "#f6f8fb";
+  const subtleColor = cssVar("--muted") || "#9fb0c7";
+  const borderColor = cssVar("--line") || "rgba(176, 196, 222, 0.18)";
 
   window._frugalmindParetoChart = new Chart(canvas, {
     type: "scatter",
@@ -340,6 +342,7 @@ async function main() {
 
   // Main leaderboard.
   let leaderboardRows = [];
+  let paretoFront = new Set();
   try {
     const data = await loadLeaderboard();
     leaderboardRows = data.leaderboard ?? [];
@@ -348,23 +351,26 @@ async function main() {
     notes.textContent = (data.notes ?? []).join(" ");
     renderSummary(leaderboardRows);
     renderTable(leaderboardRows);
+    paretoFront = computeParetoFront(leaderboardRows);
     if (paretoGeneratedAt) paretoGeneratedAt.textContent = formatDate(data.generated_at);
     if (paretoSourceLabel) paretoSourceLabel.textContent = data.source ?? "data/leaderboard.json";
     if (paretoNotes) {
-      const front = computeParetoFront(leaderboardRows);
-      paretoNotes.textContent = `${front.size}/${leaderboardRows.length} rows on the Pareto front.`;
+      paretoNotes.textContent = `${paretoFront.size}/${leaderboardRows.length} rows on the Pareto front.`;
     }
   } catch (error) {
     generatedAt.textContent = "Leaderboard unavailable";
     notes.textContent = error.message;
     renderSummary([]);
     renderTable([]);
+    if (paretoGeneratedAt) paretoGeneratedAt.textContent = "Leaderboard unavailable";
+    if (paretoSourceLabel) paretoSourceLabel.textContent = "data/leaderboard.json";
     if (paretoNotes) paretoNotes.textContent = error.message;
   }
 
   // Pareto chart depends on Chart.js, which is loaded via `defer`.
   // If the script hasn't finished by the time we get here, retry once on load.
-  const drawChart = () => renderParetoChart(leaderboardRows);
+  // Reuse the already-computed front so we don't traverse rows twice.
+  const drawChart = () => renderParetoChart(leaderboardRows, paretoFront);
   if (typeof Chart === "undefined") {
     window.addEventListener("load", drawChart, { once: true });
   } else {
