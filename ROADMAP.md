@@ -199,6 +199,9 @@ builds on:
 
 ## P2.1 · Adopt InspectAI as the substrate
 
+> **Tracking** branch `p2-1-inspect-substrate` (off main) · status: implementation complete on branch, 14 new tests, 189 total passing. `python -m inspect_ai list tasks src/frugalmind_suites/sta_lta/inspect_tasks.py` discovers all 5 tasks.
+
+
 > **Goal** Convert each STA/LTA suite to an `inspect_ai.task.Task` with
 > `Sample(input=prompt, target=gold, metadata=…)` records and an
 > `@scorer`-decorated wrapper around our existing scorers.
