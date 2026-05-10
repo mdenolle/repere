@@ -137,3 +137,86 @@ def test_css_has_pill_classes():
         ".pill-toolset-custom",
     ):
         assert cls in css, f"styles.css missing rule for {cls}"
+
+
+# ---------------------------------------------------------------------------
+# Pareto chart panel (P1.4)
+# ---------------------------------------------------------------------------
+
+
+def test_html_has_pareto_chart_panel():
+    html = SITE_HTML.read_text()
+    assert 'id="pareto"' in html, "index.html must declare a Pareto panel"
+    assert 'id="pareto-canvas"' in html, "Pareto panel must include a <canvas id='pareto-canvas'>"
+    assert "cdnjs.cloudflare.com/ajax/libs/Chart.js" in html, (
+        "Chart.js must be loaded from the cdnjs allowlist"
+    )
+
+
+def test_app_js_exposes_pareto_helpers():
+    js = SITE_JS.read_text()
+    assert "function computeParetoFront" in js, (
+        "app.js must define computeParetoFront — the Pareto computation is the "
+        "non-trivial logic worth pinning"
+    )
+    assert "renderParetoChart" in js, "app.js must define renderParetoChart"
+    # The chart wires into both the leaderboard rows and the canvas id.
+    assert "#pareto-canvas" in js
+    assert "Chart" in js  # references the Chart.js global
+
+
+def test_app_js_uses_actual_css_variable_names_for_chart():
+    """Chart colors must inherit from variables that exist in styles.css.
+
+    The site theme defines `--text`, `--muted`, `--line` (not the
+    Anthropic-design-system `--color-text-primary` family). Mismatched
+    lookups produce silent fallbacks to dark text on a dark background.
+    """
+    js = SITE_JS.read_text()
+    css = (REPO_ROOT / "site" / "styles.css").read_text()
+    for var in ("--text", "--muted", "--line"):
+        assert f'cssVar("{var}")' in js or f"cssVar('{var}')" in js, (
+            f"app.js Pareto chart should read CSS variable {var}"
+        )
+        assert f"{var}:" in css, f"styles.css should define {var}"
+    # And must not reference the old (non-existent) names.
+    for ghost in ("--color-text-primary", "--color-text-secondary", "--color-border-tertiary"):
+        assert ghost not in js, (
+            f"app.js still references {ghost}, which is not defined in styles.css; "
+            "switch to --text / --muted / --line"
+        )
+
+
+def test_app_js_passes_pareto_front_into_renderer():
+    """`computeParetoFront` should be computed once in main() and reused by
+    the renderer — duplicate work was flagged in P1.4 review."""
+    js = SITE_JS.read_text()
+    # The renderer accepts an optional front argument.
+    assert "function renderParetoChart(rows, front)" in js, (
+        "renderParetoChart must accept the pre-computed front as its second arg"
+    )
+    # main() should pass the front through.
+    assert "renderParetoChart(leaderboardRows, paretoFront)" in js, (
+        "main() must pass the pre-computed Pareto front into renderParetoChart"
+    )
+
+
+def test_app_js_clears_pareto_metadata_on_load_failure():
+    """Error-path metadata fix from P1.4 review: catch block must update
+    the Pareto panel's metadata spans, not leave them on 'Loading…'."""
+    js = SITE_JS.read_text()
+    # The catch block must touch the Pareto metadata spans.
+    catch_start = js.find("} catch (error) {")
+    assert catch_start != -1, "could not find catch block in main()"
+    catch_block = js[catch_start:catch_start + 800]
+    assert "paretoGeneratedAt" in catch_block, (
+        "catch block must update #pareto-generated-at on failure"
+    )
+    assert "paretoSourceLabel" in catch_block, (
+        "catch block must update #pareto-source-label on failure"
+    )
+
+
+def test_css_has_chart_wrap_rule():
+    css = (REPO_ROOT / "site" / "styles.css").read_text()
+    assert ".chart-wrap" in css, "styles.css missing .chart-wrap layout rule"

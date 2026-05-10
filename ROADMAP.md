@@ -164,7 +164,7 @@ builds on:
 >
 > **Effort** M
 > **Depends on** P1.3 (cost units are now standardised across rows)
-> **Tracking** _(issue not yet filed)_
+> **Tracking** branch `p1-4-pareto-chart` (stacked on `p1-3-leaderboard-metadata`) · status: implementation complete on branch, awaiting issue file + PR
 
 ## P1.5 · LLM-judge fallback for the report scorer
 

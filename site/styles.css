@@ -405,3 +405,15 @@ tbody tr:hover {
 .pill-toolset-standard { background: #e7f0ff; color: #1d4ea3; border-color: #bcd2f5; }
 .pill-toolset-iface    { background: #f0e7ff; color: #5731a3; border-color: #d2bcf5; }
 .pill-toolset-custom   { background: #ffe7f4; color: #8a1f5e; border-color: #f0bcd9; }
+
+/* Pareto chart panel */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  margin: 1rem 0 0.5rem;
+}
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
