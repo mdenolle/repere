@@ -37,7 +37,11 @@ frugalmind = "frugalmind.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"frugalmind_suites.sta_lta" = ["events.yaml", "data/golden/.gitkeep"]
+"frugalmind_suites.sta_lta" = [
+    "events.yaml",
+    "data/golden/.gitkeep",
+    "judge_prompts/*.md",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
