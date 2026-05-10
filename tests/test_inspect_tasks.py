@@ -24,7 +24,7 @@ import json
 
 import pytest
 
-inspect_ai = pytest.importorskip("inspect_ai")
+pytest.importorskip("inspect_ai")
 
 from inspect_ai import Task  # noqa: E402
 from inspect_ai.dataset import Sample  # noqa: E402
