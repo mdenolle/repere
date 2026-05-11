@@ -107,18 +107,32 @@ def _persist_artifacts(out_dir: str) -> tuple[dict[str, Any], list[str]]:
         except Exception:
             pass
 
-    artifact_files = [
-        str(path)
-        for path in Path(out_dir).iterdir()
-        if path.name not in ("snippet.py", "__fm_result__.json")
-    ]
+    # Restrict to regular files. A snippet that calls ``os.makedirs`` or
+    # writes a FIFO would otherwise trip ``read_bytes()`` with
+    # IsADirectoryError / OSError and abort the run. We accept symlinks
+    # too — Path.is_file() resolves them — but skip anything that isn't
+    # a plain file the caller can later open and read.
+    artifact_files: list[str] = []
+    for path in Path(out_dir).iterdir():
+        if path.name in ("snippet.py", "__fm_result__.json"):
+            continue
+        if not path.is_file():
+            continue
+        artifact_files.append(str(path))
+
     if artifact_files:
         persist_dir = Path(tempfile.mkdtemp(prefix="fm_artifacts_"))
         kept: list[str] = []
         for artifact_file in artifact_files:
             src = Path(artifact_file)
             dst = persist_dir / src.name
-            dst.write_bytes(src.read_bytes())
+            try:
+                dst.write_bytes(src.read_bytes())
+            except OSError:
+                # A vanishingly rare race (file unlinked between iterdir
+                # and read) or unreadable file shouldn't sink the whole
+                # eval. Skip and move on; the scorer sees what survived.
+                continue
             kept.append(str(dst))
         artifact_files = kept
     return artifacts, artifact_files
@@ -208,17 +222,43 @@ def _run_snippet_docker(
     with tempfile.TemporaryDirectory(prefix="fm_sta_lta_") as out_dir:
         snippet_path = Path(out_dir) / "snippet.py"
         snippet_path.write_text(_PREAMBLE + "\n" + code)
+        # ``tempfile.TemporaryDirectory`` ships at mode 0700 owned by the
+        # host UID. The container runs as a non-root ``fmuser`` whose UID
+        # almost never matches the host's, so the default permissions
+        # would prevent the container from reading snippet.py or writing
+        # back the result JSON. The cleanest fix is to ask docker to run
+        # the container with the host's UID/GID — then the bind-mount
+        # ACLs line up and the existing 0700 is enough. Falls back
+        # gracefully on platforms without ``os.geteuid`` (Windows): we
+        # let the container run with its built-in uid and rely on the
+        # tmpdir's group/other bits, which are already loose enough on
+        # those platforms.
+        host_uid_gid: str | None = None
+        if hasattr(os, "geteuid") and hasattr(os, "getegid"):
+            host_uid_gid = f"{os.geteuid()}:{os.getegid()}"
 
         cmd: list[str] = [
             docker_bin,
             "run",
             "--rm",
             "--network=none",  # snippets shouldn't reach out; FDSN happens via the agent tool
-            "-v",
-            f"{out_dir}:/work",
-            "-e",
-            "FM_OUT_DIR=/work",
         ]
+        if host_uid_gid is not None:
+            cmd.extend(["--user", host_uid_gid])
+        cmd.extend(
+            [
+                "-v",
+                f"{out_dir}:/work",
+                "-e",
+                "FM_OUT_DIR=/work",
+                # HOME inside the container would be /home/fmuser, which a
+                # foreign-UID process can't write. Point it at /tmp so any
+                # numpy / matplotlib caches that try to scribble to $HOME
+                # don't crash the run.
+                "-e",
+                "HOME=/tmp",
+            ]
+        )
         if extra_env:
             for k, v in extra_env.items():
                 cmd.extend(["-e", f"{k}={v}"])

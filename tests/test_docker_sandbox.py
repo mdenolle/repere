@@ -11,7 +11,9 @@ gated on Docker availability.
 
 from __future__ import annotations
 
+import json
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -293,3 +295,88 @@ def test_run_snippet_host_backend_round_trips_record_call(monkeypatch):
     assert result.ok is True
     assert "ok" in result.stdout
     assert result.artifacts == {"answer": 42}
+
+
+# ---------------------------------------------------------------------------
+# 7. _persist_artifacts is robust to subdirectories and unreadable files
+# ---------------------------------------------------------------------------
+
+
+def test_persist_artifacts_skips_subdirectories_without_raising(tmp_path, monkeypatch):
+    """A snippet that calls ``os.makedirs`` (or any code that creates a
+    directory in FM_OUT_DIR) would have tripped the original implementation
+    with IsADirectoryError when read_bytes hit the subdir. We now filter
+    non-regular files first and skip them silently — the scorer sees
+    whatever regular files survived."""
+    # Build a fake out_dir matching the convention in the production code:
+    # snippet.py + __fm_result__.json are dropped, and we add one regular
+    # file (should be persisted) plus one subdirectory (should be skipped).
+    out_dir = tmp_path
+    (out_dir / "snippet.py").write_text("# internal")
+    (out_dir / "__fm_result__.json").write_text(json.dumps({"k": "v"}))
+    (out_dir / "plot.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (out_dir / "scratch").mkdir()
+    (out_dir / "scratch" / "inner.txt").write_text("should not be persisted")
+
+    artifacts, artifact_files = sandbox._persist_artifacts(str(out_dir))
+    assert artifacts == {"k": "v"}, "result JSON must still be parsed"
+    # Exactly one survivor: plot.png. No subdirs, no inner files.
+    persisted_names = sorted(Path(p).name for p in artifact_files)
+    assert persisted_names == ["plot.png"]
+    # And the persisted file is readable, with the bytes we wrote.
+    assert Path(artifact_files[0]).read_bytes().startswith(b"\x89PNG")
+
+
+def test_persist_artifacts_returns_empty_when_only_internal_files_present(tmp_path):
+    """When nothing but snippet.py + __fm_result__.json are present (the
+    common case), the function returns an empty artifact_files list and
+    does not allocate a persist_dir."""
+    (tmp_path / "snippet.py").write_text("# internal")
+    (tmp_path / "__fm_result__.json").write_text(json.dumps({}))
+    artifacts, artifact_files = sandbox._persist_artifacts(str(tmp_path))
+    assert artifacts == {}
+    assert artifact_files == []
+
+
+# ---------------------------------------------------------------------------
+# 8. Docker command construction — verify the --user UID mapping
+# ---------------------------------------------------------------------------
+
+
+def test_docker_command_includes_user_uid_gid_when_available(monkeypatch):
+    """The container runs as a non-root fmuser whose UID rarely matches
+    the host's. Without --user, the bind-mounted tmpdir (mode 0700, host
+    UID) is unreadable from inside the container. We pin that --user
+    pairs the container with the host's UID:GID — and on Windows (no
+    os.geteuid), we don't pass --user at all."""
+    monkeypatch.setenv(ENV_USE_DOCKER, "1")
+    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "frugalmind-sandbox:probe")
+    monkeypatch.setattr(sandbox.shutil, "which", lambda name: "/usr/bin/docker")
+    # Fake geteuid/getegid to known values so the assertion is deterministic.
+    monkeypatch.setattr(sandbox.os, "geteuid", lambda: 1729)
+    monkeypatch.setattr(sandbox.os, "getegid", lambda: 4242)
+    captured = _capture_subprocess_run(monkeypatch)
+
+    run_snippet("print('hi')", timeout_s=2.0)
+    cmd = captured[0]
+    assert "--user" in cmd, cmd
+    user_idx = cmd.index("--user")
+    assert cmd[user_idx + 1] == "1729:4242"
+    # HOME=/tmp must be set too, so foreign-UID processes don't try to
+    # scribble to /home/fmuser (which they can't write).
+    home_envs = [cmd[i + 1] for i, x in enumerate(cmd) if x == "-e"]
+    assert "HOME=/tmp" in home_envs
+
+
+def test_docker_command_omits_user_flag_when_os_has_no_geteuid(monkeypatch):
+    """On Windows hosts ``os.geteuid`` doesn't exist. The dispatch must
+    skip the --user flag rather than crash with AttributeError, and let
+    the container run with its built-in UID."""
+    monkeypatch.setenv(ENV_USE_DOCKER, "1")
+    monkeypatch.setattr(sandbox.shutil, "which", lambda name: "/usr/bin/docker")
+    monkeypatch.delattr(sandbox.os, "geteuid", raising=False)
+    captured = _capture_subprocess_run(monkeypatch)
+
+    run_snippet("print('hi')", timeout_s=2.0)
+    cmd = captured[0]
+    assert "--user" not in cmd, cmd

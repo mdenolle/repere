@@ -84,8 +84,14 @@ def _run_under(backend: str) -> dict:
             os.environ[ENV_USE_DOCKER] = "0"
         elif backend == "docker":
             os.environ[ENV_USE_DOCKER] = "1"
-            # Allow the CI workflow / developer to override the tag via env;
-            # default falls through to DEFAULT_SANDBOX_IMAGE in sandbox.py.
+            # Prefer the caller-provided sandbox image (the sandbox-parity
+            # CI job sets FM_SANDBOX_IMAGE=frugalmind-sandbox:ci pointing
+            # at the locally-built tag); otherwise fall back to the same
+            # CI-style local tag rather than the registry default, which
+            # isn't pullable from a PR's restricted GITHUB_TOKEN. This
+            # also keeps developer-machine runs honest: they get the
+            # local tag they just built, not a random :latest from GHCR.
+            os.environ[ENV_SANDBOX_IMAGE] = original_image or "frugalmind-sandbox:ci"
         else:
             raise ValueError(backend)
 

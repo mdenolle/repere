@@ -48,7 +48,9 @@ still pass against the committed PNGs.
 
 `.github/workflows/sandbox-image.yml` builds the image on every PR and
 pushes to GHCR (`ghcr.io/mdenolle/frugalmind-sandbox`) on tag pushes
-and merges to `main`. `.github/workflows/evals.yml` runs the test
-suite twice — once with `FM_USE_DOCKER_SANDBOX=0` (host Python), once
-with `FM_USE_DOCKER_SANDBOX=1` (built image) — and the dual-job
-matches the ROADMAP P2.2 acceptance criterion.
+and merges to `main`. `.github/workflows/sandbox-parity.yml` runs the
+relevant test set twice — once with `FM_USE_DOCKER_SANDBOX=0` (host
+Python), once with `FM_USE_DOCKER_SANDBOX=1` against the locally-built
+`frugalmind-sandbox:ci` tag — and the dual-job matches the ROADMAP P2.2
+acceptance criterion. The pre-existing `.github/workflows/evals.yml`
+runs Pixi smoke tests and is unrelated to the sandbox parity flow.
