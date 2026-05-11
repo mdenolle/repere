@@ -28,12 +28,15 @@ review priorities below, don't post it.
    gains a parameter, a new branch, or a new failure mode, the test
    file should exercise it. Flag uncovered new branches; don't flag
    coverage of unchanged code.
-5. **Optional-extras gating.** This repo has `[eval]`, `[geo]`, `[plot]`,
-   `[dev]`, `[test]` extras. Any code that imports `inspect_ai`,
-   `obspy`, `matplotlib`, `scikit-image`, `numpy` must do so lazily
-   (inside a function body) or be gated behind an `importorskip` in
-   tests. Conversely, **don't** suggest "simplifying" lazy imports back
-   to module top — they're deliberate.
+5. **Optional-extras gating.** This repo defines optional-dependency
+   extras in `pyproject.toml` (currently `[test]`, `[geo]`, `[plot]`,
+   `[dev]`; future PRs may add more — e.g. `[eval]` for `inspect_ai`).
+   Any code that imports an optional-only library (e.g. `obspy`,
+   `matplotlib`, `scikit-image`, `numpy`, or any future addition) must
+   do so lazily (inside a function body) or be gated behind an
+   `importorskip` in tests. Conversely, **don't** suggest "simplifying"
+   lazy imports back to module top — they're deliberate. Check
+   `pyproject.toml` for the current extras list before flagging.
 6. **Frugality framing.** FrugalMind's thesis is cost-vs-quality. Don't
    suggest changes that add a model call, a tool call, or a network
    round-trip without justifying it against the cost-Pareto framing.
@@ -47,11 +50,15 @@ These have all bitten us; encode them so we don't repeat:
   I/O, or third-party sync API call inside an `async` function must be
   wrapped in `asyncio.to_thread(...)` (or equivalent) so it doesn't
   stall Inspect's event loop.
-- **`pytest.importorskip("inspect_ai")` at module level.** This skips
-  the entire test module when the extra is missing — including tests
-  that don't need it. Split such tests into a separate file (see
-  `tests/test_react_descriptor.py` vs `tests/test_react_agent.py` for
-  the pattern). Same rule for `obspy`, `matplotlib`.
+- **Module-level `pytest.importorskip(...)` in a mixed test module.**
+  Module-level `importorskip` skips the *entire* module when the
+  optional dep is missing — which is correct when every test in the
+  file needs the dep (see `tests/test_canonical_recipe.py`, where the
+  whole module is plot-only) but wrong when the file mixes
+  dep-requiring and dep-free tests. Flag the latter case only: suggest
+  splitting into two files, one with the module-level skip and one
+  without. Don't flag module-level `importorskip` in single-purpose
+  test modules — that's the right pattern.
 - **Always-truthy conditionals.** `if x is not None or "string literal":`
   and similar patterns where one operand is always truthy. Ruff doesn't
   catch all of these; you should.
