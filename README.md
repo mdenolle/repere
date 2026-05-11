@@ -77,6 +77,44 @@ pixi run frugalmind run-skill-lift          # offline skill-lift demo
 pixi run frugalmind run-ollama-intent --model mistral:7b --skill stalta-detection
 ```
 
+## Running local evals and viewing the dashboard
+
+If you have an [Ollama](https://ollama.com) server running with at least
+one model pulled (e.g. `ollama pull mistral`), you can populate the
+leaderboard end-to-end from your own machine:
+
+```bash
+# 1. Verify the model is available.
+curl -s http://localhost:11434/api/tags | python -m json.tool
+
+# 2. Run the STA/LTA intent-extraction suite under two conditions
+#    (generic vs skill-conditioned). Each writes one JSON result file
+#    under results/.
+pixi run -e full frugalmind run-ollama-intent \
+    --model mistral:latest --condition generic
+pixi run -e full frugalmind run-ollama-intent \
+    --model mistral:latest --skill stalta-detection --skill-mode instructions
+
+# 3. Optional baselines: a deterministic stub eval and the offline
+#    skill-lift benchmark, also written to results/.
+pixi run -e full frugalmind smoke-eval
+pixi run -e full frugalmind run-skill-lift \
+    --skill stalta-detection --output results/skill_lift_stalta.json
+
+# 4. Aggregate every JSON file under results/ into the static dashboard
+#    payload that the GitHub Pages app consumes.
+pixi run -e full frugalmind export-leaderboard \
+    --results-dir results --output site/data/leaderboard.json
+
+# 5. Serve the dashboard locally and open it in a browser.
+python -m http.server 8765 --directory site
+# then visit http://localhost:8765/#leaderboard
+```
+
+Add more rows by pulling additional Ollama models (`ollama pull llama3.1:8b`,
+`ollama pull qwen2.5:7b`) and repeating step 2 with `--model <id>`. Each
+unique `(model, condition)` pair becomes its own row.
+
 ## Conda fallback
 
 If Pixi is unavailable:
