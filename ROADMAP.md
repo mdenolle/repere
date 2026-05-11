@@ -313,7 +313,7 @@ builds on:
 > **Deliverables**
 > - `src/frugalmind/agents/react.py` (or InspectAI-native solver after P2.1).
 > - Tool wrappers for FDSN fetch and the existing sandbox.
-> - Documented baseline run in `notebooks/02_react_baseline.ipynb`.
+> - Documented baseline run in `notebooks/03_react_baseline.ipynb`.
 >
 > **Acceptance**
 > - Baseline scores higher than `EchoAdapter` on every code/plot suite.
@@ -321,7 +321,17 @@ builds on:
 >
 > **Effort** L
 > **Depends on** P2.1, P2.2
-> **Tracking** _(issue not yet filed)_
+> **Tracking** Branch `p2-4-react-baseline` (stacked on `p2-1-inspect-substrate`).
+> Shipped: `src/frugalmind/agents/tools.py` (three `@tool` wrappers — `fdsn_get_waveforms`,
+> `python_session`, `record_submit`), `src/frugalmind/agents/react.py` (`@solver
+> stalta_react` wrapping Inspect's `basic_agent`), `src/frugalmind/agents/__init__.py`
+> (no-extra-required `stalta_tools_dict()` descriptor), `tests/test_react_agent.py`
+> (13 tests covering descriptor consistency, tool instantiation, end-to-end sandbox
+> round-trip, obspy-missing error path, and solver construction), and
+> `notebooks/03_react_baseline.ipynb` (`_build_react_baseline.py` is the source of
+> truth). Full suite: **202 passing** (was 189). Live `inspect eval --solver` against a
+> paid provider is still gated on a budget approval; the notebook ships a
+> `mockllm/model` dry-run so CI exercises the wiring for free.
 
 ## P2.5 · Align JSONLTelemetry with InspectAI's log format
 
