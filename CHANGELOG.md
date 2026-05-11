@@ -11,10 +11,23 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
-Phase 2 work in flight. Shipped on branches: P2.1 InspectAI substrate,
+Phase 2 work in flight. Merged to main: P2.1 InspectAI substrate,
 P2.2 pinned sandbox Dockerfile, P2.4 multi-step ReAct agent baseline.
+Shipped on branches awaiting PR: P2.5 telemetry / Inspect alignment.
 
 ### Added
+
+- **JSONLTelemetry v2 schema** (P2.5). Field names now align with
+  InspectAI's `EvalSample` / `EvalOutput` so FrugalMind logs map
+  cleanly to Inspect's `.eval` shape. New `run_id` (UUID4) on every
+  record; `task` / `task_args` / `solver` / `model` / `created` /
+  `completed` on the run header; `id` / `epoch` / `output` per sample
+  (renamed from `item_index` / `generation`). New `log_sample(...)`
+  write method; `log_generation(...)` stays as an alias for back-compat.
+  `read_jsonl(...)` gained a v1 → v2 normalisation shim
+  (`normalise=False` returns raw on-disk records). Field-mapping table
+  and versioning policy at [`docs/telemetry.md`](docs/telemetry.md).
+  Test count: 230 → 242 (12 new telemetry tests).
 
 - **ReAct multi-step agent baseline** (P2.4). New `frugalmind.agents`
   subpackage with three Inspect tools (`fdsn_get_waveforms`,

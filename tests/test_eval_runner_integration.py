@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import json
-
 from frugalmind import (
     DenolleGroupSuite,
     EvalRunner,
-    Generation,
     ModelCard,
     ModelRegistry,
     TaskKind,
@@ -91,11 +88,17 @@ def test_eval_runner_writes_telemetry(tmp_path):
         )
         runner.run_all()
     records = read_jsonl(path)
-    gens = [r for r in records if r["type"] == "generation"]
-    assert len(gens) == 2
-    assert all(r["skill_name"] == "my-skill" for r in gens)
-    assert all(r["skill_mode"] == "full" for r in gens)
-    assert all(r["score"] == 1.0 for r in gens)
+    # v2 schema (P2.5): generation records are now `type=sample` with the
+    # model output on key `output`. Legacy `type=generation` records would
+    # only appear from a v1 log read through read_jsonl with normalise=False.
+    samples = [r for r in records if r["type"] == "sample"]
+    assert len(samples) == 2
+    assert all(r["skill_name"] == "my-skill" for r in samples)
+    assert all(r["skill_mode"] == "full" for r in samples)
+    assert all(r["score"] == 1.0 for r in samples)
+    # Every sample record links back to the enclosing run.
+    run_ids = {r["run_id"] for r in samples}
+    assert len(run_ids) == 1
 
 
 def test_back_compat_constructor_still_accepts_budget_args():

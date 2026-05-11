@@ -1,0 +1,4 @@
+{"type": "run_start", "ts": "2026-04-12T13:45:21Z", "metadata": {"suite": "stalta.intent", "skill_name": "stalta-detection", "skill_mode": "full"}}
+{"type": "generation", "ts": "2026-04-12T13:45:22Z", "generation": {"text": "hello", "model_id": "m1"}, "score": 0.8, "suite": "stalta.intent", "item_index": 0, "skill_name": "stalta-detection", "skill_mode": "full"}
+{"type": "generation", "ts": "2026-04-12T13:45:23Z", "generation": {"text": "world", "model_id": "m1"}, "score": 0.6, "suite": "stalta.intent", "item_index": 1, "skill_name": "stalta-detection", "skill_mode": "full"}
+{"type": "run_end", "ts": "2026-04-12T13:45:24Z", "ok": true}
