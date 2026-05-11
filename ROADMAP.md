@@ -30,6 +30,23 @@ on the table.
   benchmark, scale the truth set to ~50 events, hide the test split,
   reframe the leaderboard around skill-lift. ~6–8 weeks.
 
+### Phase 2 execution order
+
+After P2.1 (InspectAI substrate) and P2.4 (ReAct baseline) shipped together
+as a stacked pair, the remaining Phase 2 items should land in this order:
+
+1. **P2.2 · Pinned sandbox Dockerfile** — next. P2.4 made this urgent:
+   the ReAct agent now runs model-generated code through `python_session`
+   on every step, so the "whatever Python the host has" sandbox is a
+   real reproducibility risk across contributors.
+2. **P2.5 · Align JSONLTelemetry with InspectAI's log format** — quick
+   S-effort polish; stacks cleanly on P2.1; makes `inspect view` work
+   against existing logs.
+3. **P2.3 · Move large goldens to DVC or HuggingFace** — defer until
+   P3.2 expands the truth set past ~25 events. Premature today (6 events,
+   4 plot goldens fit fine in git); the ROADMAP item itself already
+   flags this as `Depends on P3.2`.
+
 ## Tracking conventions
 
 - **Milestones**: `Phase 1 — Quick wins`, `Phase 2 — Medium`, `Phase 3 — Pivots`.
