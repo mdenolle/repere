@@ -124,12 +124,17 @@ class JSONLTelemetry(AbstractContextManager):
     def __enter__(self) -> JSONLTelemetry:
         self._handle = open(self._path, "a", encoding="utf-8")
         if self._write_run_header:
+            # Capture the timestamp once so ``ts`` and ``created`` cannot
+            # disagree by 1s across a second-boundary (microseconds are
+            # stripped by ``_utc_now_iso``). Two reads of the wall clock
+            # would silently produce internally inconsistent headers.
+            now = _utc_now_iso()
             header: dict[str, Any] = {
                 "type": "run_start",
                 "schema_version": TELEMETRY_SCHEMA_VERSION,
-                "ts": _utc_now_iso(),
+                "ts": now,
                 "run_id": self._run_id,
-                "created": _utc_now_iso(),
+                "created": now,
                 "metadata": self._run_metadata,
             }
             # Only emit run-level fields when the caller actually provided
@@ -149,13 +154,16 @@ class JSONLTelemetry(AbstractContextManager):
     def __exit__(self, exc_type, exc, tb) -> None:
         if self._handle is not None:
             try:
+                # Capture once — same reason as run_start (ts and completed
+                # must agree even when called at a second-boundary).
+                now = _utc_now_iso()
                 self._write(
                     {
                         "type": "run_end",
                         "schema_version": TELEMETRY_SCHEMA_VERSION,
-                        "ts": _utc_now_iso(),
+                        "ts": now,
                         "run_id": self._run_id,
-                        "completed": _utc_now_iso(),
+                        "completed": now,
                         "ok": exc_type is None,
                     }
                 )
@@ -216,9 +224,13 @@ class JSONLTelemetry(AbstractContextManager):
         """
         gen = _coerce(generation)
 
-        # Synthesise sample_id from (suite, epoch) when caller doesn't pass
-        # one — gives a stable, human-readable key. Falls back to the run_id
-        # when neither is known so every record still has an id.
+        # Synthesise sample_id from (suite, epoch) when the caller doesn't
+        # pass one — gives a stable, human-readable key. When neither
+        # suite nor epoch is known the record is left **id-less** so
+        # callers can detect the missing info rather than getting a
+        # fabricated key (the run_id wouldn't be unique per sample
+        # anyway). The contract is also pinned by
+        # test_log_sample_omits_id_when_nothing_known.
         derived_id: str | None
         if sample_id is not None:
             derived_id = sample_id

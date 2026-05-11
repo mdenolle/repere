@@ -46,6 +46,26 @@ def test_run_header_and_footer_written(tmp_path):
     assert records[-1]["completed"]
 
 
+def test_run_header_and_footer_use_a_single_timestamp(tmp_path):
+    """Header and footer must each emit one logical wall-clock read — if
+    ``ts`` and ``created`` (or ``ts`` and ``completed``) drifted by 1s
+    at a second-boundary, the record would be internally inconsistent.
+    Caught by P2.5 review."""
+    path = tmp_path / "telemetry.jsonl"
+    with JSONLTelemetry(path, task="t", solver="generate", model="m1"):
+        pass
+    records = read_jsonl(path)
+    header, footer = records[0], records[-1]
+    assert header["ts"] == header["created"], (
+        f"run_start ts and created should be captured once; got "
+        f"ts={header['ts']!r} created={header['created']!r}"
+    )
+    assert footer["ts"] == footer["completed"], (
+        f"run_end ts and completed should be captured once; got "
+        f"ts={footer['ts']!r} completed={footer['completed']!r}"
+    )
+
+
 def test_run_header_omits_unset_attribution_fields(tmp_path):
     """When the caller doesn't pass task/solver/model, those fields must
     not appear on the header — null attribution would mislead readers."""
