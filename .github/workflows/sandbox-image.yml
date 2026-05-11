@@ -1,0 +1,84 @@
+name: Build & publish sandbox image
+
+# Builds docker/sandbox.Dockerfile on every PR (no push), and publishes
+# to GHCR on pushes to main and on version tag pushes. The image is the
+# pinned execution environment for the STA/LTA suite scorers and the
+# ReAct agent's `python_session` tool (ROADMAP P2.2).
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+    paths:
+      - 'docker/sandbox.Dockerfile'
+      - 'docker/README.md'
+      - '.github/workflows/sandbox-image.yml'
+  pull_request:
+    paths:
+      - 'docker/sandbox.Dockerfile'
+      - 'docker/README.md'
+      - '.github/workflows/sandbox-image.yml'
+  workflow_dispatch:
+
+# One in-flight build per branch; cancel older builds when a new commit
+# lands so we don't pay GHCR storage for orphaned shas.
+concurrency:
+  group: sandbox-image-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/frugalmind-sandbox
+
+jobs:
+  build:
+    name: build (push=${{ github.event_name != 'pull_request' }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # packages:write is needed to push to GHCR; the token is scoped
+      # automatically to this repo's owner namespace.
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        # Skip the login step on PRs from forks where secrets aren't
+        # available; the build still runs to verify the Dockerfile parses
+        # and the pip install succeeds.
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix=sha-,format=short
+
+      - name: Build and (conditionally) push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/sandbox.Dockerfile
+          # Push only when this is *not* a pull_request — PRs build for
+          # verification, tag and main pushes publish.
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
