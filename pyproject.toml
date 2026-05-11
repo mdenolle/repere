@@ -29,6 +29,12 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
 ]
+eval = [
+    # InspectAI is the substrate for `inspect eval frugalmind/...` and the
+    # `inspect view` log inspector. Optional so contributors who don't run
+    # benchmarks don't pull it in.
+    "inspect_ai>=0.3.50",
+]
 
 [project.scripts]
 frugalmind = "frugalmind.cli:main"

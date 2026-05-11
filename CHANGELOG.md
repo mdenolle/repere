@@ -16,6 +16,19 @@ P2.2 pinned sandbox Dockerfile, P2.4 multi-step ReAct agent baseline.
 
 ### Added
 
+- **ReAct multi-step agent baseline** (P2.4). New `frugalmind.agents`
+  subpackage with three Inspect tools (`fdsn_get_waveforms`,
+  `python_session`, `record_submit`) and a `stalta_react` solver wrapping
+  Inspect's `basic_agent`. Addressable as
+  `inspect eval src/frugalmind_suites/sta_lta/inspect_tasks.py@<task> \
+   --solver src/frugalmind/agents/react.py@stalta_react`. The package
+  re-exports a static `stalta_tools_dict()` descriptor that is importable
+  without `inspect_ai`. New notebook
+  `notebooks/03_react_baseline.ipynb` walks through the tools, solver,
+  and a free `mockllm/model` dry-run before the live-provider swap.
+  Builder script `notebooks/_build_react_baseline.py` is the source of
+  truth.
+
 - **Pinned Docker sandbox** (P2.2). New `docker/sandbox.Dockerfile`
   pins the execution environment for the STA/LTA suite scorers and the
   ReAct agent's `python_session` tool: `python:3.10-slim-bookworm` with

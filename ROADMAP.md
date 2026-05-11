@@ -30,6 +30,23 @@ on the table.
   benchmark, scale the truth set to ~50 events, hide the test split,
   reframe the leaderboard around skill-lift. ~6–8 weeks.
 
+### Phase 2 execution order
+
+After P2.1 (InspectAI substrate) and P2.4 (ReAct baseline) shipped together
+as a stacked pair, the remaining Phase 2 items should land in this order:
+
+1. **P2.2 · Pinned sandbox Dockerfile** — next. P2.4 made this urgent:
+   the ReAct agent now runs model-generated code through `python_session`
+   on every step, so the "whatever Python the host has" sandbox is a
+   real reproducibility risk across contributors.
+2. **P2.5 · Align JSONLTelemetry with InspectAI's log format** — quick
+   S-effort polish; stacks cleanly on P2.1; makes `inspect view` work
+   against existing logs.
+3. **P2.3 · Move large goldens to DVC or HuggingFace** — defer until
+   P3.2 expands the truth set past ~25 events. Premature today (6 events,
+   4 plot goldens fit fine in git); the ROADMAP item itself already
+   flags this as `Depends on P3.2`.
+
 ## Tracking conventions
 
 - **Milestones**: `Phase 1 — Quick wins`, `Phase 2 — Medium`, `Phase 3 — Pivots`.
@@ -199,6 +216,9 @@ builds on:
 
 ## P2.1 · Adopt InspectAI as the substrate
 
+> **Tracking** branch `p2-1-inspect-substrate` (off main) · status: implementation complete on branch, 14 new tests, 189 total passing. `python -m inspect_ai list tasks src/frugalmind_suites/sta_lta/inspect_tasks.py` discovers all 5 tasks.
+
+
 > **Goal** Convert each STA/LTA suite to an `inspect_ai.task.Task` with
 > `Sample(input=prompt, target=gold, metadata=…)` records and an
 > `@scorer`-decorated wrapper around our existing scorers.
@@ -308,7 +328,7 @@ builds on:
 > **Deliverables**
 > - `src/frugalmind/agents/react.py` (or InspectAI-native solver after P2.1).
 > - Tool wrappers for FDSN fetch and the existing sandbox.
-> - Documented baseline run in `notebooks/02_react_baseline.ipynb`.
+> - Documented baseline run in `notebooks/03_react_baseline.ipynb`.
 >
 > **Acceptance**
 > - Baseline scores higher than `EchoAdapter` on every code/plot suite.
@@ -316,7 +336,17 @@ builds on:
 >
 > **Effort** L
 > **Depends on** P2.1, P2.2
-> **Tracking** _(issue not yet filed)_
+> **Tracking** Branch `p2-4-react-baseline` (stacked on `p2-1-inspect-substrate`).
+> Shipped: `src/frugalmind/agents/tools.py` (three `@tool` wrappers — `fdsn_get_waveforms`,
+> `python_session`, `record_submit`), `src/frugalmind/agents/react.py` (`@solver
+> stalta_react` wrapping Inspect's `basic_agent`), `src/frugalmind/agents/__init__.py`
+> (no-extra-required `stalta_tools_dict()` descriptor), `tests/test_react_agent.py`
+> (13 tests covering descriptor consistency, tool instantiation, end-to-end sandbox
+> round-trip, obspy-missing error path, and solver construction), and
+> `notebooks/03_react_baseline.ipynb` (`_build_react_baseline.py` is the source of
+> truth). Full suite: **202 passing** (was 189). Live `inspect eval --solver` against a
+> paid provider is still gated on a budget approval; the notebook ships a
+> `mockllm/model` dry-run so CI exercises the wiring for free.
 
 ## P2.5 · Align JSONLTelemetry with InspectAI's log format
 
