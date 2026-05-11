@@ -126,6 +126,38 @@ def test_python_session_surfaces_error_without_raising():
     assert "RuntimeError" in payload["stderr"] or "boom" in payload["stderr"]
 
 
+def test_python_session_catches_run_snippet_exception_and_returns_payload(monkeypatch):
+    """The @tool contract is 'never raise'. ``run_snippet`` already catches
+    its own subprocess.TimeoutExpired, but filesystem / OSError / future
+    docker-pull failures could escape via ``asyncio.to_thread``. Force
+    such an error and assert the tool returns a structured ok=False
+    payload instead of letting the exception bubble out into Inspect's
+    event loop (which would abort the run)."""
+    import frugalmind.agents.tools as tools_mod
+
+    def _explode(*args, **kwargs):
+        raise OSError("simulated tmpdir creation failure")
+
+    # ``run_snippet`` is imported inside execute() — patch it at its
+    # source module so the lazy import sees our exploder.
+    import frugalmind_suites.sta_lta.sandbox as sandbox_mod
+
+    monkeypatch.setattr(sandbox_mod, "run_snippet", _explode)
+    # Defensive: also patch the symbol on tools_mod in case it was
+    # rebound at import time (it isn't today, but cheap insurance).
+    if hasattr(tools_mod, "run_snippet"):
+        monkeypatch.setattr(tools_mod, "run_snippet", _explode, raising=False)
+
+    sess = python_session()
+    raw = _call(sess, code="print('x')", timeout_s=5.0)
+    payload = json.loads(raw)
+    assert payload["ok"] is False
+    assert payload["returncode"] is None
+    assert payload["timed_out"] is False
+    assert "OSError" in payload["stderr"]
+    assert "simulated tmpdir creation failure" in payload["stderr"]
+
+
 def test_fdsn_get_waveforms_returns_structured_error_when_obspy_missing(monkeypatch):
     """If obspy isn't importable, the tool must return ok=false with a hint,
     not raise — the model needs to read it and either retry or submit zero."""

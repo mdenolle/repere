@@ -2,14 +2,16 @@
 
 The ReAct baseline lives in :mod:`frugalmind.agents.react` and the
 InspectAI tool wrappers it uses live in :mod:`frugalmind.agents.tools`.
-Both modules import ``inspect_ai`` lazily at *module load time*, so they
-require the optional ``[eval]`` extra::
+**Both submodules import** ``inspect_ai`` **at module top level**, so
+importing either of them requires the optional ``[eval]`` extra::
 
     pip install -e ".[eval]"
 
-A static descriptor (``stalta_tools_dict``) is exposed here so tests
-and docs can verify tool availability without importing ``inspect_ai``
-at all — useful for environments without the eval extra installed.
+This package (:mod:`frugalmind.agents`) itself has no eager dependency
+on ``inspect_ai`` — it only pulls in the standard library plus the
+static descriptor below. Tests and docs that just need to verify tool
+availability can call :func:`stalta_tools_dict` without paying the
+cost of installing ``inspect_ai`` or any of its transitive deps.
 """
 
 from __future__ import annotations

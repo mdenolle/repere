@@ -76,10 +76,12 @@ def stalta_react(
         Override the default system prompt above. Useful when wiring a
         skill prefix in front of the system message.
     """
-    # _DEFAULT_SYSTEM_PROMPT is always non-empty, so the system message is
-    # always installed. Callers that explicitly want no system message must
-    # pass system_prompt="" — we treat that as "use the default" rather than
-    # silently dropping the prompt, which would surprise downstream callers.
+    # A system message is always installed. ``system_prompt=None`` (the
+    # default) and ``system_prompt=""`` both fall through to
+    # ``_DEFAULT_SYSTEM_PROMPT`` via the ``or`` short-circuit — there is
+    # currently no way to turn the system prompt off entirely. If a future
+    # use case needs that, prefer adding an explicit ``no_system_prompt``
+    # flag over special-casing the empty string here.
     prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
     init: list[Solver] = [system_message(prompt)]
 

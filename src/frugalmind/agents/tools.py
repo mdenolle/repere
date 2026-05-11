@@ -136,7 +136,28 @@ def python_session() -> Tool:
         # which would block Inspect's event loop for the snippet's full
         # duration. Offload to a worker thread so other in-flight samples
         # can keep making progress while this snippet executes.
-        result = await asyncio.to_thread(run_snippet, code, timeout_s=float(timeout_s))
+        #
+        # ``run_snippet`` already catches subprocess.TimeoutExpired itself
+        # and returns ExecResult. But filesystem / OSError / docker-pull
+        # failures (P2.2) can still escape — and the @tool contract says
+        # we never raise. Catch broad and surface the failure as a
+        # structured ok=False payload so the agent can read it and decide.
+        try:
+            result = await asyncio.to_thread(
+                run_snippet, code, timeout_s=float(timeout_s)
+            )
+        except Exception as exc:
+            return json.dumps(
+                {
+                    "ok": False,
+                    "stdout": "",
+                    "stderr": f"{type(exc).__name__}: {exc}",
+                    "returncode": None,
+                    "timed_out": False,
+                    "artifacts": {},
+                    "artifact_files": [],
+                }
+            )
         payload = {
             "ok": result.ok,
             "stdout": (result.stdout or "")[-2000:],  # cap to last 2KB
