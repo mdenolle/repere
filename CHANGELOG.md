@@ -11,9 +11,8 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
-Phase 2 work begins here. Candidate items: P2.1 InspectAI substrate
-(shipped, in review), P2.2 pinned sandbox Dockerfile, P2.4 multi-step
-ReAct agent baseline (shipped on `p2-4-react-baseline`, stacked on P2.1).
+Phase 2 work in flight. Shipped on branches: P2.1 InspectAI substrate,
+P2.2 pinned sandbox Dockerfile, P2.4 multi-step ReAct agent baseline.
 
 ### Added
 
@@ -29,6 +28,28 @@ ReAct agent baseline (shipped on `p2-4-react-baseline`, stacked on P2.1).
   and a free `mockllm/model` dry-run before the live-provider swap.
   Builder script `notebooks/_build_react_baseline.py` is the source of
   truth.
+
+- **Pinned Docker sandbox** (P2.2). New `docker/sandbox.Dockerfile`
+  pins the execution environment for the STA/LTA suite scorers and the
+  ReAct agent's `python_session` tool: `python:3.10-slim-bookworm` with
+  `numpy==1.26.4`, `scipy==1.13.1`, `matplotlib==3.9.2`,
+  `scikit-image==0.24.0`, `obspy==1.4.1`, `PyYAML==6.0.2`. Runs as
+  non-root, ships with `tini` so host-side timeouts terminate the
+  container cleanly, sets `MPLBACKEND=Agg`. `sandbox.py` learns an
+  `FM_USE_DOCKER_SANDBOX=1` dispatch branch (image configurable via
+  `FM_SANDBOX_IMAGE`, defaults to `ghcr.io/mdenolle/frugalmind-sandbox:latest`)
+  that runs the snippet inside the container with `--network=none` and
+  the host tmpdir mounted at `/work`. Default behaviour is unchanged —
+  `FM_USE_DOCKER_SANDBOX` unset still runs the historical host-Python
+  path. New `tests/test_docker_sandbox.py` (23 tests on dispatch / cmd
+  construction / error paths, all pass without Docker installed) and
+  `tests/test_sandbox_parity.py` (deterministic-snippet end-to-end
+  parity test; docker leg skips when the daemon isn't reachable).
+  `.github/workflows/sandbox-image.yml` builds on every PR touching
+  the Dockerfile and pushes `latest` / `sha-…` / version tags to GHCR
+  on main and on `v*` tag pushes, with buildx GHA cache.
+  `.github/workflows/sandbox-parity.yml` runs the suite under both
+  backends in CI on every relevant PR. Closes ROADMAP P2.2.
 
 ## [0.3.0] — Phase 1: AstaBench-alignment quick wins
 

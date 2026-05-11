@@ -274,7 +274,22 @@ builds on:
 >
 > **Effort** M
 > **Depends on** P2.1 (so the Inspect runner is the integration point)
-> **Tracking** _(issue not yet filed)_
+> **Tracking** Branch `p2-2-docker-sandbox` off main. Shipped:
+> `docker/sandbox.Dockerfile` (python:3.10-slim-bookworm + pinned numpy /
+> scipy / matplotlib / scikit-image / obspy / PyYAML), `docker/README.md`,
+> `.github/workflows/sandbox-image.yml` (build on PR, push to GHCR on tag
+> + main with buildx GHA cache), `.github/workflows/sandbox-parity.yml`
+> (dual job runs the suite under `FM_USE_DOCKER_SANDBOX=0` and `=1`),
+> a refactored `src/frugalmind_suites/sta_lta/sandbox.py` with a clean
+> `_run_snippet_host` / `_run_snippet_docker` split dispatched via
+> `_docker_requested()`, `tests/test_docker_sandbox.py` (23 dispatch /
+> command-construction / error-path tests, all green without Docker
+> installed) and `tests/test_sandbox_parity.py` (deterministic-snippet
+> end-to-end test that runs under both backends and asserts identical
+> artefact bits; docker leg auto-skips when the daemon isn't reachable).
+> Full sweep: **199 passing, 1 skipped** (was 189 before P2.4 + 24 new in
+> P2.2). Default behaviour unchanged — host Python path runs identically
+> to pre-P2.2 when `FM_USE_DOCKER_SANDBOX` is unset.
 
 ## P2.3 · Move large goldens to DVC or HuggingFace
 
