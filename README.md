@@ -2,6 +2,8 @@
 
 FrugalMind is a prototype for a cost-optimized multi-agent evaluation and routing system. The goal is to preserve scientific rigor while spending the least possible model budget by routing work to the cheapest agent that can meet a task-specific quality floor.
 
+> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework now runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/frugalmind-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+
 The current repository contains:
 
 - A minimal core evaluation framework in `src/frugalmind`.

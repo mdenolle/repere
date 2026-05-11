@@ -11,9 +11,20 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
-Phase 2 work in flight. Merged to main: P2.1 InspectAI substrate,
-P2.2 pinned sandbox Dockerfile, P2.4 multi-step ReAct agent baseline.
-Shipped on branches awaiting PR: P2.5 telemetry / Inspect alignment.
+Phase 3 work begins here. Candidate items: P3.1 submit STA/LTA as an
+`inspect_evals` benchmark, P3.2 grow the truth set to 30–50 events,
+P3.3 hidden test split, P3.4 skill-conditioned 3-axis leaderboard,
+P3.5 per-suite `RUBRIC.md` scorer rationale.
+
+## [0.4.0] — 2026-05-12 — Phase 2: AstaBench substrate alignment
+
+> The framework now runs on the AstaBench / InspectAI substrate. Five
+> Phase 2 items shipped: an InspectAI eval loop, a pinned Docker
+> sandbox, a multi-step ReAct agent baseline, telemetry log records
+> aligned with Inspect's `EvalSample` / `EvalOutput` schema, and a
+> repository-specific Copilot review rubric. No breaking API changes
+> for callers of the 0.3.x public surface — the `log_generation`
+> alias is preserved and v1 telemetry logs read-compat.
 
 ### Added
 
