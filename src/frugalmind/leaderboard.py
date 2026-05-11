@@ -9,12 +9,12 @@ quality and frugality.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+import json
+from collections.abc import Callable, Iterable
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterable
-import json
-
+from typing import Any
 
 DEFAULT_SUITE = "sta_lta.intent_extraction"
 
@@ -247,7 +247,6 @@ class LeaderboardRunner:
 
         Returns ``{"none": {...}, "full": {...}}`` with score, cost, and n.
         """
-        from .budget import BudgetGuard  # local import to avoid cycles
 
         out: dict[str, dict[str, float | int]] = {}
         adapter = self.adapter_factory(card)
@@ -270,11 +269,15 @@ class LeaderboardRunner:
                 score_sum += item_score
                 count += 1
                 if self.telemetry is not None:
-                    self.telemetry.log_generation(
+                    # v2 schema (P2.5): log_sample(epoch=…) with the
+                    # generation on key "output". The legacy
+                    # log_generation alias still works for external
+                    # callers, but in-tree code uses the new name.
+                    self.telemetry.log_sample(
                         gen,
                         score=item_score,
                         suite=self.suite_id,
-                        item_index=idx,
+                        epoch=idx,
                         skill_name=self.skill_name,
                         skill_mode=mode,
                     )

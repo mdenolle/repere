@@ -367,7 +367,27 @@ builds on:
 >
 > **Effort** S
 > **Depends on** P2.1
-> **Tracking** _(issue not yet filed)_
+> **Tracking** Branch `p2-5-telemetry-inspect-alignment` off main.
+> Shipped: `src/frugalmind/telemetry.py` bumped to **schema v2** with
+> `run_id` (UUID4), `id`/`epoch`/`output` per sample (renames from
+> `item_index`/`generation`), and Inspect-style `task` / `task_args` /
+> `solver` / `model` / `created` / `completed` on the run header.
+> `JSONLTelemetry.log_sample(...)` is the new write method;
+> `log_generation(...)` stays as a thin alias for back-compat.
+> `read_jsonl(...)` gained a v1 → v2 normalisation shim (toggleable
+> via `normalise=False` for raw inspection) and a regression fixture
+> at `tests/fixtures/telemetry_v1_sample.jsonl`.
+> `EvalRunner` and `LeaderboardRunner` migrated to `log_sample`.
+> Tests: **17 telemetry tests** (was 5), covering v2 write shape, run-id
+> uniqueness across runs, omitted-attribution case, the alias, custom
+> events, the v1 normaliser unit, the frozen v1 fixture, and the raw
+> read path. Full sweep: **242 passing** (was 230; +12 new).
+> Field-mapping table + versioning policy at
+> [`docs/telemetry.md`](docs/telemetry.md). Acceptance: data shape now
+> maps cleanly to Inspect's `EvalSample` / `EvalOutput` — direct
+> `inspect view` of our `.jsonl` is gated on a future converter (no
+> Inspect tool natively reads JSONL today), tracked as a possible
+> Phase 3 follow-up.
 
 ---
 

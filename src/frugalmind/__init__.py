@@ -202,10 +202,14 @@ class EvalRunner:
                     }
                 )
                 if self.telemetry is not None:
-                    self.telemetry.log_generation(
+                    # v2 schema: log_sample(epoch=…) replaces
+                    # log_generation(item_index=…). The legacy method stays
+                    # available as a back-compat alias, but new code writes
+                    # the Inspect-aligned shape directly.
+                    self.telemetry.log_sample(
                         generation,
                         score=item_score,
-                        item_index=idx,
+                        epoch=idx,
                         skill_name=self.skill_name,
                         skill_mode=self.skill_mode,
                     )
