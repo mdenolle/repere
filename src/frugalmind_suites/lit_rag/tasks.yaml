@@ -1,0 +1,60 @@
+# Literature / RAG / translation truth set (Family 1), verifiable-core.
+#
+# Each task decomposes an "open-ended" literature task into a piece that can be
+# scored against a reference with NO LLM in the loop. See
+# docs/lit_rag_scorers.md. Seed set: one item per deterministic scorer.
+#
+# Multimodal (figure/waveform) input tasks are described in the design doc but
+# omitted here — they need the vision-input plumbing in adapters.py first.
+
+tasks:
+  - id: retrieval-ambient-noise-refs
+    kind: retrieval
+    split: validation
+    visibility: public
+    prompt: >-
+      You are given a corpus of seismology paper abstracts with ids D1..D10.
+      Rank ALL ids from most to least relevant to the query:
+      "ambient noise cross-correlation for crustal velocity monitoring".
+      Return only a JSON array of ids, best first, e.g. ["D3","D7",...].
+    # Gold relevant set (order-independent); the scorer ranks the model's list.
+    gold: ["D3", "D7", "D9"]
+    scorer:
+      name: retrieval_metrics
+      config: {metric: ndcg_at_k, k: 5}
+
+  - id: translate-abstract-es-terms
+    kind: translation
+    split: validation
+    visibility: public
+    prompt: >-
+      Translate the following abstract sentence to Spanish, preserving all
+      technical identifiers exactly (station codes, magnitudes, phase names):
+      "Station NC.JBGB recorded a M4.2 event with a clear Pn arrival."
+    gold: "La estación NC.JBGB registró un evento M4.2 con una llegada Pn clara."
+    scorer:
+      name: term_preservation
+      config:
+        required_terms: ["NC.JBGB", "M4.2", "Pn"]
+        # A model that "helpfully" rounds the magnitude or renames the phase.
+        forbidden_terms: ["M4.0", "M4.5", "Pg"]
+        case_sensitive: true
+
+  - id: grounded-qa-detection-threshold
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    prompt: >-
+      Using only the provided sources S1, S2, S3, answer in 2-3 sentences:
+      "What STA/LTA on-trigger threshold do these studies recommend for
+      regional networks?" Cite each claim inline as [S1], [S2], or [S3].
+      Do not cite any source that was not provided.
+    # The scorer needs the set of legitimately-provided source ids + the facts.
+    gold: "Recommended on-trigger threshold is ~3.5-4.0 (per S2)."
+    scorer:
+      name: citation_support
+      config:
+        valid_sources: ["S1", "S2", "S3"]
+        required_terms: ["3.5", "threshold"]
+        # A fabricated source id the model might invent.
+        forbidden_terms: ["S9"]

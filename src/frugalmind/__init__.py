@@ -24,6 +24,10 @@ class TaskKind(str, Enum):
     PLOTTING = "plotting"
     REPORT_DRAFTING = "report_drafting"
     NUMERICAL_REGRESSION = "numerical_regression"
+    RETRIEVAL = "retrieval"
+    TRANSLATION = "translation"
+    GROUNDED_QA = "grounded_qa"
+    ORCHESTRATION = "orchestration"
 
 
 class DenolleGroupSuite:

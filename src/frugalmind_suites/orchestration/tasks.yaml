@@ -1,0 +1,44 @@
+# Orchestration truth set (Family 3): non-linear subagent workflows.
+#
+# Each task gives the orchestrator a goal whose correct solution is a DAG of
+# subagent calls (not a linear chain). The reference DAG is the gold; the
+# trajectory_dag scorer grades the emitted plan on node F1 + edge F1 +
+# frugality. See docs/orchestration_scorer.md. Seed set: one item.
+#
+# `available_agents` documents the subagent tools the orchestrator may call;
+# in a real run these are agent-as-tool solvers. Wiring that solver is the
+# substrate change Family 3 needs (design doc).
+
+tasks:
+  - id: multi-station-detection-report
+    split: validation
+    visibility: public
+    available_agents:
+      - fetch_waveform      # download one station's waveform
+      - detect              # run STA/LTA on a fetched stream
+      - locate              # associate detections across stations
+      - draft_report        # write the summary from located events
+    prompt: >-
+      Goal: produce a detection report for a regional earthquake using two
+      stations. You may call the subagents fetch_waveform, detect, locate, and
+      draft_report. Emit your plan as a JSON object:
+      {"calls":[{"id":..,"agent":..,"deps":[..]}...], "answer":".."}.
+      Fetch both stations (independently), detect on each, associate with a
+      single locate step that depends on BOTH detections, then draft_report
+      from locate. Do not make redundant calls.
+    # Reference DAG: 2 fetches -> 2 detects -> 1 locate (fan-in) -> 1 report.
+    gold:
+      nodes: [fetch_waveform, detect, locate, draft_report]
+      edges:
+        - [fetch_waveform, detect]
+        - [detect, locate]
+        - [locate, draft_report]
+    scorer:
+      name: trajectory_dag
+      config:
+        expected_agents: [fetch_waveform, detect, locate, draft_report]
+        expected_edges:
+          - [fetch_waveform, detect]
+          - [detect, locate]
+          - [locate, draft_report]
+        max_calls: 6      # 2 fetch + 2 detect + 1 locate + 1 report
