@@ -45,10 +45,12 @@ runner = F.EvalRunner(registry=reg, suites=ALL_SUITES,
 PY
 ```
 
-Export the frozen JSONL with the standard exporter:
+Export the frozen JSONL with the standard exporter (the dv/v suites are
+registered in `frugalmind.cli._all_registered_suites()` whenever `codameter` is
+importable):
 
 ```bash
-python -m frugalmind.export ... --suite dvv_processing.param_recommendation
+frugalmind export-suite --suite dvv_processing.param_recommendation --out datasets/
 # or, from codameter: pixi run frugalmind-export
 ```
 
@@ -57,6 +59,7 @@ python -m frugalmind.export ... --suite dvv_processing.param_recommendation
 Each scorer returns a value in `[0, 1]`. Negatives are first-class: a config
 that picks the wrong depth band or an estimator that cycle-skips scores near
 zero, and for the series task a no-change prediction scores ~0 by construction.
-The `gold` payload carries only `case_id` + tolerances, never the arrays, so the
-JSONL stays small and leak-free; the scorer regenerates the synthetic from its
-seed.
+The `gold` payload carries only case identifiers (`case_id`, `use_case`) and
+scalar tolerances, never the CCF arrays or the truth series, so the answer is not
+embedded and the JSONL stays small. The scorer regenerates the synthetic from its
+seed at scoring time.

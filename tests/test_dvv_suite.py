@@ -49,3 +49,29 @@ def test_param_scorer_rewards_a_sound_config():
 def test_unknown_scorer_name_raises():
     with pytest.raises(ValueError):
         dvv.make_scorer_from_spec({"name": "nope"})
+
+
+def test_dvv_suites_are_registered_in_cli():
+    # With codameter importable, the export-suite CLI must discover the dv/v
+    # suites so `--suite dvv_processing.*` resolves.
+    from frugalmind.cli import _all_registered_suites, _resolve_suites
+
+    keys = {f"{s.dataset_id}.{s.suite_id}" for s in _all_registered_suites()}
+    assert "dvv_processing.param_recommendation" in keys
+    assert "dvv_processing.dvv_series" in keys
+    picked = _resolve_suites(["dvv_processing.param_recommendation"])
+    assert len(picked) == 1 and picked[0].suite_id == "param_recommendation"
+
+
+def test_export_suite_writes_jsonl(tmp_path):
+    from frugalmind.export import export_suites
+
+    suite = dvv.DVVParamRecommendationSuite()
+    manifest = export_suites([suite], out_dir=tmp_path, version=dvv.VERSION)
+    jsonl = tmp_path / "dvv_processing" / dvv.VERSION / "param_recommendation.jsonl"
+    assert jsonl.exists()
+    lines = jsonl.read_text().strip().splitlines()
+    assert len(lines) == 10
+    row = json.loads(lines[0])
+    assert row["dataset_id"] == "dvv_processing"
+    assert manifest  # sha256 manifest returned

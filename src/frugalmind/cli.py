@@ -327,10 +327,21 @@ def _all_registered_suites() -> list[Any]:
 
     Add new suite families to this function as they are introduced; the
     ``export-suite`` CLI walks the returned list when ``--suite`` is omitted.
+
+    The dv/v suites need their scoring backend (``codameter``) to export rows, so
+    they are included only when it is importable. This keeps a bulk export
+    working for contributors who have not installed the ``[dvv]`` extra.
     """
+    from importlib.util import find_spec
+
     from frugalmind_suites.sta_lta import ALL_SUITES as STA_LTA_SUITES
 
-    return list(STA_LTA_SUITES)
+    suites = list(STA_LTA_SUITES)
+    if find_spec("codameter") is not None:
+        from frugalmind_suites.dvv import ALL_SUITES as DVV_SUITES
+
+        suites.extend(DVV_SUITES)
+    return suites
 
 
 def _resolve_suites(suite_ids: list[str] | None) -> list[Any]:

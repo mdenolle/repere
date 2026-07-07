@@ -22,9 +22,10 @@ geo = [
 ]
 dvv = [
     # Scoring backend: regenerates the hidden synthetic and runs the pipeline.
-    # Pinned to the codameter branch until it is released; switch to a
-    # versioned "codameter>=0.2" once merged/published.
-    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@feat/codameter-advisor-golden",
+    # Pinned to an immutable commit for reproducible scores (the codameter branch
+    # tip that adds codameter.frugalmind). Switch to a versioned "codameter>=0.2"
+    # once it is merged/published.
+    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@33d9d198ad84cfb44165ef43d351f607c810dfc9",
 ]
 plot = [
     "matplotlib>=3.8",
