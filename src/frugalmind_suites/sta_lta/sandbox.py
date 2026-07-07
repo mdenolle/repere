@@ -306,25 +306,29 @@ def run_snippet(
     *,
     timeout_s: float = 30.0,
     extra_env: dict[str, str] | None = None,
+    image: str | None = None,
 ) -> ExecResult:
     """Execute a Python snippet in a fresh subprocess with a timeout.
 
     The backend is chosen by environment variable:
 
     * ``FM_USE_DOCKER_SANDBOX`` truthy → pinned Docker image (P2.2).
-      Image name from ``FM_SANDBOX_IMAGE`` (default
-      ``ghcr.io/mdenolle/frugalmind-sandbox:latest``).
     * Anything else → host Python (the historical behaviour).
+
+    When the docker backend is active, the image is resolved in priority order:
+    the explicit ``image`` argument (a per-suite image — e.g. a seisbench or
+    noisepy sandbox for numerical-regression tasks), then ``FM_SANDBOX_IMAGE``,
+    then :data:`DEFAULT_SANDBOX_IMAGE`. The host backend ignores ``image``.
     """
     if not code.strip():
         return ExecResult(False, "", "empty code", None, False, {}, [])
 
     if _docker_requested():
-        image = os.environ.get(ENV_SANDBOX_IMAGE) or DEFAULT_SANDBOX_IMAGE
+        resolved = image or os.environ.get(ENV_SANDBOX_IMAGE) or DEFAULT_SANDBOX_IMAGE
         return _run_snippet_docker(
             code,
             timeout_s=timeout_s,
             extra_env=extra_env,
-            image=image,
+            image=resolved,
         )
     return _run_snippet_host(code, timeout_s=timeout_s, extra_env=extra_env)

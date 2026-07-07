@@ -23,6 +23,7 @@ class TaskKind(str, Enum):
     CODE_GENERATION = "code_generation"
     PLOTTING = "plotting"
     REPORT_DRAFTING = "report_drafting"
+    NUMERICAL_REGRESSION = "numerical_regression"
 
 
 class DenolleGroupSuite:
