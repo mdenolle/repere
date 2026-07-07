@@ -20,6 +20,12 @@ test = [
 geo = [
     "obspy>=1.4",
 ]
+dvv = [
+    # Scoring backend: regenerates the hidden synthetic and runs the pipeline.
+    # Pinned to the codameter branch until it is released; switch to a
+    # versioned "codameter>=0.2" once merged/published.
+    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@feat/codameter-advisor-golden",
+]
 plot = [
     "matplotlib>=3.8",
     "numpy>=1.26",
