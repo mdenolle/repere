@@ -158,13 +158,244 @@ def make_trajectory_dag_scorer(
     return scorer
 
 
+# ---------------------------------------------------------------------------
+# Dynamic workflows — trajectory_policy
+#
+# A static reference DAG cannot score a workflow whose correct shape depends on
+# what the agent observes at runtime (low SNR -> re-fetch; no detections ->
+# stop; transient failure -> recover). trajectory_policy instead checks
+# deterministic conditional invariants over a *recorded trace* whose calls
+# carry the observation each step returned:
+#
+#   {"calls": [{"id": "s1", "agent": "fetch_waveform",
+#               "args": {"station": "NC.JBGB"}, "deps": [], "obs": {"snr": 2.1}},
+#              ...]}
+#
+# This is the invariant layer of the dynamic-eval design (see
+# docs/orchestration_scorer.md). The scenario harness that *produces* such
+# traces deterministically, and the cross-scenario branch-sensitivity metric,
+# are the follow-on layers.
+# ---------------------------------------------------------------------------
+
+
+def _obs_match(obs: Any, comp: dict | None) -> bool:
+    """Evaluate a serialisable comparator against a call's observation dict.
+
+    ``comp`` is ``{"field": ..., "op": ..., "value": ...}`` with ``op`` in
+    ``==`` ``!=`` ``<`` ``<=`` ``>`` ``>=`` ``truthy`` ``falsy``. A missing
+    field or a type-incompatible comparison is a non-match, never an error.
+    """
+    if comp is None:
+        return True
+    if not isinstance(obs, dict):
+        return False
+    val = obs.get(comp["field"])
+    op = comp["op"]
+    if op == "truthy":
+        return bool(val)
+    if op == "falsy":
+        return not bool(val)
+    if val is None:
+        return False
+    target = comp.get("value")
+    try:
+        if op == "==":
+            return val == target
+        if op == "!=":
+            return val != target
+        if op == "<":
+            return val < target
+        if op == "<=":
+            return val <= target
+        if op == ">":
+            return val > target
+        if op == ">=":
+            return val >= target
+    except TypeError:
+        return False
+    raise ValueError(f"unknown comparator op: {op!r}")
+
+
+def _validate_calls(calls: list) -> dict[str, str] | None:
+    """Shape/DAG validation shared with trajectory_dag: unique ids, deps that
+    resolve, acyclic. Returns id→agent, or None if the plan is invalid."""
+    id_to_agent: dict[str, str] = {}
+    for c in calls:
+        if not isinstance(c, dict) or "id" not in c or "agent" not in c:
+            return None
+        cid = str(c["id"])
+        if cid in id_to_agent:
+            return None
+        id_to_agent[cid] = str(c["agent"])
+    id_edges: set[tuple[str, str]] = set()
+    for c in calls:
+        cid = str(c["id"])
+        for dep in c.get("deps", []) or []:
+            dep = str(dep)
+            if dep not in id_to_agent:
+                return None
+            id_edges.add((dep, cid))
+    if not _is_acyclic(set(id_to_agent), id_edges):
+        return None
+    return id_to_agent
+
+
+def _rule_precondition(calls: list, rule: dict) -> bool:
+    """Every call to ``agent`` must be preceded by ≥``min_count`` calls to
+    ``requires_agent`` whose obs match ``requires_obs``."""
+    agent = rule["agent"]
+    req_agent = rule["requires_agent"]
+    req_obs = rule.get("requires_obs")
+    min_count = rule.get("min_count", 1)
+    for i, c in enumerate(calls):
+        if c["agent"] != agent:
+            continue
+        count = sum(
+            1
+            for j in range(i)
+            if calls[j]["agent"] == req_agent and _obs_match(calls[j].get("obs"), req_obs)
+        )
+        if count < min_count:
+            return False
+    return True
+
+
+def _rule_guard(calls: list, rule: dict) -> bool:
+    """Once ``forbidden_when_agent`` observes ``forbidden_obs``, no ``agent``
+    call may follow (e.g. never draft_report after locate saw no events)."""
+    agent = rule["agent"]
+    when_agent = rule["forbidden_when_agent"]
+    when_obs = rule.get("forbidden_obs")
+    for i, c in enumerate(calls):
+        if c["agent"] == when_agent and _obs_match(c.get("obs"), when_obs):
+            return not any(d["agent"] == agent for d in calls[i + 1 :])
+    return True
+
+
+def _rule_branch(calls: list, rule: dict) -> bool:
+    """If ``when_agent`` observes ``when_obs``, a later ``then_agent`` call must
+    exist — optionally with a different value for ``then_args_differ_field``
+    (e.g. low SNR -> re-fetch from a *different* station)."""
+    when_agent = rule["when_agent"]
+    when_obs = rule.get("when_obs")
+    then_agent = rule["then_agent"]
+    differ = rule.get("then_args_differ_field")
+    for i, c in enumerate(calls):
+        if c["agent"] != when_agent or not _obs_match(c.get("obs"), when_obs):
+            continue
+        trigger_args = c.get("args") or {}
+        ok = False
+        for d in calls[i + 1 :]:
+            if d["agent"] != then_agent:
+                continue
+            if differ is None:
+                ok = True
+                break
+            if (d.get("args") or {}).get(differ) != trigger_args.get(differ):
+                ok = True
+                break
+        if not ok:
+            return False
+    return True
+
+
+def _rule_recovery(calls: list, rule: dict) -> bool:
+    """After ``on_agent`` returns an error, require a corrective step and cap
+    identical retries — the anti-retry-storm invariant."""
+    on_agent = rule["on_agent"]
+    error_field = rule.get("error_field", "error")
+    then_agent = rule.get("then_agent")
+    max_retries = rule.get("max_identical_retries", 1)
+    err_comp = {"field": error_field, "op": "truthy"}
+    for i, c in enumerate(calls):
+        if c["agent"] != on_agent or not _obs_match(c.get("obs"), err_comp):
+            continue
+        after = calls[i + 1 :]
+        identical = sum(
+            1
+            for d in after
+            if d["agent"] == on_agent and (d.get("args") or {}) == (c.get("args") or {})
+        )
+        if identical > max_retries:
+            return False
+        if then_agent is not None and not any(d["agent"] == then_agent for d in after):
+            return False
+    return True
+
+
+def _rule_termination(calls: list, rule: dict) -> bool:
+    """A loop over ``agent`` must not exceed ``max_calls`` and must stop once it
+    observes ``stop_when_obs`` (no further ``agent`` calls after the stop)."""
+    agent = rule["agent"]
+    max_calls = rule.get("max_calls")
+    stop_obs = rule.get("stop_when_obs")
+    agent_idx = [i for i, c in enumerate(calls) if c["agent"] == agent]
+    if max_calls is not None and len(agent_idx) > max_calls:
+        return False
+    if stop_obs is not None:
+        for k, idx in enumerate(agent_idx):
+            if _obs_match(calls[idx].get("obs"), stop_obs):
+                return k + 1 >= len(agent_idx)
+    return True
+
+
+_RULE_EVALUATORS: dict[str, Callable[[list, dict], bool]] = {
+    "precondition": _rule_precondition,
+    "guard": _rule_guard,
+    "branch": _rule_branch,
+    "recovery": _rule_recovery,
+    "termination": _rule_termination,
+}
+
+
+def make_trajectory_policy_scorer(
+    *,
+    rules: list[dict],
+    require_valid_dag: bool = True,
+) -> Callable[[str, Any], float]:
+    """Score a recorded dynamic-workflow trace against conditional invariants.
+
+    Each rule in ``rules`` is a serialisable dict with a ``type`` in
+    ``precondition`` / ``guard`` / ``branch`` / ``recovery`` / ``termination``.
+    Score is the fraction of rules satisfied; an unparseable or (when
+    ``require_valid_dag``) structurally-invalid trace hard-fails to 0.
+    """
+    for r in rules:
+        if r.get("type") not in _RULE_EVALUATORS:
+            raise ValueError(f"unknown policy rule type: {r.get('type')!r}")
+
+    def scorer(model_output: str, gold: Any) -> float:
+        traj = _parse_trajectory(model_output)
+        if traj is None:
+            return 0.0
+        calls = traj.get("calls")
+        if not isinstance(calls, list) or not calls:
+            return 0.0
+        for c in calls:
+            if not isinstance(c, dict) or "id" not in c or "agent" not in c:
+                return 0.0
+        if require_valid_dag and _validate_calls(calls) is None:
+            return 0.0
+        if not rules:
+            return 1.0
+        passed = sum(1 for r in rules if _RULE_EVALUATORS[r["type"]](calls, r))
+        return passed / len(rules)
+
+    return scorer
+
+
 def make_scorer_from_spec(spec: dict[str, Any]) -> Callable[[str, Any], float]:
     """Reconstruct a Family-3 scorer callable from a JSON-serializable spec.
 
-    Recognised names: ``trajectory_dag``, ``zero``.
+    Recognised names: ``trajectory_dag``, ``trajectory_policy``, ``zero``.
     """
     name = spec["name"]
     config = dict(spec.get("config", {}))
+    if name == "trajectory_policy":
+        return make_trajectory_policy_scorer(
+            rules=config["rules"],
+            require_valid_dag=config.get("require_valid_dag", True),
+        )
     if name == "trajectory_dag":
         return make_trajectory_dag_scorer(
             expected_agents=config["expected_agents"],

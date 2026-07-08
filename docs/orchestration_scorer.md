@@ -77,10 +77,48 @@ This is the one genuine new solver in the three families. The GAIA stub's
 of tools) are the seed; `trajectory_dag` generalises Jaccard-on-tools to
 graph-structure-on-DAG.
 
+## Dynamic workflows — `trajectory_policy`
+
+`trajectory_dag` assumes the correct plan is knowable in advance. That breaks
+for **dynamic** workflows whose shape depends on what the agent observes at
+runtime: low SNR → re-fetch a different station; no detections → stop; a
+timeout → recover. Two correct runs produce *different* graphs, so there is no
+single reference DAG — and a fixed-DAG scorer would wrongly reward an agent that
+rigidly runs the same plan regardless of observations.
+
+The design (four layers, most already reusable):
+
+1. **Scenario harness** *(follow-on)* — scripted stub subagents return
+   deterministic observations (and injected failures), so dynamic behaviour is
+   reproducible and every branch is controllable. This is the subagents-as-tools
+   solver above, extended so the *environment* is deterministic.
+2. **Per-scenario DAG match** *(reuse)* — the reference becomes a policy
+   `scenario → gold DAG`; feed the realised trace to `trajectory_dag` unchanged.
+3. **Conditional invariants — `trajectory_policy` (shipped).** A deterministic
+   rule scorer over a recorded trace whose calls carry the `obs` each step
+   returned. Rule types:
+   - `precondition` — every `locate` preceded by ≥2 `detect` that *found* events
+   - `guard` — never `draft_report` after `locate` observed no events
+     (the hallucination guard for workflows)
+   - `branch` — IF a fetch saw `snr < 3` THEN a re-fetch of a *different* station
+   - `recovery` — after a tool error, a corrective step follows; identical
+     retries are capped (anti-retry-storm)
+   - `termination` — a refine loop stays within `max_calls` and stops once it
+     observes the stop condition
+   Score = fraction of rules satisfied; an unparseable or structurally-invalid
+   (duplicate id / dangling dep / cyclic) trace hard-fails to 0. Comparators are
+   a small serialisable DSL (`{field, op, value}`), no `eval`.
+4. **Cross-scenario branch-sensitivity** *(follow-on)* — run the same task under
+   scenarios that demand *different* trajectories and measure whether the
+   realised traces actually differ where they should. A static plan that ignores
+   observations scores ~0 here — the negative-case discipline for orchestration.
+
+Difficulty ladder within Family 3: static DAG → single branch → multi-branch →
+replan/recovery → open (unknown-count) fan-out.
+
 ## Follow-ups
 
+- Scenario harness + branch-sensitivity aggregation (layers 1 and 4 above).
 - Graph-edit-distance variant for partial-credit on near-miss edge sets.
-- Replanning credit: reward recovering after a subagent failure (needs the
-  trace to record failures), penalise redundant retry storms.
 - Grow `tasks.yaml` with negative cases (a goal where the correct plan is a
   *single* call — over-orchestration is the failure to catch).
