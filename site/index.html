@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="FrugalMind leaderboard for cost-optimized, rigor-preserving multi-agent evaluations."
+      content="FrugalMind: evidence-based, cost-aware evaluation of AI agents for geoscience — three task families, deterministic scoring, and a transparent leaderboard."
     />
-    <title>FrugalMind Leaderboard</title>
+    <title>FrugalMind — evidence-based AI evaluation for geoscience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -21,28 +21,33 @@
     <div class="shell">
       <header class="hero">
         <nav class="nav" aria-label="Primary navigation">
-          <a class="brand" href="./" aria-label="FrugalMind leaderboard home">
+          <a class="brand" href="./" aria-label="FrugalMind home">
             <span class="brand-mark">FM</span>
             <span>FrugalMind</span>
           </a>
           <div class="nav-links">
+            <a href="#families">Task families</a>
+            <a href="#grading">Grading</a>
+            <a href="#leaderboard">Leaderboard</a>
+            <a href="#helpers">Docs</a>
             <a href="https://github.com/mdenolle/frugalmind">GitHub</a>
-            <a href="https://github.com/mdenolle/frugalmind/actions/workflows/pages.yml">Deploys</a>
           </div>
         </nav>
 
         <section class="hero-grid">
           <div>
-            <p class="eyebrow">Cost-aware rigor benchmark</p>
-            <h1>Leaderboard for frugal multi-agent evaluation.</h1>
+            <p class="eyebrow">Evidence over hype · AI for geoscience</p>
+            <h1>Does the AI actually do the science — and at what cost?</h1>
             <p class="lede">
-              Track which model or subagent meets scientific quality floors at the lowest budget.
-              Current public data is a smoke benchmark; private golden-set scores can be published
-              here when ready.
+              FrugalMind is an open evaluation framework for scientific AI agents in the
+              geosciences. It measures whether a model or multi-agent system meets a
+              task-specific <strong>quality floor</strong>, and what it <strong>costs</strong> to
+              get there — so labs can adopt AI on the strength of measured evidence, not
+              demos and anecdotes.
             </p>
             <div class="hero-actions">
-              <a class="button primary" href="#leaderboard">View leaderboard</a>
-              <a class="button secondary" href="https://github.com/mdenolle/frugalmind">Repository</a>
+              <a class="button primary" href="#leaderboard">See the evidence</a>
+              <a class="button secondary" href="#families">How it works</a>
             </div>
           </div>
           <aside class="status-card" aria-label="Leaderboard status summary">
@@ -66,24 +71,156 @@
       </header>
 
       <main>
-        <section class="cards" aria-label="Evaluation principles">
-          <article>
-            <span class="icon">◎</span>
-            <h2>Quality floor first</h2>
-            <p>Scores are computed against deterministic public samples and private hidden goldens.</p>
-          </article>
-          <article>
-            <span class="icon">$</span>
-            <h2>Budget visible</h2>
-            <p>Cost fields are first-class so routing decisions can compare quality per dollar.</p>
-          </article>
-          <article>
-            <span class="icon">↻</span>
-            <h2>Workflow ready</h2>
-            <p>GitHub Actions can refresh this page manually now and on a weekly schedule later.</p>
-          </article>
+        <!-- WHY ---------------------------------------------------------- -->
+        <section class="prose" aria-labelledby="why-title">
+          <p class="eyebrow">Why this exists</p>
+          <h2 id="why-title">Geoscience needs proof, not vibes.</h2>
+          <p class="lede narrow">
+            AI is arriving in seismology, geodesy, and Earth science faster than our ability
+            to check it. A model that writes fluent code can still fetch the wrong station,
+            hallucinate an earthquake in a quiet window, or round a magnitude away. Frontier
+            models are also expensive, and most labs cannot spend a premium on every step of
+            a workflow. FrugalMind answers two questions at once:
+          </p>
+          <div class="cards">
+            <article>
+              <span class="icon">◎</span>
+              <h3>Is it right?</h3>
+              <p>
+                Scored against reference truth with a numeric tolerance wherever possible —
+                not a vibe check. Negative cases (a window with <em>no</em> event) are
+                first-class, so we catch confident hallucination, not just missed detections.
+              </p>
+            </article>
+            <article>
+              <span class="icon">$</span>
+              <h3>What did it cost?</h3>
+              <p>
+                Every row carries token cost in dollars. The interesting winner is not the
+                highest score — it is the cheapest system that still clears the quality floor.
+              </p>
+            </article>
+            <article>
+              <span class="icon">◇</span>
+              <h3>Is it reproducible?</h3>
+              <p>
+                Pinned sandboxes, deterministic scorers, and a parametric truth set mean a
+                score means the same thing next month. Hidden test splits keep the numbers
+                honest.
+              </p>
+            </article>
+          </div>
         </section>
 
+        <!-- THREE FAMILIES ----------------------------------------------- -->
+        <section id="families" class="prose" aria-labelledby="families-title">
+          <p class="eyebrow">The task suite</p>
+          <h2 id="families-title">Three families, because geoscience work is diverse.</h2>
+          <p class="lede narrow">
+            Real research is not one kind of task. A useful benchmark has to cover reading and
+            reasoning over the literature, running real pipelines, and coordinating multi-step
+            workflows. Each family is scored differently, by the most verifiable method the
+            task allows.
+          </p>
+          <div class="families">
+            <article class="family">
+              <span class="family-num">1</span>
+              <h3>Literature &amp; multimodal</h3>
+              <p>
+                Review, critique, translation, interpolation, and retrieval-augmented QA over
+                papers, figures, and waveforms.
+              </p>
+              <p class="family-score">
+                <strong>Scored by:</strong> retrieval metrics (recall@k, nDCG), domain-term
+                preservation, and citation grounding — no fabricated sources.
+              </p>
+              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/lit_rag_scorers.md">Design doc →</a>
+            </article>
+            <article class="family">
+              <span class="family-num">2</span>
+              <h3>Coding agents</h3>
+              <p>
+                Prompt&nbsp;→&nbsp;code (run it, check the artifact) and prompt&nbsp;→&nbsp;data
+                (drive a real pipeline — seisbench, noisepy, codameter — and check the numbers).
+              </p>
+              <p class="family-score">
+                <strong>Scored by:</strong> sandboxed execution and numerical regression
+                against a reference within tolerance.
+              </p>
+              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/numerical_regression_scorer.md">Design doc →</a>
+            </article>
+            <article class="family">
+              <span class="family-num">3</span>
+              <h3>Orchestration</h3>
+              <p>
+                Non-linear workflows where an agent decides which sub-agents to call, in what
+                order, with what dependencies — a plan graph, not a straight line.
+              </p>
+              <p class="family-score">
+                <strong>Scored by:</strong> the sub-agent call DAG vs a reference — right steps,
+                right dependencies, and frugal fan-out.
+              </p>
+              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/orchestration_scorer.md">Design doc →</a>
+            </article>
+          </div>
+        </section>
+
+        <!-- GRADING SPECTRUM --------------------------------------------- -->
+        <section id="grading" class="prose" aria-labelledby="grading-title">
+          <p class="eyebrow">Easy → hard</p>
+          <h2 id="grading-title">We grade by how verifiable the answer is.</h2>
+          <p class="lede narrow">
+            The hardest part of evaluating open-ended science is trusting the score. FrugalMind
+            pushes every task as far <em>up</em> this ladder as it will go — toward a
+            deterministic reference — and only falls back to a judged rubric when nothing else
+            fits. Higher tiers are cheaper to score and harder to game.
+          </p>
+          <ol class="spectrum" aria-label="Scorability spectrum from most to least verifiable">
+            <li class="tier"><span class="tier-tag">T0</span><span class="tier-name">Deterministic</span><span class="tier-eg">exact value + tolerance (FDSN query fields)</span></li>
+            <li class="tier"><span class="tier-tag">T1</span><span class="tier-name">Numerical</span><span class="tier-eg">array vs reference (pick times, CCF)</span></li>
+            <li class="tier"><span class="tier-tag">T2</span><span class="tier-name">Perceptual</span><span class="tier-eg">figure vs golden (SSIM)</span></li>
+            <li class="tier"><span class="tier-tag">T3</span><span class="tier-name">Trajectory</span><span class="tier-eg">call DAG vs reference plan</span></li>
+            <li class="tier"><span class="tier-tag">T4</span><span class="tier-name">Rubric</span><span class="tier-eg">LLM-judge, only as fallback</span></li>
+          </ol>
+          <p class="fineprint">
+            Difficulty also comes from the data. Items carry a public
+            <code>validation</code> split and a hidden <code>test</code> split, a
+            <code>cutoff_date</code> that bars a model from using information it could not have
+            had at the time, and negative cases an over-eager model will fail.
+          </p>
+        </section>
+
+        <!-- SKILLS ------------------------------------------------------- -->
+        <section class="prose" aria-labelledby="skills-title">
+          <p class="eyebrow">Skills</p>
+          <h2 id="skills-title">A good skill can lift a small model to frontier quality.</h2>
+          <p class="lede narrow">
+            The same task can be presented three ways: with <code>none</code> of a domain skill,
+            with its <code>instructions</code>, or with the <code>full</code> skill loaded.
+            Measuring the gap — the <strong>skill lift</strong> — shows how much a cheap, open,
+            local model gains from domain guidance. Often a small model plus a skill clears the
+            same quality floor as a frontier model at a fraction of the cost. That is the whole
+            frugality thesis, made measurable. The per-model lift table is
+            <a href="#skill-lift">below the leaderboard</a>.
+          </p>
+        </section>
+
+        <!-- TRANSPARENCY ------------------------------------------------- -->
+        <section class="prose" aria-labelledby="fair-title">
+          <p class="eyebrow">Transparency</p>
+          <h2 id="fair-title">Fair comparison is a labeled comparison.</h2>
+          <p class="lede narrow">
+            A score with no context invites hype. Every leaderboard row states the model's
+            <strong>openness</strong> (open weights vs API-only), its <strong>toolset</strong>
+            (standard vs custom scaffolding), the exact <strong>suite</strong>, the
+            <strong>cost</strong>, and how many items it actually completed. An open 7B model
+            with standard tools is never silently compared against a closed model with a custom
+            harness. Published like this, adoption decisions rest on evidence a reviewer can
+            reproduce — not a screenshot from a launch post.
+          </p>
+        </section>
+
+        <!-- LEADERBOARD (data-driven; ids consumed by app.js) ------------ -->
         <section id="leaderboard" class="panel" aria-labelledby="leaderboard-title">
           <div class="panel-header">
             <div>
@@ -95,6 +232,11 @@
               <span id="source-label">data/leaderboard.json</span>
             </div>
           </div>
+
+          <p class="fineprint">
+            Current public data is a smoke benchmark for wiring the pipeline end-to-end.
+            Private golden-set scores are published here only after human review.
+          </p>
 
           <div class="table-wrap">
             <table>
@@ -169,7 +311,36 @@
 
           <p id="skill-lift-notes" class="notes"></p>
         </section>
+
+        <!-- HELPERS ------------------------------------------------------ -->
+        <section id="helpers" class="prose" aria-labelledby="helpers-title">
+          <p class="eyebrow">Go deeper</p>
+          <h2 id="helpers-title">Helpers &amp; documentation</h2>
+          <div class="helpers">
+            <a class="helper" href="https://github.com/mdenolle/frugalmind#quickstart-with-pixi">
+              <h3>Quickstart →</h3>
+              <p>Install with Pixi, run the deterministic test suite, and build the leaderboard locally.</p>
+            </a>
+            <a class="helper" href="https://github.com/mdenolle/frugalmind/tree/main/notebooks">
+              <h3>Notebooks →</h3>
+              <p>A skill-lift walkthrough on three small local models, offline by default.</p>
+            </a>
+            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/dataset_submission.md">
+              <h3>Submit a dataset →</h3>
+              <p>The strict schema, the Hugging Face pull, and how hidden test splits prevent leakage.</p>
+            </a>
+            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/ROADMAP.md">
+              <h3>Roadmap →</h3>
+              <p>Where the framework is going, aligned with AstaBench and InspectAI.</p>
+            </a>
+          </div>
+        </section>
       </main>
+
+      <footer class="site-footer">
+        <span>FrugalMind · cost-aware, rigor-preserving evaluation for geoscience AI.</span>
+        <a href="https://github.com/mdenolle/frugalmind">github.com/mdenolle/frugalmind</a>
+      </footer>
     </div>
 
     <script src="app.js" type="module"></script>
