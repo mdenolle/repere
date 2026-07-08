@@ -175,6 +175,27 @@ def test_run_snippet_accepts_image_on_host_backend():
     assert result.artifacts.get("x") == 1
 
 
+def test_load_pipelines_validates_required_keys(tmp_path, monkeypatch):
+    # A row missing `tool` (used unconditionally by _compose) must raise an
+    # actionable schema error at load time, not a late KeyError.
+    import frugalmind_suites.pipeline_regression.items as it
+
+    bad = tmp_path / "pipelines.yaml"
+    bad.write_text(
+        "pipelines:\n"
+        "  - id: x\n"
+        "    label: no tool key\n"
+        "    artifact_key: a\n"
+        "    metric: allclose\n"
+        "    gold: [1.0]\n"
+        "    split: validation\n"
+        "    visibility: public\n"
+    )
+    monkeypatch.setattr(it, "PIPELINES_PATH", bad)
+    with pytest.raises(ValueError, match="missing key 'tool'"):
+        it._load_pipelines()
+
+
 def test_suite_carries_sandbox_image_in_spec():
     suite = PipelineRegressionSuite(split="validation")
     specs = {r.id: r.scorer_spec for r in suite.export_rows()}

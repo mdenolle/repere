@@ -30,17 +30,29 @@ from typing import Any
 def _parse_ranked_list(model_output: str) -> list[str]:
     """Pull a ranked list of ids out of a model response.
 
-    Accepts a JSON array anywhere in the text; falls back to bracketed
-    ``[S1] [S3]``-style tokens in order. Returns [] if nothing parses.
+    Scans for the first *parseable* top-level JSON array via a balanced-bracket
+    walk — a greedy ``[.*]`` would span from the array to a later bracketed
+    token (e.g. a ``[S1]`` citation) and fail to parse, mis-scoring a correct
+    answer. Falls back to bracketed ``[S1] [S3]``-style tokens in order.
     """
-    m = re.search(r"\[.*\]", model_output, re.DOTALL)
-    if m:
-        try:
-            arr = json.loads(m.group(0))
-            if isinstance(arr, list):
-                return [str(x).strip() for x in arr]
-        except json.JSONDecodeError:
-            pass
+    depth = 0
+    start = None
+    for i, ch in enumerate(model_output):
+        if ch == "[":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "]" and depth > 0:
+            depth -= 1
+            if depth == 0 and start is not None:
+                try:
+                    arr = json.loads(model_output[start : i + 1])
+                except json.JSONDecodeError:
+                    start = None
+                    continue
+                if isinstance(arr, list):
+                    return [str(x).strip() for x in arr]
+                start = None
     toks = re.findall(r"\[([A-Za-z0-9_\-]+)\]", model_output)
     return [t.strip() for t in toks]
 

@@ -103,6 +103,17 @@ def test_cycle_hard_fails():
     assert _scorer()(json.dumps(cyclic), None) == 0.0
 
 
+def test_duplicate_step_id_hard_fails():
+    dup = {
+        "calls": [
+            {"id": "s1", "agent": "fetch_waveform", "deps": []},
+            {"id": "s1", "agent": "detect", "deps": []},  # reused id
+        ],
+        "answer": "x",
+    }
+    assert _scorer()(json.dumps(dup), None) == 0.0
+
+
 def test_dangling_dependency_hard_fails():
     bad = {
         "calls": [{"id": "a", "agent": "detect", "deps": ["ghost"]}],

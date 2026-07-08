@@ -119,7 +119,10 @@ def make_trajectory_dag_scorer(
         for c in calls:
             if not isinstance(c, dict) or "id" not in c or "agent" not in c:
                 return 0.0
-            id_to_agent[str(c["id"])] = str(c["agent"])
+            cid = str(c["id"])
+            if cid in id_to_agent:
+                return 0.0  # duplicate step id -> invalid plan
+            id_to_agent[cid] = str(c["agent"])
 
         # id-level edges from deps; every dep must reference a known step.
         id_edges: set[tuple[str, str]] = set()

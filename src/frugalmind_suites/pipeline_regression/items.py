@@ -47,8 +47,11 @@ def _load_pipelines(split: str | None = None) -> list[dict]:
         raise FileNotFoundError(f"{PIPELINES_PATH} not found")
     data = yaml.safe_load(PIPELINES_PATH.read_text())
     items = data["pipelines"]
+    required_keys = (
+        "id", "tool", "label", "artifact_key", "metric", "gold", "split", "visibility"
+    )
     for p in items:
-        for required in ("id", "artifact_key", "metric", "gold", "split", "visibility"):
+        for required in required_keys:
             if required not in p:
                 raise ValueError(f"pipeline {p.get('id')!r} missing key {required!r}")
         if p["split"] not in VALID_SPLITS:

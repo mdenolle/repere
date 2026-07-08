@@ -16,6 +16,7 @@ docs/orchestration_scorer.md.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Iterable
 from typing import Any
@@ -60,7 +61,8 @@ def orchestration_scorer():
                 explanation="scorer_spec missing from sample metadata",
             )
         try:
-            value = float(make_scorer_from_spec(spec)(completion, None))
+            scorer_fn = make_scorer_from_spec(spec)
+            value = float(await asyncio.to_thread(scorer_fn, completion, None))
         except Exception as exc:  # pragma: no cover — defensive
             return Score(value=0.0, answer=completion, explanation=f"scorer error: {exc}")
         return Score(

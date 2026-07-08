@@ -49,6 +49,15 @@ def test_retrieval_empty_gold_is_zero():
     assert scorer('["D1"]', []) == 0.0
 
 
+def test_retrieval_array_followed_by_bracket_token_parses():
+    # Regression: a greedy [.*] would span the array into a trailing [S1]
+    # citation and fail to parse, falling back to token matching. The
+    # balanced-bracket scan must still recover the real ranked array.
+    scorer = make_retrieval_scorer(metric="ndcg_at_k", k=5)
+    out = 'Ranked: ["D3","D7","D9"]. See also the note [S1] below.'
+    assert scorer(out, ["D3", "D7", "D9"]) == pytest.approx(1.0)
+
+
 # --------------------------------------------------------------------------- #
 # term_preservation
 # --------------------------------------------------------------------------- #

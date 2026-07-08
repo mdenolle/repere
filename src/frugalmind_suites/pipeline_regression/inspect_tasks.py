@@ -17,6 +17,7 @@ is a follow-up (see docs/numerical_regression_scorer.md).
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Iterable
 from typing import Any
@@ -76,7 +77,8 @@ def pipeline_regression_scorer():
             )
         try:
             scorer_fn = make_scorer_from_spec(spec)
-            value = float(scorer_fn(completion, gold))
+            # Runs a sandbox subprocess; offload so it can't block the loop.
+            value = float(await asyncio.to_thread(scorer_fn, completion, gold))
         except Exception as exc:  # pragma: no cover — defensive
             return Score(value=0.0, answer=completion, explanation=f"scorer error: {exc}")
         return Score(
