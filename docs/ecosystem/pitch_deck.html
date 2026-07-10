@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agents for Seismology — pitch</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b23; --ink:#e8e6e1; --muted:#9aa3ad;
+    --accent:#e8593a; --accent2:#4aa3c7; --gold:#d9a441; --green:#5fae6e;
+    --line:#2a323d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%; background:var(--bg); color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; overflow:hidden;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column;
+    padding:56px 76px 70px; }
+  .slide.active{display:flex;}
+  .kicker{font-size:14px; letter-spacing:2.5px; text-transform:uppercase;
+    color:var(--accent); margin-bottom:14px; font-weight:600;}
+  h1{font-size:54px; line-height:1.1; font-weight:700; max-width:1100px;}
+  h2{font-size:38px; line-height:1.15; font-weight:700; margin-bottom:26px; max-width:1150px;}
+  h3{font-size:19px; font-weight:600; margin-bottom:8px;}
+  p,li{font-size:19px; line-height:1.45; color:var(--ink);}
+  .sub{color:var(--muted); font-size:22px; margin-top:18px; max-width:900px;}
+  ul{list-style:none;}
+  ul li{padding-left:22px; position:relative; margin-bottom:12px;}
+  ul li::before{content:""; position:absolute; left:0; top:10px; width:9px; height:9px;
+    background:var(--accent); border-radius:1px;}
+  .muted{color:var(--muted);}
+  .small{font-size:15px; line-height:1.4;}
+  .foot{position:absolute; bottom:22px; left:76px; right:76px; display:flex;
+    justify-content:space-between; font-size:13px; color:var(--muted);}
+  .cols{display:flex; gap:36px; flex:1; min-height:0;}
+  .col{flex:1; min-width:0;}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; margin-bottom:14px;}
+  .card h3{color:var(--accent2);}
+  .big{font-size:46px; font-weight:700; line-height:1.05;}
+  .big span{font-size:18px; font-weight:400; color:var(--muted); display:block; margin-top:6px;}
+  .statgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:10px;}
+  .statgrid .card{margin:0;}
+  table{border-collapse:collapse; width:100%; font-size:16px;}
+  th{color:var(--accent2); text-align:left; font-weight:600; padding:7px 12px 7px 0;
+    border-bottom:2px solid var(--line);}
+  td{padding:6px 12px 6px 0; border-bottom:1px solid var(--line); color:var(--ink); vertical-align:top;}
+  td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  th.num{text-align:right;}
+  .tag{display:inline-block; font-size:12px; padding:2px 9px; border-radius:20px;
+    border:1px solid var(--line); color:var(--muted); margin-left:8px; vertical-align:middle;}
+  .bar{height:26px; border-radius:4px; margin:6px 0 2px; background:var(--accent2);}
+  .barlabel{font-size:15px; color:var(--muted); margin-bottom:10px;}
+  .barrow{display:flex; align-items:center; gap:14px; margin-bottom:13px;}
+  .barrow .name{width:300px; font-size:17px; flex-shrink:0;}
+  .barrow .track{flex:1; background:#1d242e; border-radius:4px;}
+  .barrow .val{width:180px; font-size:16px; color:var(--muted); flex-shrink:0;}
+  .arrowflow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0;}
+  .node{background:var(--panel); border:1px solid var(--line); padding:10px 16px;
+    border-radius:8px; font-size:16px; white-space:nowrap;}
+  .node.hot{border-color:var(--accent); color:var(--accent);}
+  .arr{color:var(--muted); font-size:20px;}
+  .nav{position:fixed; bottom:18px; right:26px; display:flex; gap:8px; z-index:10;}
+  .nav button{background:var(--panel); color:var(--muted); border:1px solid var(--line);
+    border-radius:6px; padding:7px 14px; cursor:pointer; font-size:15px;}
+  .nav button:hover{color:var(--ink); border-color:var(--muted);}
+  .counter{position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+    color:var(--muted); font-size:13px; z-index:10;}
+  .accent{color:var(--accent);} .blue{color:var(--accent2);} .gold{color:var(--gold);} .green{color:var(--green);}
+  .titlewrap{display:flex; flex-direction:column; justify-content:center; flex:1;}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:30px; flex:1; min-height:0;}
+  .src{font-size:12.5px; color:#6b747f; margin-top:auto; padding-top:12px;}
+</style>
+</head>
+<body>
+
+<!-- 1 · TITLE -->
+<section class="slide active">
+  <div class="titlewrap">
+    <div class="kicker">Pitch · July 2026</div>
+    <h1>Agents for seismology:<br>from open tools to autonomous, evaluated workflows</h1>
+    <p class="sub">The open-source seismology stack is powerful, fragmented, and expert-gated.
+    We can wrap it in agents, grade them with synthetic evals nobody can memorize,
+    and sell the result into the fastest-growing energy and infrastructure markets.</p>
+    <p class="sub small muted">M. Denolle · FrugalMind project · full analysis in <code>docs/ecosystem/</code></p>
+  </div>
+  <div class="foot"><span>Agents for seismology</span><span>UW ESS</span></div>
+</section>
+
+<!-- 2 · THE PROBLEM -->
+<section class="slide">
+  <div class="kicker">Problem</div>
+  <h2>World-class physics, gated by expertise and glue code</h2>
+  <div class="cols">
+    <div class="col">
+      <ul>
+        <li>Five workflow chains carry the field's output (catalogs, noise, sources, FWI, rupture). <b>Healthy at the nodes, brittle at the joints</b> — every group maintains private, unversioned converter scripts.</li>
+        <li>The citation-standard relocator (HypoDD) has had <b>no maintained modern interface for a decade</b>.</li>
+        <li>3D simulation entry costs weeks: meshing, Par_file archaeology, HPC job wrangling. Errors surface as cryptic MPI crashes.</li>
+        <li>Keystone tools are one retirement or one dependency bump from breaking: CPS, NonLinLoc, disba, BayHunter.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="card"><h3>A typical catalog pipeline today</h3>
+        <div class="arrowflow">
+          <span class="node">FDSN / S3</span><span class="arr">→</span>
+          <span class="node">SeisBench pick</span><span class="arr">→</span>
+          <span class="node">PyOcto</span><span class="arr">→</span>
+          <span class="node hot">text-file glue</span><span class="arr">→</span>
+          <span class="node">NonLinLoc</span><span class="arr">→</span>
+          <span class="node hot">more glue</span><span class="arr">→</span>
+          <span class="node">HypoDD</span>
+        </div>
+        <p class="small muted">Red joints = hand-written, untested, per-lab scripts. This is where science breaks and where novices lose weeks.</p>
+      </div>
+      <div class="card"><h3>The consequence</h3>
+        <p>Analysis capacity is bounded by scarce trained people, not by data or compute.
+        Networks, regulators, and operators all report the same bottleneck: <b>analysts</b>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Agents for seismology</span><span>2</span></div>
+</section>
+
+<!-- 3 · ECOSYSTEM SHAPE -->
+<section class="slide">
+  <div class="kicker">Ecosystem</div>
+  <h2>Hub-and-spoke observation, barbell modeling</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="card"><h3>Observation: three hubs</h3>
+        <p><b class="blue">ObsPy</b> (data objects, 30+ formats) · <b class="blue">Pyrocko</b> (GFZ; GF stores, Squirrel) · <b class="blue">SeisBench</b> (one API over all ML pickers + benchmark data).</p>
+      </div>
+      <div class="card"><h3>Modeling: a barbell</h3>
+        <p>One end: pip-install source inversion (Syngine → MTUQ, minutes on a laptop).
+        Other end: HPC monoliths (SPECFEM3D, SeisSol).
+        <b>The middle — auto-config, meshing, orchestration — is thin, and it is exactly what Salvus (closed source) monetizes.</b></p>
+      </div>
+      <div class="card"><h3>What that means for us</h3>
+        <p>~70% of the stack wraps as agent tools at near zero cost (clean Python APIs).
+        The valuable 30% is ~8 legacy text formats + config generation — bounded, testable work.</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>Open data is already cloud-resident</h3>
+        <div class="big">1.3 PB<span>EarthScope + SCEDC + NCEDC continuous waveforms on AWS · 47,354 stations · anonymous or token access</span></div>
+      </div>
+      <div class="card"><h3>Ground truth on demand</h3>
+        <p>Precomputed Green's functions (Syngine REST, Pyrocko Greens Mill) give exact synthetic seismograms with zero simulation infrastructure — the eval generator is already deployed.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Agents for seismology</span><span>3</span></div>
+</section>
+
+<!-- 4 · USER BASE -->
+<section class="slide">
+  <div class="kicker">User base</div>
+  <h2>A real, active community — maintained by a handful of people</h2>
+  <div class="statgrid">
+    <div class="card"><div class="big">187k<span>ObsPy installs / month (PyPI alone; conda adds millions cumulative)</span></div></div>
+    <div class="card"><div class="big">~5–20k<span>practitioners: AGU seismology 4,900+ members; 26,000+ registered stations; 31 FDSN data centers</span></div></div>
+    <div class="card"><div class="big">30.6k<span>SeisBench installs / month — the ML layer is mainstream</span></div></div>
+    <div class="card"><div class="big">116<span>ObsPy contributors, ever. Bus factor of the whole field: a few dozen people</span></div></div>
+  </div>
+  <table style="margin-top:20px;">
+    <tr><th>Tool</th><th class="num">Stars</th><th class="num">Forks</th><th class="num">Contributors</th><th>Signal</th></tr>
+    <tr><td>ObsPy</td><td class="num">1,300</td><td class="num">562</td><td class="num">116</td><td>~3,000 citations; NumFOCUS; v1.5.0 Mar 2026</td></tr>
+    <tr><td>SPECFEM3D</td><td class="num">508</td><td class="num">256</td><td class="num">33</td><td>standard SEM code on national HPC systems</td></tr>
+    <tr><td>SeisBench</td><td class="num">405</td><td class="num">117</td><td class="num">21</td><td>v0.12 adds DAS; PhaseNet paper ~2,000 citations</td></tr>
+    <tr><td>EQTransformer / PhaseNet</td><td class="num">413 / 376</td><td class="num">167 / 131</td><td class="num">14 / 5</td><td>pickers embedded in commercial catalogs</td></tr>
+    <tr><td>SeisSol · PyLith · NoisePy · Pyrocko</td><td class="num">344 · 191 · 217 · 246</td><td class="num"></td><td class="num">39 · 14 · 19 · 20</td><td>consortium-backed (ChEESE, CIG, SCOPED, GFZ)</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:12px;">Fork:star ratios of 0.4–0.5 (vs ~0.1 for consumer OSS): these tools are worked with, not bookmarked. SeisComP runs operationally at hundreds of agencies worldwide.</p>
+  <div class="foot"><span>GitHub / pypistats / Semantic Scholar, queried 2026-07-08</span><span>4</span></div>
+</section>
+
+<!-- 5 · COMPETITIVE WINDOW -->
+<section class="slide">
+  <div class="kicker">Prior art</div>
+  <h2>The window: two half-systems, zero public benchmarks</h2>
+  <div class="two">
+    <div class="card"><h3 class="accent">TRACE — observation only</h3>
+      <p>Shanghai AI Lab + USTC + Harvard (Mar 2026). Multi-agent: raw waveforms → 90k-event relocated catalogs → mechanistic interpretation (Ridgecrest, Santorini). 2,200+ analytical modules.</p>
+      <p class="small muted" style="margin-top:8px;">Benchmark is internal to one paper. Harness not released. No simulation branch.</p>
+    </div>
+    <div class="card"><h3 class="accent">SPECFEM-MCP — simulation only</h3>
+      <p>Harbin/PKU (Dec 2025). First MCP server suite for SPECFEM 2D/3D/GLOBE: parameter generation → meshing → solver → visualization.</p>
+      <p class="small muted" style="margin-top:8px;">No evals shipped. Single group. Proves wrappers alone are replicable in months — not a moat.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:4px;"><h3 class="gold">What no one has</h3>
+    <p>① An agent that closes the <b>observation ↔ simulation loop</b> (simulate a hypothesis, test it against data).
+    ② A <b>public, difficulty-graded benchmark</b> for seismology agents — AstaBench, ScienceAgentBench, and every geo-agent benchmark contain zero waveform seismology.
+    Both map directly onto FrugalMind's existing design.</p>
+  </div>
+  <div class="foot"><span>arXiv:2603.21152 · arXiv:2512.14429 · allenai.org/asta/bench</span><span>5</span></div>
+</section>
+
+<!-- 6 · WHO PAYS TODAY -->
+<section class="slide">
+  <div class="kicker">Market · today</div>
+  <h2>Who pays for seismic analysis now</h2>
+  <table>
+    <tr><th>Segment</th><th>Driver</th><th>Spend signal</th><th>Agent fit</th></tr>
+    <tr><td><b>Geothermal</b></td><td>Traffic-light-protocol compliance, EGS microseismic + DAS</td><td>Fervo $462M Series E; Zanskar $115M Series C on AI exploration</td><td>Analyst-starved, Python-native, funded</td></tr>
+    <tr><td><b>CCS / Class VI</b></td><td>EPA-mandated monitoring, decades post-injection</td><td>$0.5–3M install + $100–500k/yr analysis per site</td><td>Compliance reports = recurring deliverable</td></tr>
+    <tr><td><b>Mining</b></td><td>Rockburst safety regulation</td><td>IMS alone: ~210 systems, 34 countries</td><td>Per-mine subscriptions already normal</td></tr>
+    <tr><td><b>PSHA / engineering</b></td><td>Nuclear, dams, hospitals, data centers</td><td>$200–400/hr senior-geoscientist billing</td><td>Codified workflows → margin machine</td></tr>
+    <tr><td><b>Networks / treaty</b></td><td>Bulletins, EEW, CTBTO-style review</td><td>gempa's client list; ShakeAlert ~$35M/yr</td><td>Credibility beachhead, grant-funded</td></tr>
+    <tr><td><b>DAS vendors</b></td><td>TB/day, almost no trained analysts</td><td>Market $0.6–0.8B, ~10–13%/yr</td><td>Interpretation layer hardware firms don't own</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:14px;">Precedents: gempa (open-core support around SeisComP, national agencies), Nanometrics (analysis-as-a-service with human analysts — the cost line agents attack), Mondaic/Salvus (~$2M/yr license ceiling: tools alone don't scale).</p>
+  <div class="foot"><span>Sources in docs/ecosystem/03_market_analysis.md</span><span>6</span></div>
+</section>
+
+<!-- 7 · RISING VERTICALS -->
+<section class="slide">
+  <div class="kicker">Market · rising</div>
+  <h2>The energy build-out multiplies demand for exactly our workflows</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="card"><h3 class="green">Offshore wind</h3>
+        <p>83 GW (2024) → ~238 GW by 2030 (GWEC). Capex ~$50–65B/yr → $100B+/yr.
+        Every farm needs marine seismic surveys + geohazard assessment:
+        <b>site-investigation slice ≈ $1.5B/yr, growing ~11%/yr</b>.</p></div>
+      <div class="card"><h3 class="green">Nuclear &amp; SMRs</h3>
+        <p>Investment ~$65B/yr → $120–150B/yr in net-zero scenarios (IEA).
+        <b>127 SMR designs, 51 in licensing, ~85 active siting discussions</b> (NEA, 2025) —
+        and PSHA is legally mandatory at every site (NRC 10 CFR 100.23, IAEA SSG-9).
+        85 siting discussions = 85 near-term hazard campaigns.</p></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3 class="green">Climate-resilient infrastructure</h3>
+        <p>Structural health monitoring: <b>$3.6–4.5B (2025), 9–20%/yr</b> — bridges and dams the largest segment.
+        Earthquake early warning: $1.3–1.5B. Rail geohazards: Network Rail's DAS already covers
+        <b>~12,000 route-km</b>. All of it is passive-seismic analysis at scale with no analyst pool.</p></div>
+      <div class="card"><h3 class="green">Data centers</h3>
+        <p>Hyperscaler capex ~$600B guided for 2026; siting screens hazard explicitly, and seismic design
+        certification applies to every West-Coast / Japan / Taiwan build. Even 0.1% of capex on
+        siting due diligence ≈ $600M/yr of geotech-hazard work <span class="muted">(our arithmetic, illustrative)</span>.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>GWEC · IEA 2025 · OECD-NEA SMR Dashboard · Mordor/GrandView · CreditSights</span><span>7</span></div>
+</section>
+
+<!-- 7b · NEW VERTICALS: TAILINGS / REINSURANCE / WATER-AG -->
+<section class="slide">
+  <div class="kicker">Market · opening now</div>
+  <h2>Three more doors: tailings dams, reinsurance, water &amp; agriculture</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="card"><h3 class="gold">Tailings dam monitoring</h3>
+        <p class="small">~8,500 facilities worldwide, only ~1,900 disclosed; lifetime failure rate ~1.2% — two orders of magnitude worse than water dams. Brumadinho cost Vale <b>$7B</b>; Samarco settled at <b>~$30B</b>. GISTM (backed by investors holding <b>&gt;$25T AUM</b>) mandates monitoring at every facility; only 67% of ICMM facilities conform. Insurance limits cut by a third, premiums doubled.</p>
+        <p class="small" style="margin-top:8px;"><b>Our edge:</b> dv/v ambient-noise monitoring sees <i>inside</i> the dam — internal erosion that InSAR, GNSS, and piezometers all miss (Olivier 2017 caught seepage other instruments didn't). IMS and Silixa already sell passive-seismic dam products; the analysis layer is the bottleneck.</p></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3 class="gold">Reinsurance &amp; parametric</h3>
+        <p class="small">Six straight years of &gt;$100B insured cat losses; $790B reinsurance capital; $65.6B cat bonds outstanding. Parametric insurance: <b>~$18B → ~$39B by 2030</b>. ShakeMap is already de facto trigger infrastructure — and Liberty Mutual Re + Safehub launched ShakeNet Parametric (2024) marketing <b>ground-truth shaking data</b> as the basis-risk killer. Descartes Underwriting: &gt;$200M GWP, 30%/yr. Proven willingness to pay for exactly what dense seismic analysis produces.</p></div>
+      <div class="card"><h3 class="gold">Water &amp; agriculture (roadmap, not TAM)</h3>
+        <p class="small">Precision ag $11B→$24B; SGMA created 260+ groundwater agencies in California with &gt;$500M in DWR grants (4× oversubscribed). Depth-resolved groundwater from ambient noise (Clements &amp; Denolle 2018 → Mao 2025 <i>Science</i>) is our lab's own chain — TRL 3–4, no product yet, 3–7 yrs out. Honest position: a research thrust that the same agent + eval infrastructure de-risks.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>ICMM 2025 · GRID-Arendal · Swiss Re sigma · Artemis · DWR</span><span>8</span></div>
+</section>
+
+<!-- 7c · EO ECOSYSTEM CONTEXT -->
+<section class="slide">
+  <div class="kicker">Context</div>
+  <h2>Seismology is a climate-risk sensor inside a larger geophysics stack</h2>
+  <div class="cols">
+    <div class="col" style="flex:1.2;">
+      <div class="card"><h3 class="blue">Three claims</h3>
+        <ul class="small" style="font-size:15.5px;">
+          <li><b>Seismic sensing sees inside what every other sensor sees only the surface of.</b> InSAR/GNSS measure surface deformation; dv/v measures interior state: dam seepage, depth-resolved groundwater, pre-failure landslide softening (Mainsant 2012: ~7% velocity drop days before failure). One method, three insured perils.</li>
+          <li><b>Climate-hazard seismology already works operationally in one place</b> — Illgraben's ML debris-flow detector adds 20 min–1.5 hr of warning — and retrospectively everywhere else (GLOF tracking in <i>Science</i> 2018, landslide catalogs, flood discharge from river noise). The gap between "works in papers" and "runs as a service" is an agent-and-evals gap.</li>
+          <li><b>Seismic is the missing modality in the EO stack.</b> NISAR ships 85 TB/day; DestinE has &gt;€315M; Prithvi/Clay/Major TOM cover optical, SAR, climate — none ingest seismic waveforms. The seismic+EO fusion slot (and the multimodal foundation model) is uncontested.</li>
+        </ul></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3 class="blue">Adjacent open-source ecosystems (same playbook applies)</h3>
+        <table class="small" style="font-size:14px;">
+          <tr><th>Field</th><th>Stack</th><th>State</th></tr>
+          <tr><td>Geodesy / InSAR</td><td>ISCE, MintPy, LiCSBAS, HyP3; GAMIT/GipsyX</td><td>Mature; only field matching ObsPy's penetration</td></tr>
+          <tr><td>Hydrogeophysics</td><td>SimPEG, pyGIMLi, ResIPy</td><td>Healthy academic; SimPEG has industry consortium</td></tr>
+          <tr><td>Geotechnical</td><td>OpenSees, groundhog</td><td>OpenSees dominant in EQ engineering</td></tr>
+          <tr><td>Gravity / EM</td><td>Fatiando a Terra, empymod</td><td>Small, well-engineered</td></tr>
+        </table>
+        <p class="small muted" style="margin-top:10px;">Joint InSAR+GNSS+seismicity lives in consortia (COMET, EarthScope — 170+ institutions, consolidating into one NSF National Geophysical Facility). Seismology agents are the beachhead; the tool-wrapping + eval playbook then extends across the whole stack.</p></div>
+      <div class="card"><h3 class="blue">Market frame</h3>
+        <p class="small">Tracked climate finance passed <b>$2T in 2024</b>; adaptation ~$65B/yr and projected to multiply. Multi-physics hazard analytics is where seismic agents compound instead of competing.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>WSL/ETH · Mao 2025 Science · NASA/ESA · CPI 2025</span><span>9</span></div>
+</section>
+
+<!-- 8 · MARKET SIZING BARS -->
+<section class="slide">
+  <div class="kicker">Market · sizing</div>
+  <h2>The seismic-analysis slice, stacked across verticals</h2>
+  <p class="barlabel">Annual addressable analysis-layer spend, conservative ends of sourced ranges (log-ish scale bars; details + caveats in 03_market_analysis.md)</p>
+  <div class="barrow"><div class="name">Geotechnical instrumentation &amp; monitoring (incl. tailings)</div><div class="track"><div class="bar" style="width:95%; background:var(--gold);"></div></div><div class="val">~$5.1B (2026), ~9.6%/yr</div></div>
+  <div class="barrow"><div class="name">SHM / resilient infrastructure</div><div class="track"><div class="bar" style="width:82%; background:var(--green);"></div></div><div class="val">$3.6–4.5B, 9–20%/yr</div></div>
+  <div class="barrow"><div class="name">Parametric insurance (seismic-triggered slice growing)</div><div class="track"><div class="bar" style="width:70%; background:var(--gold);"></div></div><div class="val">$18B → $39B by 2030</div></div>
+  <div class="barrow"><div class="name">Offshore wind site investigation</div><div class="track"><div class="bar" style="width:52%; background:var(--green);"></div></div><div class="val">~$1.5B, ~11%/yr</div></div>
+  <div class="barrow"><div class="name">Earthquake early warning</div><div class="track"><div class="bar" style="width:48%; background:var(--accent2);"></div></div><div class="val">$1.3–1.5B, ~6%/yr</div></div>
+  <div class="barrow"><div class="name">Microseismic monitoring (O&amp;G, mining, EGS, CCS)</div><div class="track"><div class="bar" style="width:40%; background:var(--accent2);"></div></div><div class="val">$0.5–1.4B, 8–9%/yr</div></div>
+  <div class="barrow"><div class="name">DAS interpretation</div><div class="track"><div class="bar" style="width:36%; background:var(--accent2);"></div></div><div class="val">$0.6–0.8B, 10–13%/yr</div></div>
+  <div class="barrow"><div class="name">Nuclear / SMR PSHA · data-center siting</div><div class="track"><div class="bar" style="width:28%; background:var(--gold);"></div></div><div class="val">85 SMR sites in play · ~$0.6B/yr (illustr.)</div></div>
+  <div class="card" style="margin-top:14px;"><p><b>Order of magnitude: a ~$12–15B/yr analysis-and-monitoring layer growing ~10%/yr</b> (parametric counted only as its trigger/analytics slice), fragmented across niches — too small for SLB to care, too expert-gated for generic AI vendors, and almost entirely runnable on the open-source stack we know. The wedge is the analyst bottleneck; the capture model is managed monitoring + compliance deliverables, not seat licenses.</p></div>
+  <div class="foot"><span>Green = infrastructure/energy growth · blue = established monitoring · gold = campaign-based</span><span>8</span></div>
+</section>
+
+<!-- 9 · THESIS -->
+<section class="slide">
+  <div class="kicker">Thesis</div>
+  <h2>Agents are the demo. Evals are the moat.</h2>
+  <div class="two">
+    <div>
+      <ul>
+        <li><b>Wrappers commoditize.</b> SPECFEM-MCP shipped in months; frontier models write glue code better every quarter.</li>
+        <li><b>Trust does not commoditize.</b> Regulators, DOE reviewers, and operators need measured missed-event rates, location error, and magnitude bias before they accept an autonomous result.</li>
+        <li><b>Whoever publishes the benchmark sets the standard</b> others must beat — the LAB-Bench / FutureHouse position, unclaimed in seismology.</li>
+        <li><b>FrugalMind already has the skeleton</b>: InspectAI substrate, parametric truth sets, negative-case discipline, cost-Pareto leaderboard. This plan generalizes it from STA/LTA to the whole field.</li>
+      </ul>
+    </div>
+    <div class="card"><h3>Why synthetic evals</h3>
+      <p>Ridgecrest, Tohoku, L'Aquila are in every LLM's training data — real-data evals measure memory.
+      Our simulators produce waveforms with <b>exact hidden truth</b> (origin, mechanism, arrivals, structure),
+      private seeds regenerate quarterly, and difficulty becomes continuous knobs:
+      SNR, scene complexity, network geometry, model mismatch, tool tier, autonomy.</p>
+      <p style="margin-top:10px;"><b>The modeling stack is the eval generator for the observational stack.</b></p>
+    </div>
+  </div>
+  <div class="foot"><span>Agents for seismology</span><span>9</span></div>
+</section>
+
+<!-- 10 · ARCHITECTURE -->
+<section class="slide">
+  <div class="kicker">Plan</div>
+  <h2>Three tiers, four phases</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="card"><h3>Tier 1 · Tools</h3>
+        <p class="small">Typed wrappers + MCP servers: cheap wraps of Python APIs (ObsPy, SeisBench, MTUQ, Instaseis…) plus codecs for the 8 legacy formats (NonLinLoc, HypoDD, GrowClust, Par_file…) with round-trip tests. Fixes the wrapper vacuum — a community contribution in itself.</p></div>
+      <div class="card"><h3>Tier 2 · Operator agents</h3>
+        <p class="small">One per chain: <b>DataScout · CatalogBuilder · SourceEstimator · NoiseMonitor · SimulationRunner · StructureInverter</b>. Each self-verifies against deterministic oracles (cross-code GF agreement, travel-time sanity) before returning anything.</p></div>
+      <div class="card"><h3>Tier 3 · Orchestrator</h3>
+        <p class="small">The scientist agent: plans a DAG across operators, routes steps by cost (FrugalRouter), and closes the observation↔simulation loop neither TRACE nor SPECFEM-MCP occupies.</p></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>Phases (each ships agent + eval suite)</h3>
+        <table class="small">
+          <tr><th>Phase</th><th>Weeks</th><th>Ships</th></tr>
+          <tr><td>A</td><td class="num">1–6</td><td>Python-API tools, PickTable schema, DataScout + CatalogBuilder, <code>pick_associate_locate</code> suite</td></tr>
+          <tr><td>B</td><td class="num">6–14</td><td>Legacy codecs, relocation glue release, SourceEstimator + NoiseMonitor, <code>source_mt</code> + <code>noise_chain</code></td></tr>
+          <tr><td>C</td><td class="num">14–26</td><td>SimulationRunner (SPECFEM2D/SW4/Deepwave), <code>forward_sim</code> + <code>fwi_2d</code></td></tr>
+          <tr><td>D</td><td class="num">mo 6–12</td><td>Orchestrator + digital-twin loop, <code>orchestration_twin</code>, first external pilot with human sign-off</td></tr>
+        </table>
+      </div>
+      <div class="card"><h3>Design rules</h3>
+        <p class="small">Frugality is architectural (small models for extraction/translation, frontier only for planning). Vendor and pin the fragile solo-maintainer layer. Provenance on every artifact — compliance-ready from day one. Human-in-the-loop <i>is</i> the product for regulated outputs.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>docs/ecosystem/04_agent_plan.md</span><span>10</span></div>
+</section>
+
+<!-- 11 · EVAL LADDER -->
+<section class="slide">
+  <div class="kicker">Evaluation</div>
+  <h2>Eight suites, five difficulty levels, deterministic scoring</h2>
+  <div class="cols">
+    <div class="col" style="flex:1.35;">
+      <table class="small">
+        <tr><th>Suite</th><th>Generator</th><th>Scored on</th></tr>
+        <tr><td><code>pick_associate_locate</code></td><td>fomosto regional scenes</td><td>pick residuals, association P/R, hypocenter km, uncertainty calibration</td></tr>
+        <tr><td><code>relocate</code></td><td>clustered synthetic sequences</td><td>fault-plane separation resolved (binary science outcome)</td></tr>
+        <tr><td><code>source_mt</code></td><td>Syngine / fomosto, known MT</td><td>Kagan angle, depth error; corrupted-GF detection as negative case</td></tr>
+        <tr><td><code>noise_chain</code></td><td>GF-store CCFs, imposed dv/v</td><td>dv/v recovery; must not report source effects as velocity change</td></tr>
+        <tr><td><code>forward_sim</code></td><td>SPECFEM2D / SW4 configs</td><td>numerical regression, LOH.1 misfit, refusing infeasible configs</td></tr>
+        <tr><td><code>fwi_2d</code></td><td>Deepwave / Marmousi crops</td><td>model recovery + gradient evaluations spent (frugality)</td></tr>
+        <tr><td><code>cycle_catalog</code></td><td>QDYN BP1-QD cycles</td><td>b-value/recurrence recovery; pyCSEP link</td></tr>
+        <tr><td><code>orchestration_twin</code></td><td>full digital-twin scenes</td><td>call-DAG vs reference + hidden-truth recovery + cost</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="card"><h3>The L0–L4 ladder</h3>
+        <p class="small"><b>L0</b> one tool, clean data, full spec → <b>L1</b> realistic noise, spec gaps → <b>L2</b> multi-step chain, parameter choices scored → <b>L3</b> model mismatch, negative cases, adversarial paths (judgment) → <b>L4</b> underspecified scientific goal, orchestration scored.</p></div>
+      <div class="card"><h3>Contamination policy</h3>
+        <p class="small">Public: generator code + worked seeds. Private: held-out seeds and perturbations, regenerated quarterly. Negative cases at fixed proportion from L1 up. Inspect-compatible logs; AstaBench-comparable metadata.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>docs/ecosystem/05_eval_design.md</span><span>11</span></div>
+</section>
+
+<!-- 12 · BUSINESS + FUNDING -->
+<section class="slide">
+  <div class="kicker">Model &amp; funding</div>
+  <h2>Nonprofit credibility, commercial capture, non-dilutive runway</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="card"><h3>Structure: the FutureHouse → Edison template</h3>
+        <p class="small">Academic/nonprofit arm builds agents, benchmarks, and publications (Schmidt-style AI-in-science philanthropy is funding exactly this). Commercial arm sells managed monitoring ($10–40k/mo/site), per-analysis compliance deliverables, and gempa-style open-core support. Edison spun out at $250M on this pattern in Dec 2025. Clean IP separation from day one.</p></div>
+      <div class="card"><h3>Moats, restated</h3>
+        <p class="small">Published eval suites (the standard others must beat) · golden datasets + private synthetic generators · provenance-stamped compliance templates · community maintainership no closed vendor can buy.</p></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>Non-dilutive map</h3>
+        <ul class="small" style="font-size:15px;">
+          <li><b>DOE</b> — strongest fit: GTO/FORGE EGS FOAs, FECM storage, SBIR topics in geothermal MMV + CCS monitoring.</li>
+          <li><b>NSF</b> — NAIRR (bipartisan, natural home for agentic geoscience CI), CSSI/Geoinformatics.</li>
+          <li><b>EU</b> — DT-GEO follow-ons, ChEESE-2P, Destination Earth: funding the containerized plumbing agents sit on; hedges US volatility.</li>
+          <li><b>Philanthropy</b> — Schmidt AI-in-science, Project InnerSpace's stated ~$6M AI gap.</li>
+        </ul></div>
+      <div class="card"><h3>Honest risks</h3>
+        <p class="small">Fragmented TAM (niches of $10s–100s of M each) · incumbents bundling LLMs onto existing contracts · liability in regulated outputs (human sign-off is the product) · federal funding volatility · best commercial data is proprietary.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>docs/ecosystem/03_market_analysis.md</span><span>12</span></div>
+</section>
+
+<!-- 13 · ASK -->
+<section class="slide">
+  <div class="titlewrap">
+    <div class="kicker">Ask</div>
+    <h2>What we do next</h2>
+    <ul style="max-width:1000px;">
+      <li><b>Phase A now</b>: PickTable schema + CatalogBuilder + the <code>pick_associate_locate</code> suite on synthetic scenes — 6 weeks, laptop-scale, publishable as the first public seismology-agent benchmark.</li>
+      <li><b>One flagship demo</b>: the digital-twin loop — simulate a hidden scenario, let the agent recover it end-to-end, score everything deterministically.</li>
+      <li><b>Two proposals</b>: NAIRR/CSSI (benchmark infrastructure) and a DOE GTO/SBIR angle (geothermal compliance agent pilot).</li>
+      <li><b>One conversation each</b> with a network, a geothermal operator, and a DAS vendor about pilot data and pain points.</li>
+    </ul>
+    <p class="sub">The tools exist. The data is on S3. The truth is computable.<br>What's missing is the agent layer and the grading — and we are positioned to own the grading.</p>
+  </div>
+  <div class="foot"><span>Agents for seismology · full analysis: docs/ecosystem/</span><span>13</span></div>
+</section>
+
+<div class="nav">
+  <button onclick="prev()">←</button>
+  <button onclick="next()">→</button>
+</div>
+<div class="counter" id="counter"></div>
+
+<script>
+  const slides=document.querySelectorAll('.slide');
+  let i=0;
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+    location.hash=i+1;
+  }
+  function next(){show(i+1);} function prev(){show(i-1);}
+  // auto-number footers (skip title slide)
+  slides.forEach((s,k)=>{ if(k===0) return;
+    const spans=s.querySelectorAll('.foot span');
+    if(spans.length) spans[spans.length-1].textContent=k+1; });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown') next();
+    if(e.key==='ArrowLeft'||e.key==='PageUp') prev();
+    if(e.key==='Home') show(0); if(e.key==='End') show(slides.length-1);
+  });
+  document.addEventListener('click',e=>{
+    if(e.target.closest('.nav')||e.target.closest('a')) return;
+    (e.clientX>window.innerWidth/2)?next():prev();
+  });
+  show(parseInt(location.hash.slice(1)||1)-1);
+</script>
+</body>
+</html>
