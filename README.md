@@ -1,17 +1,30 @@
 # FrugalMind
 
-FrugalMind is a prototype for a cost-optimized multi-agent evaluation and routing system. The goal is to preserve scientific rigor while spending the least possible model budget by routing work to the cheapest agent that can meet a task-specific quality floor.
+FrugalMind is an open evaluation framework for scientific AI agents in the geosciences. It measures whether a model or multi-agent system meets a task-specific **quality floor**, and what it **costs** to get there — so labs can adopt AI on measured evidence, not demos and anecdotes. Rigor is preserved by scoring against reference truth wherever possible; frugality is first-class because the interesting winner is the cheapest system that still clears the floor.
 
-> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework now runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/frugalmind-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+The narrative overview lives on the [landing page](https://mdenolle.github.io/frugalmind/) (served from [`site/`](site/)); this README is the developer guide.
+
+> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/frugalmind-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 The current repository contains:
 
 - A minimal core evaluation framework in `src/frugalmind`.
-- The first benchmark suite, STA/LTA seismic detection, in `src/frugalmind_suites/sta_lta`.
-- Public sample fixtures for local development.
-- A private-golden-data policy for hidden evaluation sets.
-- A static leaderboard app in `site/` for GitHub Pages.
+- Benchmark suites across **three task families** (see below) in `src/frugalmind_suites/`.
+- Public sample fixtures for local development, plus a private-golden-data policy for hidden evaluation sets.
+- A static landing page + leaderboard in `site/` for GitHub Pages.
 - Manual CI scaffolding for smoke tests and future scheduled evals.
+
+## Task families
+
+Geoscience work is diverse, so the suite spans three families, each scored by the most verifiable method the task allows:
+
+| Family | What it tests | Scored by | Suites | Design doc |
+|---|---|---|---|---|
+| **1 · Literature & multimodal** | review/critique, translation, interpolation, retrieval-augmented QA over papers, figures, waveforms | retrieval metrics (recall@k, nDCG), domain-term preservation, citation grounding | `lit_rag` | [`docs/lit_rag_scorers.md`](docs/lit_rag_scorers.md) |
+| **2 · Coding agents** | prompt→code (run + check artifact) and prompt→data (drive a real pipeline — seisbench, noisepy, codameter — and check the numbers) | sandboxed execution + numerical regression within tolerance | `sta_lta`, `pipeline_regression`, `dvv`, `gaia_data_downloader` | [`docs/numerical_regression_scorer.md`](docs/numerical_regression_scorer.md) |
+| **3 · Orchestration** | non-linear workflows: which sub-agents to call, in what order, with what dependencies | sub-agent call-DAG vs a reference (right steps, right deps, frugal fan-out) | `orchestration` | [`docs/orchestration_scorer.md`](docs/orchestration_scorer.md) |
+
+Grading runs on a **scorability spectrum** — every task is pushed as far toward a deterministic reference (T0) as it will go, falling back to an LLM-judge rubric (T4) only when nothing else fits. To contribute a dataset, see [`docs/dataset_submission.md`](docs/dataset_submission.md).
 
 ## Why this exists
 
@@ -38,13 +51,18 @@ frugalmind/
 │   │   ├── router.py                # FrugalRouter
 │   │   ├── skills.py                # SkillLoader, SkillManifest, render modes
 │   │   └── telemetry.py             # JSONLTelemetry
-│   └── frugalmind_suites/
-│       └── sta_lta/                 # First scientific benchmark suite
+│   └── frugalmind_suites/           # Benchmark suites across 3 task families
+│       ├── sta_lta/                 # Family 2 — STA/LTA seismic pipeline (reference suite)
+│       ├── pipeline_regression/     # Family 2 — prompt→data numerical regression
+│       ├── dvv/                     # Family 2 — dv/v processing (codameter-backed)
+│       ├── gaia_data_downloader/    # Family 2 — data-download coding agent
+│       ├── lit_rag/                 # Family 1 — retrieval / translation / grounded QA
+│       └── orchestration/           # Family 3 — non-linear subagent workflows
 ├── config/
 │   └── models.yaml                  # 13-model registry (nano/small/medium/big/cloud)
 ├── notebooks/                       # Interactive walkthroughs (quickstart, etc.)
 ├── scripts/                         # Small standalone runners
-├── tests/                           # Deterministic test suite (~80 tests)
+├── tests/                           # Deterministic test suite (~260 tests)
 ├── docs/                            # Archived suite docs and design notes
 ├── site/                            # GitHub Pages leaderboard
 ├── .github/skills/                  # Domain-agent skills + manifest.yaml
@@ -62,7 +80,7 @@ Install Pixi, then run:
 
 ```bash
 pixi install
-pixi run test                # deterministic test suite (~80 tests, no providers)
+pixi run test                # deterministic test suite (~260 tests, no providers)
 pixi run smoke-eval          # stub eval; writes results/stub_eval.json
 pixi run export-leaderboard  # builds site/data/leaderboard.json
 ```
