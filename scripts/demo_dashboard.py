@@ -3,9 +3,9 @@
 Evals
 -----
 - ``synthetic_stalta`` (STA/LTA detection on Ridgecrest-derived synthetic cases)
-- ``dvv_processing``   (codameter dv/v param-recommendation; the manifest is
-  regenerated to a writable cache because the pinned codameter ships its golden
-  data with a source-checkout path — a codameter packaging fix is the real cure)
+- ``dvv_processing``   (codameter dv/v param-recommendation; the pinned
+  codameter includes the installed-golden-dir fix, so its golden data resolves
+  or regenerates on an installed copy with no workaround here)
 
 Honesty note
 ------------
@@ -80,16 +80,9 @@ def _stalta_items():
 
 
 def _dvv_items():
-    # Regenerate codameter's golden manifest into a writable cache first.
+    # codameter#15 makes an installed copy resolve/regenerate its golden data
+    # (per-user cache), so no manifest workaround is needed here.
     from codameter import frugalmind as cfm
-    from codameter import golden
-
-    cache = REPO / "results" / "codameter_golden"
-    cache.mkdir(parents=True, exist_ok=True)
-    golden.DATA_DIR = cache
-    golden.MANIFEST = cache / "manifest.json"
-    if not golden.MANIFEST.exists():
-        golden.regenerate_manifest()
 
     rows = cfm.build_rows("param_recommendation", split="validation")
     bad_config = json.dumps({"freqmin": 9.5, "freqmax": 10.0})
