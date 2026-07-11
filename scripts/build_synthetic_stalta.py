@@ -163,9 +163,23 @@ def _build_cases(seed: np.ndarray, t0: float) -> list[dict]:
     cases.append({"id": "p5-two-events", "transform": f"second (0.6x) event at +{gap:g}s",
                   "data": two, "onsets_s": [round(t0, 2), round(t0 + gap, 2)]})
 
+    cases.append({"id": "p6-high-noise", "transform": "additive Gaussian noise x2, seed=4",
+                  "data": seed + 2.0 * tiled_noise(4), "onsets_s": [round(t0, 2)]})
+
+    shift2 = 40.0
+    shifted2 = np.concatenate([tiled_noise(5)[: int(shift2 * SR)], seed])[:n]
+    cases.append({"id": "p7-late-shift", "transform": f"onset delayed +{shift2:g}s",
+                  "data": shifted2, "onsets_s": [round(t0 + shift2, 2)]})
+
+    cases.append({"id": "p8-half-signal-plus-noise", "transform": "0.5x signal + noise, seed=6",
+                  "data": 0.5 * seed + tiled_noise(6), "onsets_s": [round(t0, 2)]})
+
     # --- negatives (expected: no detection) ------------------------------
     cases.append({"id": "n1-gaussian-noise", "transform": "Gaussian noise only, seed=3",
                   "data": tiled_noise(3), "onsets_s": []})
+
+    cases.append({"id": "n3-low-noise", "transform": "low-amplitude Gaussian noise, seed=8",
+                  "data": 0.3 * tiled_noise(8), "onsets_s": []})
 
     real_noise = np.resize(noise_seg, n)
     cases.append({"id": "n2-real-preevent-noise", "transform": "tiled real pre-event noise",
