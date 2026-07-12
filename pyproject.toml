@@ -24,7 +24,7 @@ dvv = [
     # Scoring backend: regenerates the hidden synthetic and runs the pipeline.
     # Pinned to the codameter v0.2.0 release (the graded golden benchmark) for
     # reproducible scores. Bump this tag when codameter cuts a newer benchmark.
-    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@v0.2.0",
+    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@v0.2.1",
 ]
 plot = [
     "matplotlib>=3.8",
