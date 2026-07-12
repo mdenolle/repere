@@ -71,7 +71,11 @@ def test_export_suite_writes_jsonl(tmp_path):
     jsonl = tmp_path / "dvv_processing" / dvv.VERSION / "param_recommendation.jsonl"
     assert jsonl.exists()
     lines = jsonl.read_text().strip().splitlines()
-    assert len(lines) == 10
+    # One row per golden case (30 in the graded benchmark). Read the count
+    # from codameter so a future change to the corpus does not break this.
+    from codameter import golden
+
+    assert len(lines) == len(golden.CASES)
     row = json.loads(lines[0])
     assert row["dataset_id"] == "dvv_processing"
     assert manifest  # sha256 manifest returned
