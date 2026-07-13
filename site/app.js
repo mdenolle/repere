@@ -264,10 +264,15 @@ function renderAxisPicker() {
   box.innerHTML = "";
   const labels = { cost: "Cost ($)", latency: "Latency (s)", size: "Model size (B)" };
   for (const key of Object.keys(X_AXES)) {
+    const ax = X_AXES[key];
+    const has = state.rows.some(
+      (r) => Number.isFinite(ax.none(r)) && Number.isFinite(ax.full(r))
+    );
     const b = document.createElement("button");
     b.className = "chip";
     b.type = "button";
-    b.textContent = labels[key];
+    b.textContent = labels[key] + (has ? "" : " — not yet measured");
+    b.disabled = !has;
     b.setAttribute("aria-pressed", state.xaxis === key);
     b.addEventListener("click", () => {
       state.xaxis = key;
