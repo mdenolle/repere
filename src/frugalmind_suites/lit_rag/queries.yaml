@@ -1,0 +1,102 @@
+# Known-item retrieval over a corpus of REAL arXiv physics.geo-ph papers
+# (data/arxiv_geo_corpus.json — titles and abstracts verbatim from arXiv).
+#
+# Each item shows the model a shortlist of same-domain candidate papers and one
+# research question, and asks it to rank the candidates. The gold answer is the
+# paper the question was written from, so relevance is OBJECTIVE — no human
+# relevance labels, no judge. This is the document-based family's T0 core.
+#
+# The questions below were authored by reading each paper's real abstract and
+# paraphrasing it. They deliberately avoid copying the title verbatim, so the
+# task is semantic matching rather than string matching; the distractors are all
+# drawn from the same corpus and share generic seismology vocabulary.
+
+meta:
+  corpus: data/arxiv_geo_corpus.json
+  candidates_per_item: 10   # 1 target + 9 deterministically sampled distractors
+  metric: mrr
+
+queries:
+  - id: q01-spinet
+    gold: 1810.08517v1
+    query: >-
+      Which paper proposes a neural network for automated seismic interpretation
+      that is not restricted to a single interpretation task, arguing that most
+      existing techniques are designed for only one kind of seismic structure?
+
+  - id: q02-metamaterial-shadow
+    gold: 1210.5589v2
+    query: >-
+      I am looking for work that protects buildings from earthquakes by burying
+      resonant boxes with side-holes around them, using acoustic metamaterials to
+      create an artificial seismic shadow zone.
+
+  - id: q03-inverse-moment-tensor
+    gold: 1808.03049v1
+    query: >-
+      Which paper treats the seismological inverse problem analytically,
+      determining the seismic moment tensor from far-field P and S waves in a
+      homogeneous medium?
+
+  - id: q04-gw-site-noise
+    gold: 2209.06559v3
+    query: >-
+      Find the study that characterises low-frequency ambient seismic noise at a
+      candidate site in Australia for a next-generation gravitational-wave
+      detector, motivated by coherent and incoherent noise of seismic origin.
+
+  - id: q05-santorini-swarm
+    gold: 2502.11768v1
+    query: >-
+      Which study reports that changes in a seismic regularity coefficient, and
+      in strain-energy release, precede the stronger earthquakes of the ongoing
+      Santorini swarm in Greece?
+
+  - id: q06-lunar-gw
+    gold: 2604.24866v1
+    query: >-
+      I want the paper on mitigating the seismic background that limits a lunar
+      gravitational-wave detector conceived as an array of accelerometers on the
+      Moon.
+
+  - id: q07-fno-velocity-continuation
+    gold: 2203.14386v1
+    query: >-
+      Which work accelerates uncertainty quantification for seismic imaging by
+      using Fourier neural operators for velocity continuation, given errors in
+      the background squared-slowness model?
+
+  - id: q08-turkey-aftershocks
+    gold: 2211.09539v2
+    query: >-
+      Find the real-time deep-learning earthquake-monitoring case study on the
+      Turkey aftershock sequence, covering both seismic phase picking and
+      magnitude estimation for early warning.
+
+  - id: q09-acoustic-impedance
+    gold: 2006.15472v1
+    query: >-
+      Which paper estimates acoustic impedance from seismic images using
+      spatiotemporal modelling, arguing that conventional inversion works
+      trace-by-trace and ignores spatial structure?
+
+  - id: q10-porosity-spectral
+    gold: 2111.13581v1
+    query: >-
+      I am after the machine-learning method that estimates porosity from
+      spectrally decomposed seismic data, as an alternative to impedance
+      inversion combined with well logs.
+
+  - id: q11-quant-vs-qual-imaging
+    gold: 1706.05276v1
+    query: >-
+      Which paper classifies seismic imaging methods into quantitative versus
+      qualitative, and argues that imaging should be understood to include
+      inversion and may be done in time rather than depth?
+
+  - id: q12-small-magnitude-detection
+    gold: 2204.02870v1
+    query: >-
+      Find the deep-learning approach for detecting small-magnitude earthquakes
+      and classifying seismic phases when the signal-to-noise ratio is poor and
+      data volumes are large.

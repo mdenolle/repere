@@ -37,6 +37,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import sys
 import time
 from pathlib import Path
@@ -83,6 +84,7 @@ MODELS = [
 SKILL = {
     "synthetic_stalta": ("stalta-detection", "v0.1-demo"),
     "dvv_processing": ("dvv-processing", "v0.1-demo"),
+    "lit_rag": ("literature-retrieval", "v0.1-demo"),
 }
 
 # EvalHub categories. The leaderboard filters on these; keep in sync with the
@@ -131,6 +133,23 @@ def _stalta_items():
         yield (meta["case_id"], prompt, gold, scorer, good, degraded)
 
 
+def _lit_rag_items():
+    """Document-based family: known-item retrieval over REAL arXiv papers."""
+    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+    from frugalmind_suites.lit_rag.scorers import (
+        make_scorer_from_spec as lit_scorer_from_spec,
+    )
+
+    suite = LitRagKnownItemSuite()
+    for q in suite._queries():
+        prompt, gold, spec, meta = suite._compose(q)
+        scorer = lit_scorer_from_spec(spec)
+        ids = re.findall(r'\["([0-9.v]+)"\]', prompt)
+        good = json.dumps([gold[0]] + [i for i in ids if i != gold[0]])
+        degraded = json.dumps([i for i in ids if i != gold[0]] + [gold[0]])
+        yield (meta["query_id"], prompt, gold, scorer, good, degraded)
+
+
 def _dvv_items():
     # codameter#15 makes an installed copy resolve/regenerate its golden data
     # (per-user cache), so no manifest workaround is needed here.
@@ -144,7 +163,11 @@ def _dvv_items():
         yield (r["id"], r["prompt"], r["gold"], scorer, good, bad_config)
 
 
-SUITES = {"synthetic_stalta": _stalta_items, "dvv_processing": _dvv_items}
+SUITES = {
+    "synthetic_stalta": _stalta_items,
+    "dvv_processing": _dvv_items,
+    "lit_rag": _lit_rag_items,
+}
 
 # (model_id, suite) -> uncertainty from the repeat study. Populated by
 # _main_live and merged into the emitted JSON by _emit, so SkillLiftRow

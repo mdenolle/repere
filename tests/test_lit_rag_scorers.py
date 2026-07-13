@@ -156,3 +156,58 @@ def test_end_to_end_retrieval_suite_scores_perfectly():
 def test_translation_and_grounded_suites_exist():
     assert LitRagTranslationSuite().task_kind == TaskKind.TRANSLATION
     assert LitRagGroundedQASuite().task_kind == TaskKind.GROUNDED_QA
+
+
+# --------------------------------------------------------------------------- #
+# Known-item retrieval over REAL arXiv papers (the document-based family)
+# --------------------------------------------------------------------------- #
+def test_known_item_suite_is_a_real_eval_not_a_seed():
+    """The document family must be demonstrated, not merely proposed: enough
+    items to carry a score, real papers, objective gold."""
+    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+
+    suite = LitRagKnownItemSuite()
+    rows = list(suite.export_rows())
+    assert len(rows) >= 10, "too few items to support a score"
+    for r in rows:
+        assert r.task_kind == TaskKind.RETRIEVAL.value
+        assert r.scorer_spec["name"] == "retrieval_metrics"
+        # exactly one paper answers each question -> gold is unambiguous
+        assert len(r.gold) == 1
+        # the gold must actually be among the candidates shown to the model
+        assert r.gold[0] in r.prompt
+
+
+def test_known_item_shortlist_is_deterministic_and_contains_the_gold():
+    """The same item must always show the same candidates, or the eval is not
+    reproducible; and the gold must not always sit in the same slot."""
+    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+
+    a = list(LitRagKnownItemSuite().items())
+    b = list(LitRagKnownItemSuite().items())
+    assert [p for p, _, _ in a] == [p for p, _, _ in b], "shortlist is not deterministic"
+
+    import re
+
+    positions = []
+    for prompt, gold, _ in a:
+        ids = re.findall(r'\["([0-9.v]+)"\]', prompt)
+        assert gold[0] in ids
+        positions.append(ids.index(gold[0]))
+    # if the gold were always first, ranking would be trivial
+    assert len(set(positions)) > 1, "gold sits in the same slot every time"
+
+
+def test_known_item_scorer_discriminates():
+    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+
+    prompt, gold, scorer = next(iter(LitRagKnownItemSuite().items()))
+    import json
+    import re
+
+    ids = re.findall(r'\["([0-9.v]+)"\]', prompt)
+    best = json.dumps([gold[0]] + [i for i in ids if i != gold[0]])
+    worst = json.dumps([i for i in ids if i != gold[0]] + [gold[0]])
+    assert scorer(best, gold) == pytest.approx(1.0)          # MRR = 1/1
+    assert scorer(worst, gold) == pytest.approx(1 / len(ids))  # MRR = 1/10
+    assert scorer("I don't know.", gold) == 0.0

@@ -128,3 +128,150 @@ ALL_SUITES = (
     LitRagTranslationSuite,
     LitRagGroundedQASuite,
 )
+
+
+# --------------------------------------------------------------------------- #
+# Known-item retrieval over a corpus of REAL arXiv papers (document family).
+#
+# The seed tasks above are one-item demonstrations of each scorer. THIS suite is
+# the real document-based evaluation: 12 research questions, each answered by
+# exactly one paper in a shortlist of 10 same-domain candidates. Relevance is
+# objective (the paper the question was written from), so it is scored at T0 by
+# `retrieval_metrics` with no judge and no human labels.
+# --------------------------------------------------------------------------- #
+_CORPUS_PATH = Path(__file__).parent / "data" / "arxiv_geo_corpus.json"
+_QUERIES_PATH = Path(__file__).parent / "queries.yaml"
+
+
+def _load_known_item() -> tuple[dict, list[dict], list[dict]]:
+    import json
+
+    corpus_doc = json.loads(_CORPUS_PATH.read_text())
+    docs = corpus_doc["docs"]
+    qdoc = yaml.safe_load(_QUERIES_PATH.read_text())
+    return qdoc.get("meta", {}), qdoc["queries"], docs
+
+
+_STOP = frozenset(
+    "a an the of for and or to in on with we our this that is are be by from as at "
+    "using use used propose proposed present presents new novel method methods "
+    "results show shows can it its their they which than then also more most such "
+    "these those has have been was were will would".split()
+)
+
+
+def _terms(doc: dict) -> set[str]:
+    text = f"{doc['title']} {doc['abstract']}".lower()
+    return {
+        w
+        for w in "".join(c if c.isalnum() else " " for c in text).split()
+        if len(w) > 3 and w not in _STOP
+    }
+
+
+def _shortlist(target_id: str, docs: list[dict], k: int) -> list[dict]:
+    """Target + (k-1) HARD distractors: the most confusable papers in the corpus.
+
+    Sampling distractors at random makes this eval trivial and, worse, actively
+    misleading. The queries name distinctive entities (Santorini, the Moon,
+    Fourier neural operators); if no distractor shares them, the task is solvable
+    by keyword matching alone. Measured: both claude-haiku AND qwen2.5:7b scored a
+    perfect 1.000 unskilled — no discrimination — and the skill, which teaches
+    "rank by contribution, not shared vocabulary", *lowered* qwen's score by
+    talking it out of the winning shortcut.
+
+    So distractors are the nearest neighbours of the target by term overlap
+    (Jaccard over content words). They share the target's vocabulary and topic,
+    which forces the model to discriminate on the actual contribution — which is
+    what the task is supposed to measure.
+
+    Deterministic: the same item always shows the same candidates.
+    """
+    import hashlib
+
+    target = next(d for d in docs if d["arxiv_id"] == target_id)
+    t_terms = _terms(target)
+
+    def similarity(d: dict) -> float:
+        o = _terms(d)
+        union = t_terms | o
+        return len(t_terms & o) / len(union) if union else 0.0
+
+    others = [d for d in docs if d["arxiv_id"] != target_id]
+    # Sort by similarity desc; break ties deterministically by id hash.
+    others.sort(
+        key=lambda d: (
+            -similarity(d),
+            hashlib.sha256(f"{target_id}|{d['arxiv_id']}".encode()).hexdigest(),
+        )
+    )
+    picked = others[: k - 1]
+    shortlist = [target, *picked]
+    # Deterministic display order, so the gold is not always first.
+    shortlist.sort(key=lambda d: hashlib.sha256((target_id + d["arxiv_id"]).encode()).hexdigest())
+    return shortlist
+
+
+class LitRagKnownItemSuite(DenolleGroupSuite):
+    """Research question -> rank candidate papers; gold is the paper it came from."""
+
+    task_kind = TaskKind.RETRIEVAL
+    dataset_id = "lit_rag"
+    suite_id = "known_item_retrieval"
+    version = "v0.1"
+
+    def __init__(self, *, split: str | None = None) -> None:
+        self.split = _resolve_split(split)
+
+    def _queries(self) -> list[dict]:
+        return _load_known_item()[1]
+
+    def _compose(self, q: dict) -> tuple[str, Any, dict, dict]:
+        meta, _, docs = _load_known_item()
+        k = int(meta.get("candidates_per_item", 10))
+        shortlist = _shortlist(q["gold"], docs, k)
+
+        lines = []
+        for d in shortlist:
+            lines.append(f'  ["{d["arxiv_id"]}"] {d["title"]}\n      {d["abstract"]}')
+        candidates = "\n".join(lines)
+
+        prompt = (
+            "You are given a research question and a shortlist of candidate "
+            "papers. Rank ALL of the candidates from most to least relevant to "
+            "the question.\n\n"
+            f"Question:\n  {' '.join(q['query'].split())}\n\n"
+            f"Candidate papers:\n{candidates}\n\n"
+            "Return ONLY a JSON array of the candidate ids, best first, e.g.\n"
+            '  ["2203.14386v1", "1810.08517v1", ...]\n'
+            "Include every candidate exactly once. Return nothing but the array."
+        )
+        gold = [q["gold"]]  # exactly one paper answers the question
+        scorer_spec = {
+            "name": "retrieval_metrics",
+            "config": {"metric": meta.get("metric", "mrr"), "k": k},
+        }
+        item_meta = {"query_id": q["id"], "kind": "retrieval", "n_candidates": k}
+        return prompt, gold, scorer_spec, item_meta
+
+    def items(self) -> Iterable[tuple[str, Any, Callable[[str, Any], float]]]:
+        for q in self._queries():
+            prompt, gold, spec, _ = self._compose(q)
+            yield (prompt, gold, make_scorer_from_spec(spec))
+
+    def export_rows(self) -> Iterable[BenchmarkRow]:
+        for q in self._queries():
+            prompt, gold, spec, meta = self._compose(q)
+            yield BenchmarkRow(
+                id=f"{self.dataset_id}/{self.suite_id}/{q['id']}",
+                dataset_id=self.dataset_id,
+                suite_id=self.suite_id,
+                version=self.version,
+                task_kind=self.task_kind.value,
+                split="validation",
+                visibility="public",
+                prompt=prompt,
+                gold=gold,
+                scorer_spec=spec,
+                metadata=meta,
+            )

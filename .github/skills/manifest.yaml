@@ -39,6 +39,13 @@ skills:
       - sta_lta.report
     notes: "Narrow skill: only the one-paragraph report step."
 
+  - name: literature-retrieval
+    suites:
+      - lit_rag.known_item_retrieval
+    notes: |
+      Document-based family. Teaches the failure mode that dominates known-item
+      retrieval: ranking by shared vocabulary instead of shared contribution.
+
   - name: dvv-processing
     suites:
       - dvv_processing.param_recommendation
