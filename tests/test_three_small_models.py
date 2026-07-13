@@ -158,7 +158,7 @@ def test_three_small_models_run_skill_lift_benchmark():
     for r in rows:
         assert r.suite == "sta_lta.intent_extraction"
         assert r.skill_name == "stalta-detection"
-        assert r.skill_version == "v0.2"
+        assert r.skill_version == "v0.3"
         assert r.n_total == len(list(suite.items()))
 
 

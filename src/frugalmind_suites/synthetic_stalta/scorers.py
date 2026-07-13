@@ -84,13 +84,80 @@ def make_detection_picks_scorer(
     return scorer
 
 
+# ---------------------------------------------------------------------------
+# stalta_code — the coding-agent form of the task
+#
+# Asking a model to *mentally execute* a DSP algorithm over ~1000 raw samples
+# pasted into the prompt is not a meaningful eval: no LLM can do it, every model
+# scores 0, and the column cannot discriminate. (A live 7B run confirmed this —
+# it replies "what would you like me to do with these numbers?")
+#
+# The realistic agent task is to WRITE THE DETECTOR. The waveform is injected
+# into the sandbox as a pre-defined `waveform` / `fs`, the model's code runs
+# there, and we grade the onsets it reports via `record(picks=[...])` with the
+# same pick_f1 metric. This is the Family-2 prompt -> code -> execute pattern.
+# ---------------------------------------------------------------------------
+
+_DEFAULT_STAGE_WEIGHTS = {"code": 0.1, "runs": 0.1, "accuracy": 0.8}
+
+
+def make_stalta_code_scorer(
+    *,
+    waveform: list[float],
+    fs: float,
+    tolerance_s: float = 1.5,
+    timeout_s: float = 60.0,
+    stage_weights: dict[str, float] | None = None,
+) -> Callable[[str, Any], float]:
+    """Run the model's STA/LTA code in the sandbox and grade the picks it records.
+
+    Staged, accuracy-weighted: a snippet that merely runs but reports the wrong
+    onsets caps at 0.2, well below one that actually finds the event.
+    """
+    from frugalmind_suites.sta_lta.sandbox import extract_code, run_snippet
+
+    weights = {**_DEFAULT_STAGE_WEIGHTS, **(stage_weights or {})}
+    # The data the model's code operates on. Injected rather than pasted into
+    # the prompt so the model writes a detector instead of transcribing numbers.
+    setup = f"waveform = {json.dumps(list(waveform))}\nfs = {float(fs)!r}\n"
+
+    def scorer(model_output: str, gold: Any) -> float:
+        code = extract_code(model_output)
+        if not code:
+            return 0.0
+        score = weights["code"]
+        result = run_snippet(setup + "\n" + code, timeout_s=timeout_s)
+        if result.ok and "picks" in result.artifacts:
+            score += weights["runs"]
+            picks = result.artifacts["picks"]
+            if not isinstance(picks, list):
+                picks = []
+            try:
+                picks = [float(p) for p in picks]
+            except (TypeError, ValueError):
+                picks = []
+            acc = metric_pick_f1(picks, list(gold or []), tolerance=tolerance_s)
+            score += weights["accuracy"] * acc
+        return max(0.0, min(1.0, score))
+
+    return scorer
+
+
 def make_scorer_from_spec(spec: dict[str, Any]) -> Callable[[str, Any], float]:
     """Reconstruct a scorer from a JSON-serialisable spec.
 
-    Recognised names: ``detection_picks``, ``zero``.
+    Recognised names: ``stalta_code``, ``detection_picks``, ``zero``.
     """
     name = spec["name"]
     config = dict(spec.get("config", {}))
+    if name == "stalta_code":
+        return make_stalta_code_scorer(
+            waveform=config["waveform"],
+            fs=config["fs"],
+            tolerance_s=config.get("tolerance_s", 1.5),
+            timeout_s=config.get("timeout_s", 60.0),
+            stage_weights=config.get("stage_weights"),
+        )
     if name == "detection_picks":
         return make_detection_picks_scorer(
             tolerance_s=config.get("tolerance_s", 1.5)

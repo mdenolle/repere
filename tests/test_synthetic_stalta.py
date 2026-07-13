@@ -63,12 +63,46 @@ def test_suite_loads_cases_and_scores_gold_perfectly():
     assert n_pos >= 3 and n_neg >= 1  # positives + first-class negatives
 
     for r in rows:
-        assert r.task_kind == TaskKind.EXTRACTION.value
-        assert r.scorer_spec["name"] == "detection_picks"
+        # The task is code-generation: the model writes the detector, the
+        # sandbox runs it. (Asking an LLM to execute STA/LTA over ~1000 raw
+        # samples in-context is unsolvable — a live 7B scored 0 on every item.)
+        assert r.task_kind == TaskKind.CODE_GENERATION.value
+        assert r.scorer_spec["name"] == "stalta_code"
+        # The waveform travels in the spec so the row stays self-contained and
+        # the sandbox can inject it; the prompt must NOT paste the samples.
+        assert len(r.scorer_spec["config"]["waveform"]) > 100
 
-    # feeding gold back as the model answer scores each case perfectly
+    # A snippet that records the gold onsets scores each case perfectly.
     for prompt, gold, scorer in suite.items():
         import json
 
-        assert scorer(json.dumps(gold), gold) == pytest.approx(1.0)
-        assert "waveform =" in prompt
+        snippet = f"```python\nrecord(picks={json.dumps(gold)})\n```"
+        assert scorer(snippet, gold) == pytest.approx(1.0)
+        # the prompt asks for code against pre-defined variables, not raw data
+        assert "record(picks=" in prompt
+        assert "waveform = [" not in prompt
+
+
+def test_stalta_code_scorer_grades_a_real_detector():
+    """A snippet that runs the detector but reports the raw (re-triggered)
+    onsets must score below one that declusters the coda — the domain knowledge
+    the eval is designed to reward."""
+    suite = SyntheticSTALTASuite(split="validation")
+    case = next(c for c in suite._cases() if c["expected_detection"])
+    _, gold, spec, _ = suite._compose(case)
+    scorer = make_scorer_from_spec(spec)
+
+    naive = (
+        "```python\n"
+        "import numpy as np\n"
+        "from obspy.signal.trigger import classic_sta_lta, trigger_onset\n"
+        "cft = classic_sta_lta(np.array(waveform, float), int(1.0*fs), int(10.0*fs))\n"
+        "record(picks=[float(o[0])/fs for o in trigger_onset(cft, 3.5, 1.5)])\n"
+        "```"
+    )
+    exact = f"```python\nrecord(picks={gold})\n```"
+    no_code = "I cannot run a detector on this."
+
+    assert scorer(no_code, gold) == 0.0
+    assert 0.0 < scorer(naive, gold) < scorer(exact, gold)
+    assert scorer(exact, gold) == pytest.approx(1.0)
