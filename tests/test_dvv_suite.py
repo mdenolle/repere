@@ -31,10 +31,14 @@ def test_each_suite_yields_items_and_rows():
 
 
 def test_param_scorer_rewards_a_sound_config():
-    from codameter import golden, use_cases as uc
-    suite = dvv.DVVParamRecommendationSuite()
+    from codameter import golden
+    from codameter import use_cases as uc
+
+    # split="all" so a stray FM_DVV_SPLIT can't filter the landslide case out
+    # and make this fail spuriously.
+    suite = dvv.DVVParamRecommendationSuite(split="all")
     # find the landslide item
-    for (prompt, gold, scorer) in suite.items():
+    for _prompt, gold, scorer in suite.items():
         if gold["use_case"] == "landslide":
             good = json.dumps(golden._jsonable(uc.recommend("landslide")))
             bad = json.dumps({"estimator": "stretching (TS)", "band": [0.4, 1.0],
@@ -66,12 +70,19 @@ def test_dvv_suites_are_registered_in_cli():
 def test_export_suite_writes_jsonl(tmp_path):
     from frugalmind.export import export_suites
 
-    suite = dvv.DVVParamRecommendationSuite()
+    # split="all" pins the full corpus: without it the suite would honour
+    # FM_DVV_SPLIT from the environment and the row count would no longer be
+    # comparable to golden.CASES.
+    suite = dvv.DVVParamRecommendationSuite(split="all")
     manifest = export_suites([suite], out_dir=tmp_path, version=dvv.VERSION)
     jsonl = tmp_path / "dvv_processing" / dvv.VERSION / "param_recommendation.jsonl"
     assert jsonl.exists()
     lines = jsonl.read_text().strip().splitlines()
-    assert len(lines) == 10
+    # One row per golden case (30 in the graded benchmark). Read the count
+    # from codameter so a future change to the corpus does not break this.
+    from codameter import golden
+
+    assert len(lines) == len(golden.CASES)
     row = json.loads(lines[0])
     assert row["dataset_id"] == "dvv_processing"
     assert manifest  # sha256 manifest returned
