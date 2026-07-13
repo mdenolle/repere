@@ -1,0 +1,132 @@
+# =============================================================================
+# "Agentify the paper" — research-workflow truth set (Family 3)
+# =============================================================================
+# TASK. Given a paper's abstract (and, at the easier tiers, its methods), the
+# orchestrator must emit the RESEARCH WORKFLOW that produces it: a DAG of
+# research operations drawn from `ontology.yaml`. It is scored on the graph, not
+# on prose — node F1 (did it call for the right operations?), edge F1 (did it get
+# the dependencies right?), frugality (did it invent steps the paper never did?),
+# and the ontology's physical-ordering invariants.
+#
+# WHY THIS IS A REAL EVAL AND NOT A VIBE CHECK.
+#   * The gold is author-annotated. Only someone who did the work knows the
+#     workflow, which is exactly why this eval can only come from a working lab.
+#   * Hallucinated methodology is PENALISED, not rewarded: adding `forward_model`
+#     to a paper that ran no simulations costs node precision. That is the
+#     negative-case discipline, applied to research planning.
+#
+# CONTAMINATION — READ THIS BEFORE ADDING A PAPER.
+#   Published papers are in the models' training data. A model may recall the
+#   methods section rather than reason about it. So:
+#     * PUBLISHED papers  -> split: validation, visibility: public.
+#       Useful for development. NOT trustworthy as a capability measurement.
+#     * UNPUBLISHED / in-preparation papers -> split: test, visibility: private.
+#       These are in no training corpus, which makes them the only honest
+#       measurement of whether a model can PLAN research rather than RECALL it.
+#       They live in the gated dataset, never in git (see docs/dataset_submission.md).
+#   Set `cutoff_date` to the paper's public appearance date so a retrieval-
+#   augmented agent cannot look up the answer.
+#
+# DIFFICULTY TIERS — the model is given progressively less to work with:
+#   easy   : abstract + methods section  -> mostly extraction
+#   medium : abstract only               -> must infer the methodology
+#   hard   : title + research question   -> must DESIGN the workflow
+#            (this is the tier that actually tests research reasoning)
+#
+# STATUS: SCAFFOLD. The two entries below are worked examples annotated by the
+# framework author from public abstracts, to exercise the schema and scorers.
+# They are marked `provisional: true` and MUST be validated (or replaced) by a
+# domain author before any published number. Real entries come from the Denolle
+# group's own papers — see docs/paper_workflow_annotation.md.
+# =============================================================================
+
+meta:
+  ontology: ontology.yaml
+  candidates_note: >-
+    The orchestrator is shown the full operation vocabulary and must select from
+    it; it is not shown the reference workflow.
+
+papers:
+
+  - id: ridgecrest-dvv-example
+    provisional: true          # <-- author validation required
+    tier: medium
+    split: validation
+    visibility: public
+    cutoff_date: "2020-01-01"
+    title: >-
+      Monitoring co-seismic velocity change with ambient-noise
+      cross-correlation (worked example)
+    abstract: >-
+      We measure the relative seismic velocity change (dv/v) associated with a
+      large earthquake using continuous ambient-noise records from a regional
+      network. Nine-component cross-correlations are computed for all available
+      station pairs, stacked daily, and referenced to a fixed pre-event stack.
+      Velocity changes are estimated in the coda by the stretching method, gated
+      on waveform coherence, and compared with the co-seismic static strain
+      predicted from the catalogue moment tensor.
+    # The workflow the abstract actually describes.
+    workflow:
+      nodes:
+        - acquire_waveforms
+        - acquire_metadata
+        - acquire_catalog
+        - preprocess_waveforms
+        - quality_control
+        - compute_correlation
+        - stack
+        - measure_dvv
+        - validate_against_reference
+        - visualize
+        - interpret
+      edges:
+        - [acquire_waveforms, preprocess_waveforms]
+        - [acquire_metadata, preprocess_waveforms]
+        - [preprocess_waveforms, quality_control]
+        - [quality_control, compute_correlation]
+        - [compute_correlation, stack]
+        - [stack, measure_dvv]
+        - [acquire_catalog, validate_against_reference]
+        - [measure_dvv, validate_against_reference]
+        - [measure_dvv, visualize]
+        - [validate_against_reference, interpret]
+      max_calls: 14   # frugality budget: inventing extra steps is penalised
+
+  - id: ml-phase-picking-example
+    provisional: true          # <-- author validation required
+    tier: medium
+    split: validation
+    visibility: public
+    cutoff_date: "2022-01-01"
+    title: >-
+      Deep-learning phase picking and its effect on catalogue completeness
+      (worked example)
+    abstract: >-
+      We apply a pretrained deep-learning phase picker to continuous records from
+      a dense local network, associate the resulting picks into events, and
+      relocate them. The enhanced catalogue is compared with the routine
+      catalogue to quantify the improvement in magnitude of completeness, and the
+      residual distribution is used to assess pick quality.
+    workflow:
+      nodes:
+        - acquire_waveforms
+        - acquire_catalog
+        - preprocess_waveforms
+        - apply_ml_model
+        - pick_phases
+        - locate_events
+        - validate_against_reference
+        - statistical_test
+        - visualize
+        - interpret
+      edges:
+        - [acquire_waveforms, preprocess_waveforms]
+        - [preprocess_waveforms, apply_ml_model]
+        - [apply_ml_model, pick_phases]
+        - [pick_phases, locate_events]
+        - [locate_events, validate_against_reference]
+        - [acquire_catalog, validate_against_reference]
+        - [validate_against_reference, statistical_test]
+        - [statistical_test, visualize]
+        - [visualize, interpret]
+      max_calls: 13

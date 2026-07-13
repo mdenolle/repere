@@ -27,10 +27,10 @@ const CATEGORIES = {
 
 /* Per-model palette + static metadata for the hover card. */
 const MODEL_META = {
-  "qwen2.5:7b": { hex: "#4b2e83", params: "7B", license: "Apache-2.0", org: "Alibaba" },
-  "llama3.1:8b": { hex: "#1b7f79", params: "8B", license: "Llama 3", org: "Meta" },
-  "deepseek-r1:7b": { hex: "#c2571a", params: "7B", license: "MIT", org: "DeepSeek" },
-  "olmo2:7b": { hex: "#2f6fb2", params: "7B", license: "Apache-2.0", org: "AI2" },
+  "qwen2.5:7b": { size_b: 7, hex: "#4b2e83", params: "7B", license: "Apache-2.0", org: "Alibaba" },
+  "llama3.1:8b": { size_b: 8, hex: "#1b7f79", params: "8B", license: "Llama 3", org: "Meta" },
+  "deepseek-r1:7b": { size_b: 7, hex: "#c2571a", params: "7B", license: "MIT", org: "DeepSeek" },
+  "olmo2:7b": { size_b: 7, hex: "#2f6fb2", params: "7B", license: "Apache-2.0", org: "AI2" },
   "claude-haiku-4-5-20251001": { hex: "#8a1f5e", params: "n/d", license: "proprietary", org: "Anthropic" },
 };
 const FALLBACK_HEX = "#6f6890";
@@ -71,9 +71,11 @@ const X_AXES = {
     fmt: (v) => `${Math.round(v)}s`,
   },
   size: {
-    label: "Model size (billion parameters)",
-    none: (r) => r.size_b,
-    full: (r) => r.size_b,
+    // Static property of the model, so it needs no measurement and works even on
+    // result files produced before the run recorded `size_b`.
+    label: "Model size (billion parameters) — how many parameters is the skill worth?",
+    none: (r) => r.size_b ?? (MODEL_META[r.model_id] || {}).size_b,
+    full: (r) => r.size_b ?? (MODEL_META[r.model_id] || {}).size_b,
     fmt: (v) => `${v}B`,
   },
 };

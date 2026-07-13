@@ -39,6 +39,14 @@ skills:
       - sta_lta.report
     notes: "Narrow skill: only the one-paragraph report step."
 
+  - name: research-orchestration
+    suites:
+      - paper_workflow.agentify_the_paper
+    notes: |
+      Research-workflow family. Teaches the two failure modes of "agentify the
+      paper": inventing methodology the paper never performed (costs precision),
+      and collapsing fan-in dependencies into a single chain (costs edge recall).
+
   - name: literature-retrieval
     suites:
       - lit_rag.known_item_retrieval

@@ -1,0 +1,120 @@
+# =============================================================================
+# Research-operation ontology — the sub-agent alphabet for "agentify the paper"
+# =============================================================================
+# The orchestrator must express a paper's methodology as a DAG over THESE terms.
+#
+# WHY A CLOSED VOCABULARY. A free-text plan cannot be scored: "compute the
+# correlations" and "cross-correlate the noise" are the same step written two
+# ways, and no F1 can see that. Constraining the orchestrator to a fixed alphabet
+# turns an essay into a graph, and a graph can be compared to a reference graph
+# deterministically (node F1, edge F1) with no LLM judge anywhere in the loop.
+#
+# The cost is expressiveness: a workflow that genuinely needs a step not in this
+# list cannot be written. That is a real limitation and the reason this file is
+# versioned — extend it, deliberately, rather than letting annotators invent
+# terms. `scripts/validate_paper_workflows.py` rejects any node outside it.
+#
+# Granularity rule of thumb: one term ~ one thing a competent graduate student
+# would be asked to go away and do.
+# =============================================================================
+
+version: v0.1
+
+operations:
+
+  # ---- getting the data ----------------------------------------------------
+  - id: acquire_waveforms
+    description: Download seismic waveforms (FDSN, local archive, DAS, nodal array).
+  - id: acquire_catalog
+    description: Retrieve an earthquake/event catalog (origin times, locations, magnitudes).
+  - id: acquire_metadata
+    description: Fetch station inventory, instrument response, or network geometry.
+  - id: acquire_geodetic
+    description: Retrieve GNSS/InSAR/strain observations.
+  - id: acquire_auxiliary
+    description: Retrieve non-seismic covariates (weather, hydrology, temperature, tides).
+
+  # ---- conditioning the data ----------------------------------------------
+  - id: preprocess_waveforms
+    description: Detrend, demean, taper, filter, resample, remove instrument response.
+  - id: quality_control
+    description: Reject bad channels/days; assess SNR, gaps, clock errors.
+  - id: select_subset
+    description: Choose stations, pairs, components, time windows, or events to analyse.
+
+  # ---- deriving measurements ----------------------------------------------
+  - id: detect_events
+    description: Trigger/detect events (STA/LTA, template matching, ML detector).
+  - id: pick_phases
+    description: Pick P/S arrivals (manual, autopicker, ML picker).
+  - id: locate_events
+    description: Associate picks and locate hypocentres.
+  - id: compute_correlation
+    description: Cross-correlate records (ambient noise, coda, template matching).
+  - id: stack
+    description: Stack correlations/records over time or over pairs.
+  - id: measure_dvv
+    description: Measure relative velocity change (stretching, MWCS, DTW).
+  - id: compute_spectral
+    description: Spectra, spectrograms, spectral ratios, polarisation, H/V.
+  - id: compute_amplitude
+    description: Amplitudes, magnitudes, moment, stress drop, attenuation.
+
+  # ---- modelling ----------------------------------------------------------
+  - id: forward_model
+    description: Simulate the physics (SPECFEM, finite difference, analytical).
+  - id: invert
+    description: Solve an inverse problem (tomography, moment tensor, slip, source).
+  - id: train_ml_model
+    description: Train/fine-tune a machine-learning model.
+  - id: apply_ml_model
+    description: Run inference with a pretrained ML model.
+  - id: statistical_test
+    description: Significance testing, uncertainty quantification, bootstrap, MCMC.
+
+  # ---- closing the loop ---------------------------------------------------
+  - id: validate_against_reference
+    description: Compare results to a catalog, an independent dataset, or synthetics.
+  - id: sensitivity_analysis
+    description: Vary parameters/assumptions and report the effect on the result.
+  - id: visualize
+    description: Produce the figures that carry the argument.
+  - id: interpret
+    description: Draw the scientific conclusion from the measurements.
+
+# -----------------------------------------------------------------------------
+# Ordering invariants. These hold for ANY geophysical workflow and are checked by
+# `trajectory_policy` regardless of the paper: they encode what it means for a
+# research plan to be physically executable at all, as opposed to merely
+# plausible-sounding.
+# -----------------------------------------------------------------------------
+invariants:
+  - type: precondition
+    agent: preprocess_waveforms
+    requires_agent: acquire_waveforms
+    min_count: 1
+    why: You cannot precondition data you have not obtained.
+
+  - type: precondition
+    agent: measure_dvv
+    requires_agent: compute_correlation
+    min_count: 1
+    why: dv/v is measured on correlation functions, not on raw records.
+
+  - type: precondition
+    agent: locate_events
+    requires_agent: pick_phases
+    min_count: 1
+    why: Locations are derived from picks.
+
+  - type: precondition
+    agent: interpret
+    requires_agent: visualize
+    min_count: 0     # advisory: interpretation usually follows the figures
+    why: Advisory only; some papers interpret without a figure.
+
+  - type: precondition
+    agent: invert
+    requires_agent: preprocess_waveforms
+    min_count: 1
+    why: Inversion consumes conditioned data.
