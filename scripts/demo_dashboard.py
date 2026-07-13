@@ -80,6 +80,19 @@ SKILL = {
     "dvv_processing": ("dvv-processing", "v0.1-demo"),
 }
 
+# EvalHub categories. The leaderboard filters on these; keep in sync with the
+# category cards on the site.
+#   document          — literature / RAG / translation / multimodal
+#   software-agent    — agents driving real scientific software (detectors,
+#                       noisepy, specfem, seisbench, codameter)
+#   research-workflow — orchestrators, scored on their call trajectory
+SUITE_CATEGORY = {
+    "synthetic_stalta": "software-agent",
+    "dvv_processing": "software-agent",
+    "lit_rag": "document",
+    "orchestration": "research-workflow",
+}
+
 
 def _u(*parts: str) -> float:
     """Deterministic pseudo-random in [0,1) from a label (no Math.random)."""
@@ -303,10 +316,14 @@ def _emit(flat, skill_rows, note: str, source: str, merge: bool = False) -> int:
 
     lb = build_leaderboard(flat, source=source)
     lb["notes"].insert(0, note)
+    for r in lb["leaderboard"]:
+        r["category"] = SUITE_CATEGORY.get(r.get("suite"), "software-agent")
     (site / "leaderboard.json").write_text(json.dumps(lb, indent=2) + "\n")
 
     sl = build_skill_lift_leaderboard(skill_rows, source=source)
     sl["notes"].insert(0, note)
+    for r in sl["rows"]:
+        r["category"] = SUITE_CATEGORY.get(r.get("suite"), "software-agent")
     (site / "skill_lift.json").write_text(json.dumps(sl, indent=2) + "\n")
 
     print(f"\nleaderboard rows: {len(lb['leaderboard'])}  skill-lift rows: {len(sl['rows'])}")

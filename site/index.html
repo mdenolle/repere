@@ -5,364 +5,286 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="FrugalMind: evidence-based, cost-aware evaluation of AI agents for geoscience — three task families, deterministic scoring, and a transparent leaderboard."
+      content="FrugalMind EvalHub — evidence-based, cost-aware evaluation of AI agents for geoscience. Three eval families, deterministic scoring, an open cost-vs-performance leaderboard."
     />
-    <title>FrugalMind — evidence-based AI evaluation for geoscience</title>
+    <title>FrugalMind EvalHub — evaluating AI for geoscience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="shell">
-      <header class="hero">
-        <nav class="nav" aria-label="Primary navigation">
-          <a class="brand" href="./" aria-label="FrugalMind home">
+    <!-- ================= HERO / WHY ================= -->
+    <header class="hero">
+      <div class="shell">
+        <nav class="nav" aria-label="Primary">
+          <a class="brand" href="./">
             <span class="brand-mark">FM</span>
-            <span>FrugalMind</span>
+            <span>FrugalMind <span style="opacity:.7;font-weight:600">EvalHub</span></span>
           </a>
           <div class="nav-links">
-            <a href="#families">Task families</a>
-            <a href="#grading">Grading</a>
+            <a href="#why">Why</a>
+            <a href="#categories">Categories</a>
             <a href="#leaderboard">Leaderboard</a>
-            <a href="#helpers">Docs</a>
-            <a href="https://github.com/mdenolle/frugalmind">GitHub</a>
+            <a href="#contribute">Contribute</a>
+            <a href="https://github.com/gaia-hazlab">GAIA HazLab</a>
           </div>
         </nav>
 
-        <section class="hero-grid">
-          <div>
-            <p class="eyebrow">Evidence over hype · AI for geoscience</p>
-            <h1>Does the AI actually do the science — and at what cost?</h1>
-            <p class="lede">
-              FrugalMind is an open evaluation framework for scientific AI agents in the
-              geosciences. It measures whether a model or multi-agent system meets a
-              task-specific <strong>quality floor</strong>, and what it <strong>costs</strong> to
-              get there — so labs can adopt AI on the strength of measured evidence, not
-              demos and anecdotes.
-            </p>
-            <div class="hero-actions">
-              <a class="button primary" href="#leaderboard">See the evidence</a>
-              <a class="button secondary" href="#families">How it works</a>
-            </div>
+        <div class="hero-inner">
+          <p class="eyebrow">Evidence over hype · AI for geoscience</p>
+          <h1>Does the AI actually do the science — and what does it cost?</h1>
+          <p>
+            An open evaluation hub for scientific AI agents in the geosciences. We measure
+            whether a model or agent clears a task-specific <strong>quality floor</strong>, and
+            what it <strong>costs</strong> to get there — so labs adopt AI on measured evidence,
+            not demos and anecdotes.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#leaderboard">See the evidence</a>
+            <a class="button secondary" href="#contribute">Contribute an eval</a>
           </div>
-          <aside class="status-card" aria-label="Leaderboard status summary">
-            <span class="status-pill">Live GitHub Pages</span>
-            <dl>
-              <div>
-                <dt>Best score</dt>
-                <dd id="best-score">—</dd>
-              </div>
-              <div>
-                <dt>Lowest cost</dt>
-                <dd id="lowest-cost">—</dd>
-              </div>
-              <div>
-                <dt>Models tracked</dt>
-                <dd id="model-count">—</dd>
-              </div>
-            </dl>
-          </aside>
-        </section>
-      </header>
+        </div>
+      </div>
+    </header>
 
-      <main>
-        <!-- WHY ---------------------------------------------------------- -->
-        <section class="prose" aria-labelledby="why-title">
+    <main class="shell">
+      <!-- ================= WHY ================= -->
+      <section id="why">
+        <div class="section-head">
           <p class="eyebrow">Why this exists</p>
-          <h2 id="why-title">Geoscience needs proof, not vibes.</h2>
-          <p class="lede narrow">
-            AI is arriving in seismology, geodesy, and Earth science faster than our ability
-            to check it. A model that writes fluent code can still fetch the wrong station,
+          <h2>Geoscience needs proof, not vibes.</h2>
+          <p class="lede">
+            AI is arriving in seismology, geodesy and Earth science faster than our ability to
+            check it. A model that writes fluent code can still fetch the wrong station,
             hallucinate an earthquake in a quiet window, or round a magnitude away. Frontier
-            models are also expensive, and most labs cannot spend a premium on every step of
-            a workflow. FrugalMind answers two questions at once:
+            models are also expensive, and most labs cannot pay a premium for every step of a
+            workflow. We answer three questions at once.
           </p>
-          <div class="cards">
-            <article>
-              <span class="icon">◎</span>
-              <h3>Is it right?</h3>
-              <p>
-                Scored against reference truth with a numeric tolerance wherever possible —
-                not a vibe check. Negative cases (a window with <em>no</em> event) are
-                first-class, so we catch confident hallucination, not just missed detections.
-              </p>
-            </article>
-            <article>
-              <span class="icon">$</span>
-              <h3>What did it cost?</h3>
-              <p>
-                Every row carries token cost in dollars. The interesting winner is not the
-                highest score — it is the cheapest system that still clears the quality floor.
-              </p>
-            </article>
-            <article>
-              <span class="icon">◇</span>
-              <h3>Is it reproducible?</h3>
-              <p>
-                Pinned sandboxes, deterministic scorers, and a parametric truth set mean a
-                score means the same thing next month. Hidden test splits keep the numbers
-                honest.
-              </p>
-            </article>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Is it right?</h3>
+            <p>
+              Scored against reference truth with a numeric tolerance wherever possible — not a
+              vibe check. Negative cases (a window with <em>no</em> event) are first-class, so we
+              catch confident hallucination, not just missed detections.
+            </p>
+          </article>
+          <article class="card">
+            <h3>What did it cost?</h3>
+            <p>
+              Every point carries real token cost in dollars. The interesting winner is not the
+              highest score — it is the cheapest system that still clears the quality floor.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Is it reproducible?</h3>
+            <p>
+              Pinned sandboxes, deterministic scorers, versioned skills and a hidden test split
+              mean a score means the same thing next month — and cannot be gamed by training on
+              the answers.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ================= CATEGORIES ================= -->
+      <section id="categories">
+        <div class="section-head">
+          <p class="eyebrow">How evals are organised</p>
+          <h2>Three categories of evaluation.</h2>
+          <p class="lede">
+            Research is not one kind of task, so the hub is organised by what is being evaluated
+            and how it is scored. Each eval carries a category and tags; the leaderboard below
+            filters on them.
+          </p>
+        </div>
+        <div class="cats">
+          <article class="card cat">
+            <h3><span class="dot" style="background:var(--c1)"></span>Document-based</h3>
+            <p>
+              Reading and reasoning over the literature: review, critique, translation,
+              interpolation, retrieval-augmented QA, and multimodal figure interpretation.
+              Scored by retrieval metrics, domain-term preservation and citation grounding.
+            </p>
+            <div class="tags">
+              <span class="tag">RAG</span><span class="tag">translation</span>
+              <span class="tag">multimodal</span><span class="tag soon">lit-review · soon</span>
+            </div>
+          </article>
+          <article class="card cat">
+            <h3><span class="dot" style="background:var(--c2)"></span>Software-agent</h3>
+            <p>
+              Agents that drive real scientific software: write the detector, run the pipeline,
+              produce the data product. Scored by sandboxed execution and numerical regression
+              against a reference within tolerance.
+            </p>
+            <div class="tags">
+              <span class="tag">STA/LTA detector</span><span class="tag">dv/v · codameter</span>
+              <span class="tag soon">noisepy · soon</span><span class="tag soon">specfem · soon</span>
+              <span class="tag soon">seisbench · soon</span>
+            </div>
+          </article>
+          <article class="card cat">
+            <h3><span class="dot" style="background:var(--c3)"></span>Research-workflow</h3>
+            <p>
+              Orchestrators that decide which sub-agents to call, in what order, with what
+              dependencies. Scored on the <em>trajectory</em> — the call DAG versus a reference —
+              plus frugal fan-out, not just the final answer.
+            </p>
+            <div class="tags">
+              <span class="tag">orchestration</span><span class="tag">trajectory-DAG</span>
+              <span class="tag soon">dynamic workflows · soon</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ================= LEADERBOARD ================= -->
+      <section id="leaderboard">
+        <div class="section-head">
+          <p class="eyebrow">The evidence</p>
+          <h2>Cost versus performance.</h2>
+          <p class="lede">
+            Each model appears twice: <strong>without</strong> a domain skill (hollow marker) and
+            <strong>with</strong> it (filled marker), joined by a line. The line <em>is</em> the
+            skill lift. Up is better, left is cheaper — so the best systems sit in the
+            <strong>upper-left</strong>. Hover any marker for the model version, weights and
+            exact numbers.
+          </p>
+        </div>
+
+        <div class="card chart-card">
+          <div class="chart-toolbar">
+            <div class="filters" id="filters" role="group" aria-label="Filter by category"></div>
+            <div class="downloads">
+              <button class="btn-sm" id="dl-csv" type="button">↓ CSV</button>
+              <button class="btn-sm" id="dl-png" type="button">↓ PNG</button>
+            </div>
           </div>
-        </section>
 
-        <!-- THREE FAMILIES ----------------------------------------------- -->
-        <section id="families" class="prose" aria-labelledby="families-title">
-          <p class="eyebrow">The task suite</p>
-          <h2 id="families-title">Three families, because geoscience work is diverse.</h2>
-          <p class="lede narrow">
-            Real research is not one kind of task. A useful benchmark has to cover reading and
-            reasoning over the literature, running real pipelines, and coordinating multi-step
-            workflows. Each family is scored differently, by the most verifiable method the
-            task allows.
-          </p>
-          <div class="families">
-            <article class="family">
-              <span class="family-num">1</span>
-              <h3>Literature &amp; multimodal</h3>
-              <p>
-                Review, critique, translation, interpolation, and retrieval-augmented QA over
-                papers, figures, and waveforms.
-              </p>
-              <p class="family-score">
-                <strong>Scored by:</strong> retrieval metrics (recall@k, nDCG), domain-term
-                preservation, and citation grounding — no fabricated sources.
-              </p>
-              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/lit_rag_scorers.md">Design doc →</a>
-            </article>
-            <article class="family">
-              <span class="family-num">2</span>
-              <h3>Coding agents</h3>
-              <p>
-                Prompt&nbsp;→&nbsp;code (run it, check the artifact) and prompt&nbsp;→&nbsp;data
-                (drive a real pipeline — seisbench, noisepy, codameter — and check the numbers).
-              </p>
-              <p class="family-score">
-                <strong>Scored by:</strong> sandboxed execution and numerical regression
-                against a reference within tolerance.
-              </p>
-              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/numerical_regression_scorer.md">Design doc →</a>
-            </article>
-            <article class="family">
-              <span class="family-num">3</span>
-              <h3>Orchestration</h3>
-              <p>
-                Non-linear workflows where an agent decides which sub-agents to call, in what
-                order, with what dependencies — a plan graph, not a straight line.
-              </p>
-              <p class="family-score">
-                <strong>Scored by:</strong> the sub-agent call DAG vs a reference — right steps,
-                right dependencies, and frugal fan-out.
-              </p>
-              <a class="family-link" href="https://github.com/mdenolle/frugalmind/blob/main/docs/orchestration_scorer.md">Design doc →</a>
-            </article>
-          </div>
-        </section>
+          <svg id="chart" viewBox="0 0 900 480" role="img"
+               aria-label="Cost versus performance, with skill-lift lines per model"></svg>
 
-        <!-- GRADING SPECTRUM --------------------------------------------- -->
-        <section id="grading" class="prose" aria-labelledby="grading-title">
-          <p class="eyebrow">Easy → hard</p>
-          <h2 id="grading-title">We grade by how verifiable the answer is.</h2>
-          <p class="lede narrow">
-            The hardest part of evaluating open-ended science is trusting the score. FrugalMind
-            pushes every task as far <em>up</em> this ladder as it will go — toward a
-            deterministic reference — and only falls back to a judged rubric when nothing else
-            fits. Higher tiers are cheaper to score and harder to game.
-          </p>
-          <ol class="spectrum" aria-label="Scorability spectrum from most to least verifiable">
-            <li class="tier"><span class="tier-tag">T0</span><span class="tier-name">Deterministic</span><span class="tier-eg">exact value + tolerance (FDSN query fields)</span></li>
-            <li class="tier"><span class="tier-tag">T1</span><span class="tier-name">Numerical</span><span class="tier-eg">array vs reference (pick times, CCF)</span></li>
-            <li class="tier"><span class="tier-tag">T2</span><span class="tier-name">Perceptual</span><span class="tier-eg">figure vs golden (SSIM)</span></li>
-            <li class="tier"><span class="tier-tag">T3</span><span class="tier-name">Trajectory</span><span class="tier-eg">call DAG vs reference plan</span></li>
-            <li class="tier"><span class="tier-tag">T4</span><span class="tier-name">Rubric</span><span class="tier-eg">LLM-judge, only as fallback</span></li>
-          </ol>
-          <p class="fineprint">
-            Difficulty also comes from the data. Items carry a public
-            <code>validation</code> split and a hidden <code>test</code> split, a
-            <code>cutoff_date</code> that bars a model from using information it could not have
-            had at the time, and negative cases an over-eager model will fail.
-          </p>
-        </section>
+          <div class="legend" id="legend"></div>
+          <p class="chart-note" id="chart-note"></p>
+          <p class="meta-line"><span id="generated-at">Loading…</span> · <span id="source-label"></span></p>
+        </div>
 
-        <!-- SKILLS ------------------------------------------------------- -->
-        <section class="prose" aria-labelledby="skills-title">
-          <p class="eyebrow">Skills</p>
-          <h2 id="skills-title">A good skill can lift a small model to frontier quality.</h2>
-          <p class="lede narrow">
-            The same task can be presented three ways: with <code>none</code> of a domain skill,
-            with its <code>instructions</code>, or with the <code>full</code> skill loaded.
-            Measuring the gap — the <strong>skill lift</strong> — shows how much a cheap, open,
-            local model gains from domain guidance. Often a small model plus a skill clears the
-            same quality floor as a frontier model at a fraction of the cost. That is the whole
-            frugality thesis, made measurable. The per-model lift table is
-            <a href="#skill-lift">below the leaderboard</a>.
+        <div class="callout" style="margin-top:22px">
+          <h3>What the live run found: whether you can be frugal depends on the task.</h3>
+          <p>
+            On dv/v <strong>parameter choice</strong>, free local models (<code>qwen2.5:7b</code>,
+            <code>llama3.1:8b</code>) reach a perfect <strong>1.00 with the domain skill —
+            matching <code>claude-haiku</code> at zero cost</strong>. On STA/LTA
+            <strong>code generation</strong>, every 7B model fails (~0.10): they import the right
+            ObsPy functions, then hand-roll a buggy detector that crashes. Only the cloud model
+            writes working code (0.56 → 0.76 with the declustering skill).
+            <strong>Skills rescue a small model on config tasks; they do not rescue one that
+            cannot write correct numerical code.</strong>
           </p>
-        </section>
+        </div>
+      </section>
 
-        <!-- TRANSPARENCY ------------------------------------------------- -->
-        <section class="prose" aria-labelledby="fair-title">
-          <p class="eyebrow">Transparency</p>
-          <h2 id="fair-title">Fair comparison is a labeled comparison.</h2>
-          <p class="lede narrow">
-            A score with no context invites hype. Every leaderboard row states the model's
-            <strong>openness</strong> (open weights vs API-only), its <strong>toolset</strong>
-            (standard vs custom scaffolding), the exact <strong>suite</strong>, the
-            <strong>cost</strong>, and how many items it actually completed. An open 7B model
-            with standard tools is never silently compared against a closed model with a custom
-            harness. Published like this, adoption decisions rest on evidence a reviewer can
-            reproduce — not a screenshot from a launch post.
+      <!-- ================= CONTRIBUTE ================= -->
+      <section id="contribute">
+        <div class="section-head">
+          <p class="eyebrow">Contribute</p>
+          <h2>Build an eval for your own science.</h2>
+          <p class="lede">
+            An eval is your agent, your skill, and your golden data — versioned so a score means
+            the same thing a year from now, and split so it cannot be gamed by training on the
+            answers.
           </p>
-        </section>
+        </div>
 
-        <!-- LEADERBOARD (data-driven; ids consumed by app.js) ------------ -->
-        <section id="leaderboard" class="panel" aria-labelledby="leaderboard-title">
-          <div class="panel-header">
+        <div class="steps">
+          <div class="card step">
+            <span class="step-n">1</span>
             <div>
-              <p class="eyebrow">Public display</p>
-              <h2 id="leaderboard-title">Leaderboard</h2>
-            </div>
-            <div class="metadata">
-              <span id="generated-at">Loading…</span>
-              <span id="source-label">data/leaderboard.json</span>
+              <h3>Keep your agent in your repository</h3>
+              <p>
+                The agent lives with the science code it drives — a <code>specfem</code> agent in
+                the specfem repo, a <code>noisepy</code> agent in noisepy. EvalHub calls it; it
+                does not own it. Pin it by commit SHA (never a movable tag) so scores stay
+                reproducible.
+              </p>
             </div>
           </div>
 
-          <p class="fineprint">
-            <strong>LIVE RUN — real inference.</strong> Four open 7–8B models running locally
-            under Ollama (<code>qwen2.5</code>, <code>llama3.1</code>, <code>deepseek-r1</code>,
-            <code>olmo2</code>) plus <code>claude-haiku</code> via the Anthropic API, over two
-            evals: <em>dv/v processing</em> (codameter) and <em>STA/LTA detection</em>
-            (Ridgecrest synthetic). Real prompts, real skill injection, code executed in the
-            sandbox, graded by the deterministic scorers. <strong>Costs are actual token
-            usage</strong> — local open-weight models bill $0 marginal.
-          </p>
-          <p class="fineprint">
-            <strong>What it shows: whether you can be frugal depends on the task.</strong>
-            On dv/v <em>parameter choice</em>, free local models (qwen2.5:7b, llama3.1:8b) reach
-            a <strong>perfect 1.00 with the domain skill — matching claude-haiku at zero cost</strong>.
-            On STA/LTA <em>code generation</em>, every 7B model fails (~0.10): they import the
-            right ObsPy functions, then hand-roll a buggy detector that crashes. Only the cloud
-            model writes working code (0.56 → 0.76 with the declustering skill). Skills rescue a
-            small model on config tasks; they do not rescue one that cannot write correct
-            numerical code.
-            <a href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">Why we demo at laptop scale →</a>
-          </p>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Model</th>
-                  <th scope="col">Condition</th>
-                  <th scope="col">Openness</th>
-                  <th scope="col">Toolset</th>
-                  <th scope="col">Suite</th>
-                  <th scope="col">Score</th>
-                  <th scope="col">Cost</th>
-                  <th scope="col">Completed</th>
-                  <th scope="col">Efficiency</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboard-body">
-                <tr>
-                  <td colspan="10" class="loading">Loading leaderboard data…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <p id="leaderboard-notes" class="notes"></p>
-        </section>
-
-        <section id="skill-lift" class="panel" aria-labelledby="skill-lift-title">
-          <div class="panel-header">
+          <div class="card step">
+            <span class="step-n">2</span>
             <div>
-              <p class="eyebrow">Per-model skill impact</p>
-              <h2 id="skill-lift-title">Skill lift</h2>
-            </div>
-            <div class="metadata">
-              <span id="skill-lift-generated-at">Loading…</span>
-              <span id="skill-lift-source-label">data/skill_lift.json</span>
+              <h3>Version-control your skill with GitHub tags</h3>
+              <p>
+                A skill is a <code>SKILL.md</code> with frontmatter (<code>name</code>,
+                <code>version</code>, <code>task_kind</code>). Bump the version whenever the
+                guidance changes and tag the release — every leaderboard row records the exact
+                skill version that produced it, so a lift is traceable to the words that caused it.
+              </p>
             </div>
           </div>
 
-          <p class="lede" style="max-width: 60ch; margin-top: 0.25rem;">
-            Each row shows the same model on the same suite, once with no skill
-            (<code>none</code>) and once with the bound skill loaded
-            (<code>full</code>). Lift is the score gained from the skill alone;
-            cost lift is the extra spend the skill prefix introduced.
+          <div class="card step">
+            <span class="step-n">3</span>
+            <div>
+              <h3>Publish a golden dataset (HF or Zenodo)</h3>
+              <p>
+                Ship the <em>public validation split</em> to Hugging Face or Zenodo with a DOI, in
+                the strict row schema (<code>id</code>, <code>task_kind</code>, <code>prompt</code>,
+                <code>gold</code>, <code>scorer_spec</code>, <code>split</code>,
+                <code>visibility</code>). A sha256 manifest pins the version a score was computed on.
+              </p>
+            </div>
+          </div>
+
+          <div class="card step">
+            <span class="step-n">4</span>
+            <div>
+              <h3>Keep a hidden test split</h3>
+              <p>
+                The ranked numbers come from a <strong>hidden</strong> split whose answers are
+                never published — not in git, not on the hub. Otherwise the benchmark measures
+                memorisation, not capability. Gate it, score it server-side, and rotate it.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h3 style="font-size:1rem;margin-bottom:6px">Scoring is a declarative spec, not code</h3>
+          <p class="lede" style="font-size:0.95rem">
+            Each row carries its own scorer spec, so anyone can score your eval without running
+            your Python — which is what makes a hidden, server-side split possible at all.
           </p>
+          <pre><code>{"id": "dvv_processing/param_recommendation/easy-volcano-01",
+ "task_kind": "numerical_regression",
+ "split": "validation", "visibility": "public",
+ "prompt": "Choose the dv/v processing parameters for ...",
+ "gold":  {"estimator": "stretching (TS)", "band": [0.4, 1.0], ...},
+ "scorer_spec": {"name": "dvv_recovery", "config": {"tolerance": 0.15}}}</code></pre>
+          <p class="chart-note">
+            Full guide:
+            <a href="https://github.com/mdenolle/frugalmind/blob/main/docs/dataset_submission.md">dataset_submission.md</a>
+            — strict schema, the HF/Zenodo pull, and the anti-contamination rules.
+          </p>
+        </div>
+      </section>
+    </main>
 
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Model</th>
-                  <th scope="col">Openness</th>
-                  <th scope="col">Toolset</th>
-                  <th scope="col">Skill</th>
-                  <th scope="col">Suite</th>
-                  <th scope="col">Score (none)</th>
-                  <th scope="col">Score (full)</th>
-                  <th scope="col">Lift</th>
-                  <th scope="col">Cost (none)</th>
-                  <th scope="col">Cost (full)</th>
-                  <th scope="col">Cost Δ</th>
-                </tr>
-              </thead>
-              <tbody id="skill-lift-body">
-                <tr>
-                  <td colspan="11" class="loading">Loading skill-lift data…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+    <footer class="site-footer">
+      <div class="shell" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;width:100%">
+        <span>FrugalMind EvalHub · cost-aware, rigor-preserving evaluation for geoscience AI · <a href="https://github.com/gaia-hazlab">GAIA HazLab</a></span>
+        <span>Code and golden data are private by design; this site is the public face.</span>
+      </div>
+    </footer>
 
-          <p id="skill-lift-notes" class="notes"></p>
-        </section>
-
-        <!-- HELPERS ------------------------------------------------------ -->
-        <section id="helpers" class="prose" aria-labelledby="helpers-title">
-          <p class="eyebrow">Go deeper</p>
-          <h2 id="helpers-title">Helpers &amp; documentation</h2>
-          <div class="helpers">
-            <a class="helper" href="https://github.com/mdenolle/frugalmind#quickstart-with-pixi">
-              <h3>Quickstart →</h3>
-              <p>Install with Pixi, run the deterministic test suite, and build the leaderboard locally.</p>
-            </a>
-            <a class="helper" href="https://github.com/mdenolle/frugalmind/tree/main/notebooks">
-              <h3>Notebooks →</h3>
-              <p>A skill-lift walkthrough on three small local models, offline by default.</p>
-            </a>
-            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/dataset_submission.md">
-              <h3>Submit a dataset →</h3>
-              <p>The strict schema, the Hugging Face pull, and how hidden test splits prevent leakage.</p>
-            </a>
-            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">
-              <h3>Why laptop-scale? →</h3>
-              <p>Small open models make the frugality claim falsifiable, the board reproducible without a credit card, and the data able to stay in the building.</p>
-            </a>
-            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/ROADMAP.md">
-              <h3>Roadmap →</h3>
-              <p>Where the framework is going, aligned with AstaBench and InspectAI.</p>
-            </a>
-          </div>
-        </section>
-      </main>
-
-      <footer class="site-footer">
-        <span>FrugalMind · cost-aware, rigor-preserving evaluation for geoscience AI.</span>
-        <a href="https://github.com/mdenolle/frugalmind">github.com/mdenolle/frugalmind</a>
-      </footer>
-    </div>
-
+    <div id="tooltip" role="tooltip"></div>
     <script src="app.js" type="module"></script>
   </body>
 </html>
