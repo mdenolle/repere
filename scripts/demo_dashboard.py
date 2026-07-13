@@ -45,14 +45,18 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
 from frugalmind import load_env_keys  # noqa: E402
-from frugalmind.adapters import adapter_from_env  # noqa: E402
+from frugalmind.adapters import AnthropicAdapter, adapter_from_env  # noqa: E402
 from frugalmind.leaderboard import (  # noqa: E402
     SkillLiftRow,
     build_leaderboard,
     build_skill_lift_leaderboard,
 )
 from frugalmind.registry import load_registry_yaml  # noqa: E402
-from frugalmind.skills import SkillLoader, render_with_skill  # noqa: E402
+from frugalmind.skills import (  # noqa: E402
+    SkillLoader,
+    render_with_skill,
+    render_with_skill_parts,
+)
 from frugalmind_suites.synthetic_stalta.items import SyntheticSTALTASuite  # noqa: E402
 from frugalmind_suites.synthetic_stalta.scorers import (  # noqa: E402
     make_scorer_from_spec as stalta_scorer_from_spec,
@@ -211,9 +215,20 @@ def _run_arm_live(adapter, skill, suite_name: str, items, mode: str,
     errors = 0
     t0 = time.time()
     for i, (item_id, prompt, gold, scorer, _good, _degraded) in enumerate(items, 1):
-        rendered = render_with_skill(prompt, skill, "full" if mode == "full" else "none")
+        inject = "full" if mode == "full" else "none"
+        static, task = render_with_skill_parts(prompt, skill, inject)
         try:
-            gen = adapter.generate(rendered, temperature=temperature)
+            if static and isinstance(adapter, AnthropicAdapter):
+                # Cache the static skill prefix. `static + task` is byte-identical
+                # to the un-split prompt, so this is purely a price change.
+                gen = adapter.generate(task, cache_prefix=static,
+                                       temperature=temperature)
+            else:
+                # Every other backend gets the FULL concatenated prompt. Passing
+                # cache_prefix here would be swallowed by **_ and the skill would
+                # vanish from the prompt entirely.
+                gen = adapter.generate(render_with_skill(prompt, skill, inject),
+                                       temperature=temperature)
             text = gen.text
             cost += float(getattr(gen, "cost_usd", 0.0) or 0.0)
             latency += float(getattr(gen, "latency_s", 0.0) or 0.0)
