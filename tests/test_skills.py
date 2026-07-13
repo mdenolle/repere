@@ -6,14 +6,12 @@ import pytest
 import yaml
 
 from frugalmind.skills import (
-    Skill,
     SkillLoader,
     SkillManifest,
     render_with_skill,
     split_frontmatter,
     validate_frontmatter,
 )
-
 
 SKILL_BODY = "# Helper\n\nDo X then Y.\n"
 
@@ -171,3 +169,42 @@ def test_loader_rejects_duplicate_skill_names(tmp_path):
     (tmp_path / "x-clone" / "SKILL.md").write_text("---\n" + yaml.safe_dump(fm) + "---\nbody")
     with pytest.raises(ValueError):
         SkillLoader(skills_dir=tmp_path).load_all()
+
+
+# --------------------------------------------------------------------------- #
+# Prompt caching (issue #38): the split must be a PURE cost optimisation.
+# --------------------------------------------------------------------------- #
+SKILLS_DIR = Path(__file__).resolve().parents[1] / ".github" / "skills"
+
+def test_skill_parts_concatenate_to_the_unsplit_prompt():
+    """Caching splits the prompt into (static skill prefix, per-item task) so the
+    provider can cache the first block. If the two halves did not reassemble
+    byte-for-byte, a cost optimisation would silently become a confound on the
+    scores — the model would be seeing a different prompt."""
+    from frugalmind.skills import (
+        SkillLoader,
+        render_with_skill,
+        render_with_skill_parts,
+    )
+
+    loader = SkillLoader(skills_dir=SKILLS_DIR)
+    for name in ("stalta-detection", "dvv-processing"):
+        skill = loader.get(name)
+        for mode in ("none", "instructions", "full"):
+            task = "Detect the event in this record."
+            static, var = render_with_skill_parts(task, skill, mode)
+            joined = var if static is None else static + var
+            assert joined == render_with_skill(task, skill, mode), (
+                f"{name}/{mode}: split prompt does not reassemble to the original"
+            )
+
+
+def test_cacheable_prefix_is_identical_across_items():
+    """The whole point: the prefix must not vary per item, or it can never hit
+    the cache."""
+    from frugalmind.skills import SkillLoader, render_with_skill_parts
+
+    skill = SkillLoader(skills_dir=SKILLS_DIR).get("dvv-processing")
+    a, _ = render_with_skill_parts("task one", skill, "full")
+    b, _ = render_with_skill_parts("a completely different task", skill, "full")
+    assert a == b and a is not None

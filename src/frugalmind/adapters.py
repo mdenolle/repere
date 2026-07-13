@@ -20,8 +20,9 @@ import os
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from . import Generation, ModelCard
 
@@ -148,6 +149,13 @@ class AnthropicAdapter:
             + out_tokens / 1000.0 * self._card.cost_per_1k_out
         )
 
+    # Anthropic prompt-cache pricing multipliers, relative to base input price.
+    # Writing to the cache costs a premium; reading from it is nearly free. A
+    # long static prefix reused across N items therefore approaches ~1/N of its
+    # uncached cost. See https://docs.anthropic.com/en/docs/prompt-caching
+    CACHE_WRITE_MULT: float = 1.25
+    CACHE_READ_MULT: float = 0.10
+
     def generate(
         self,
         prompt: str,
@@ -155,13 +163,38 @@ class AnthropicAdapter:
         max_output_tokens: int | None = None,
         temperature: float = 0.0,
         system: str | None = None,
+        cache_prefix: str | None = None,
         **_: Any,
     ) -> Generation:
+        """Generate a completion.
+
+        ``cache_prefix`` is a static leading block — typically the injected
+        domain skill, identical across every item in a suite — marked for
+        provider-side caching. It is sent as the first content block of the same
+        user message, so ``cache_prefix + prompt`` is byte-identical to the
+        prompt we would otherwise have sent: caching changes the price, never
+        the text the model sees.
+
+        Note the provider enforces a minimum cacheable block length (larger for
+        the smaller models), so a short skill may simply not cache. The usage
+        fields below report what actually happened rather than what we intended.
+        """
         url = f"{self.base_url.rstrip('/')}/v1/messages"
+        if cache_prefix:
+            content: Any = [
+                {
+                    "type": "text",
+                    "text": cache_prefix,
+                    "cache_control": {"type": "ephemeral"},
+                },
+                {"type": "text", "text": prompt},
+            ]
+        else:
+            content = prompt
         body: dict[str, Any] = {
             "model": self._card.id,
             "max_tokens": max_output_tokens or self.default_max_tokens,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [{"role": "user", "content": content}],
             "temperature": temperature,
         }
         if system:
@@ -181,13 +214,21 @@ class AnthropicAdapter:
         usage = data.get("usage", {}) or {}
         in_tokens = int(usage.get("input_tokens", _approx_token_count(prompt)))
         out_tokens = int(usage.get("output_tokens", _approx_token_count(text)))
+        cache_write = int(usage.get("cache_creation_input_tokens", 0) or 0)
+        cache_read = int(usage.get("cache_read_input_tokens", 0) or 0)
+
+        rate_in = self._card.cost_per_1k_in / 1000.0
         cost = (
-            in_tokens / 1000.0 * self._card.cost_per_1k_in
+            in_tokens * rate_in
+            + cache_write * rate_in * self.CACHE_WRITE_MULT
+            + cache_read * rate_in * self.CACHE_READ_MULT
             + out_tokens / 1000.0 * self._card.cost_per_1k_out
         )
         return Generation(
             text=text,
-            prompt_tokens=in_tokens,
+            # Report every input token the request actually consumed, cached or
+            # not, so token-based accounting stays honest.
+            prompt_tokens=in_tokens + cache_write + cache_read,
             output_tokens=out_tokens,
             latency_s=latency_s,
             cost_usd=cost,

@@ -29,6 +29,21 @@ from .scorers import make_scorer_from_spec
 _DEFAULT_CASES = Path(__file__).parent / "cases.yaml"
 CASES_PATH = Path(os.environ.get("FM_SYNTH_STALTA_CASES", _DEFAULT_CASES))
 
+# --------------------------------------------------------------------------
+# Public validation vs hidden test.
+#
+# `cases.yaml` (in-repo) is the PUBLIC validation split: develop against it,
+# reproduce the demo board with it. It is deliberately committed.
+#
+# The TEST split — the answers a ranked score is computed from — is NOT in git.
+# Its gold onsets and the secret generator seed live in a gated Hugging Face
+# dataset; pull them with `scripts/pull_eval_data.py` into FM_EVAL_DATA_DIR.
+# A benchmark whose answers are public measures memorisation, not capability.
+# --------------------------------------------------------------------------
+_REPO = Path(__file__).resolve().parents[3]
+PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", _REPO / "data" / "private"))
+HIDDEN_CASES_PATH = PRIVATE_DIR / "synthetic_stalta_test.yaml"
+
 VALID_SPLITS = ("validation", "test")
 
 
@@ -50,12 +65,29 @@ def _load(split: str | None = None) -> tuple[dict, list[dict]]:
             "`pixi run -e full python scripts/build_synthetic_stalta.py` first."
         )
     doc = yaml.safe_load(CASES_PATH.read_text())
-    meta, cases = doc.get("meta", {}), doc["cases"]
+    meta, cases = doc.get("meta", {}), list(doc["cases"])
+
+    # Merge the hidden test split when it has been pulled. Absent is the normal
+    # case (CI, a fresh clone): the public validation split alone still works.
+    if HIDDEN_CASES_PATH.exists():
+        hidden = yaml.safe_load(HIDDEN_CASES_PATH.read_text()) or {}
+        cases.extend(hidden.get("cases", []))
+
     for c in cases:
         for k in ("id", "waveform", "onsets_s", "sampling_rate", "split", "visibility"):
             if k not in c:
                 raise ValueError(f"case {c.get('id')!r} missing key {k!r}")
+
     split = _resolve_split(split)
+    if split == "test" and not any(c["split"] == "test" for c in cases):
+        raise FileNotFoundError(
+            "the hidden test split is not available locally.\n"
+            f"  expected: {HIDDEN_CASES_PATH}\n"
+            "  pull it (requires access to the gated dataset):\n"
+            "      pixi run -e full python scripts/pull_eval_data.py\n"
+            "  Ranked scores are computed on the hidden split only; the public "
+            "`validation` split is for development."
+        )
     if split is not None:
         cases = [c for c in cases if c["split"] == split]
     return meta, cases

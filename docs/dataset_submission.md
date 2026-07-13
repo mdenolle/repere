@@ -168,12 +168,49 @@ distributed*. A two-repo layout on Hugging Face does all three.
 Two commands, two trust levels:
 
 ```bash
-# Develop: pulls public validation rows + public artifacts, read/write local.
-pixi run pull-dataset <name>            # -> data/<name>/validation/*.jsonl
+# Develop: the PUBLIC validation split ships in-repo. Nothing to pull.
+#          Reproduce the demo board on a laptop with no credentials.
 
-# Benchmark against hidden test: you never receive gold; you submit outputs.
-pixi run submit-run <name> --results results/<run>.jsonl   # -> server scores it
+# Benchmark: pull the HIDDEN test split (gated dataset, requires access).
+huggingface-cli login          # or export HF_TOKEN=hf_...
+pixi run -e full python scripts/pull_eval_data.py
+#   -> data/private/  (gitignored; suites pick it up automatically)
 ```
+
+### 5d. Implemented: how the hidden split actually works
+
+This is live for `synthetic_stalta` and is the pattern to copy.
+
+- **Public validation split** (`src/frugalmind_suites/synthetic_stalta/cases.yaml`)
+  is committed on purpose: it is the development set, and it keeps the demo board
+  reproducible by anyone.
+- **Hidden test split** is *not* in git. Crucially, it is also **not
+  regenerable from the repo**: every transform in it (event delay, amplitude,
+  noise level, second-event gap) is drawn from a **secret master seed** supplied
+  at build time and stored with the gated dataset, never committed.
+
+  ```bash
+  # Maintainers only. Never commit the seed.
+  python scripts/build_synthetic_stalta.py --split test --secret-seed <SECRET>
+  #   -> data/private/synthetic_stalta_test.yaml   (gitignored)
+  #   then upload that file to the gated HF dataset
+  ```
+
+  Without the seed you cannot reconstruct the answers even though you have the
+  generator and the public waveform. Publishing the generator is therefore safe.
+
+- **The loader merges** the hidden split when present and degrades gracefully
+  when it is not: `split="validation"` always works (CI, a fresh clone), while
+  `split="test"` raises a clear error telling you to pull, rather than silently
+  scoring on the public split.
+
+- **Two tests enforce the contract**: the committed `cases.yaml` must contain
+  *only* `validation`/`public` rows, and requesting the test split without the
+  data must fail loudly.
+
+> **A gitignore alone is not protection.** If the generator and its seed are both
+> public, the "hidden" answers can be reproduced exactly. Hiding the *seed* — not
+> just the file — is what makes the split real.
 
 ### 5d. Anti-leakage measures (do all of these)
 

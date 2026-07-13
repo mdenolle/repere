@@ -31,6 +31,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -41,6 +43,10 @@ SUITE_DIR = REPO / "src" / "frugalmind_suites" / "synthetic_stalta"
 DATA_DIR = SUITE_DIR / "data"
 SEED_MSEED = DATA_DIR / "ridgecrest_seed.mseed"
 CASES_YAML = SUITE_DIR / "cases.yaml"
+
+# Hidden test split lives outside the package and is gitignored. Overridable so
+# CI / a collaborator can point at a pulled copy.
+PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", REPO / "data" / "private"))
 
 # Ridgecrest M7.1 mainshock.
 ORIGIN = "2019-07-06T03:19:53"
@@ -204,28 +210,114 @@ def _build_cases(seed: np.ndarray, t0: float) -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Hidden TEST split
+#
+# The public cases above use fixed, published transforms — anyone with this repo
+# reproduces them exactly, which is fine: they are the development split.
+#
+# The test split must NOT be reproducible from the repo, or the "hidden" answers
+# aren't hidden. So every one of its transforms (shift, amplitude, noise seed,
+# second-event gap) is drawn from a SECRET master seed supplied at build time and
+# never committed. Without that seed you cannot regenerate the onsets, even with
+# this script and the public waveform.
+# ---------------------------------------------------------------------------
+def _build_test_cases(seed: np.ndarray, t0: float, master: int) -> list[dict]:
+    n = len(seed)
+    amp = float(np.max(np.abs(seed)))
+    rng = np.random.default_rng(master)
+
+    def noise(scale: float) -> np.ndarray:
+        return scale * amp * np.random.default_rng(int(rng.integers(1 << 30))).standard_normal(n)
+
+    cases: list[dict] = []
+    # positives: randomised delay, amplitude and noise level
+    for i in range(6):
+        shift = float(rng.uniform(5.0, 55.0))
+        scale = float(rng.uniform(0.2, 1.0))
+        nz = float(rng.uniform(0.05, 0.30))
+        pad = int(shift * SR)
+        data = np.concatenate([noise(nz)[:pad], scale * seed])[:n] + noise(nz)
+        cases.append({
+            "id": f"t-pos-{i + 1}", "transform": "hidden",
+            "data": data, "onsets_s": [round(t0 + shift, 2)],
+        })
+    # a hidden two-event case
+    gap = float(rng.uniform(35.0, 70.0))
+    second = np.concatenate([np.zeros(int(gap * SR)), 0.7 * seed])[:n]
+    two = seed.copy()
+    two[: len(second)] += second[: len(two)]
+    cases.append({"id": "t-pos-two", "transform": "hidden",
+                  "data": two, "onsets_s": [round(t0, 2), round(t0 + gap, 2)]})
+    # negatives: noise only, at randomised levels
+    for i in range(3):
+        cases.append({"id": f"t-neg-{i + 1}", "transform": "hidden",
+                      "data": noise(float(rng.uniform(0.05, 0.35))), "onsets_s": []})
+
+    out = []
+    for c in cases:
+        d = c["data"]
+        out.append({
+            "id": c["id"], "transform": c["transform"],
+            "expected_detection": len(c["onsets_s"]) > 0,
+            "onsets_s": c["onsets_s"],
+            "sampling_rate": SR, "npts": int(len(d)),
+            "sta_s": STA_S, "lta_s": LTA_S, "thr_on": THR_ON, "thr_off": THR_OFF,
+            "onset_tolerance_s": 1.5,
+            "split": "test",
+            "visibility": "private",
+            "waveform": _round(d),
+        })
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true",
                     help="use a deterministic analytic seed instead of FDSN")
+    ap.add_argument("--split", choices=("validation", "test"), default="validation",
+                    help="validation = public, committed. test = hidden, gitignored.")
+    ap.add_argument("--secret-seed", type=int, default=None,
+                    help="master seed for the hidden test split. Required with "
+                         "--split test. NEVER commit this value; store it with the "
+                         "gated dataset. Falls back to $FM_STALTA_TEST_SEED.")
     args = ap.parse_args()
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     seed, meta = _synthetic_seed() if args.offline else _fetch_seed()
     t0 = _reference_onset(seed)
     print(f"reference onset: {t0:.2f}s")
-    cases = _build_cases(seed, t0)
 
-    doc = {
-        "meta": {**meta, "band_hz": list(BAND), "detector": {
-            "sta_s": STA_S, "lta_s": LTA_S, "thr_on": THR_ON, "thr_off": THR_OFF}},
-        "cases": cases,
-    }
-    CASES_YAML.write_text(yaml.safe_dump(doc, sort_keys=False, width=100))
+    common_meta = {**meta, "band_hz": list(BAND), "detector": {
+        "sta_s": STA_S, "lta_s": LTA_S, "thr_on": THR_ON, "thr_off": THR_OFF}}
+
+    if args.split == "test":
+        master = args.secret_seed
+        if master is None:
+            env = os.environ.get("FM_STALTA_TEST_SEED")
+            master = int(env) if env else None
+        if master is None:
+            print("error: --split test needs --secret-seed (or $FM_STALTA_TEST_SEED).\n"
+                  "       Without it the hidden answers would be reproducible from "
+                  "this repo, which defeats the point.", file=sys.stderr)
+            return 2
+        cases = _build_test_cases(seed, t0, master)
+        out_path = PRIVATE_DIR / "synthetic_stalta_test.yaml"
+        PRIVATE_DIR.mkdir(parents=True, exist_ok=True)
+    else:
+        cases = _build_cases(seed, t0)
+        out_path = CASES_YAML
+
+    doc = {"meta": common_meta, "cases": cases}
+    out_path.write_text(yaml.safe_dump(doc, sort_keys=False, width=100))
     n_pos = sum(1 for c in cases if c["expected_detection"])
-    print(f"wrote {CASES_YAML} : {len(cases)} cases ({n_pos} positive, "
-          f"{len(cases) - n_pos} negative)")
-    print(json.dumps({c["id"]: c["onsets_s"] for c in cases}, indent=2))
+    print(f"wrote {out_path} : {len(cases)} cases ({n_pos} positive, "
+          f"{len(cases) - n_pos} negative) [split={args.split}]")
+    if args.split == "test":
+        print("This file is gitignored. Upload it to the gated HF dataset; keep the "
+              "secret seed with it, not in git.")
+    else:
+        print(json.dumps({c["id"]: c["onsets_s"] for c in cases}, indent=2))
     return 0
 
 

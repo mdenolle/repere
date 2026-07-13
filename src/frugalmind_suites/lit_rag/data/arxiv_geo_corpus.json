@@ -1,0 +1,371 @@
+{
+ "source": "arXiv API, category physics.geo-ph (real papers, fetched 2026-07-13)",
+ "note": "Titles and abstracts are verbatim from arXiv. Nothing here is invented.",
+ "docs": [
+  {
+   "arxiv_id": "1810.08517v1",
+   "title": "Developing a seismic pattern interpretation network (SpiNet) for automated seismic interpretation",
+   "abstract": "Seismic interpretation is now serving as a fundamental tool for depicting subsurface geology and assisting activities in various domains, such as environmental engineering and petroleum exploration. However, most of the existing interpretation techniques are designed for interpreting a certain seismic pattern (e.g., fa"
+  },
+  {
+   "arxiv_id": "1210.5589v2",
+   "title": "Artificial Seismic Shadow Zone by Acoustic Metamaterials",
+   "abstract": "We developed a new method of earthquakeproof engineering to create an artificial seismic shadow zone using acoustic metamaterials. By designing huge empty boxes with a few side-holes corresponding to the resonance frequencies of seismic waves and burying them around the buildings that we want to protect, the velocity o"
+  },
+  {
+   "arxiv_id": "1808.03049v1",
+   "title": "The inverse problem in Seismology. Seismic moment and energy of earthquakes. Seismic hyperbola",
+   "abstract": "The inverse problem in Seismology is tackled in this paper under three particular circumstances. First, the inverse problem is defined as the determination of the seismic-moment tensor from the far-field seismic waves (P and S waves). We use the analytical expression of the seismic waves in a homogeneous isotropic body"
+  },
+  {
+   "arxiv_id": "2209.06559v3",
+   "title": "Seismic noise characterization at a potential gravitational wave detector site in Australia",
+   "abstract": "A critical consideration in the design of next generation gravitational wave detectors is the understanding of the seismic environment that can introduce coherent and incoherent noise of seismic origin at different frequencies. We present detailed low-frequency ambient seismic noise characterization (0.1--10~Hz) at the"
+  },
+  {
+   "arxiv_id": "2502.11768v1",
+   "title": "Seismic regularity coefficient changes precede stronger earthquakes in Santorini swarm",
+   "abstract": "We have been analyzing the ongoing seismic swarm in Santorini, Greece, with the Seismic Regularity (dc) and Seismic Strain Dynamics (SSD) coefficients, which quantify temporal changes in seismic process organization and strain energy release. Stronger earthquakes are preceded by characteristic down-up changes of dc. Su"
+  },
+  {
+   "arxiv_id": "2604.24866v1",
+   "title": "Seismic background mitigation with the Lunar Gravitational-wave Antenna",
+   "abstract": "Lunar gravitational-wave (GW) detectors relying on the measurement of the response of the Moon to GWs are susceptible to a seismic background, which might pose a fundamental sensitivity limitation. The Lunar Gravitational-wave Antenna (LGWA) was conceived as an array of accelerometers with the idea that data can be pro"
+  },
+  {
+   "arxiv_id": "2203.14386v1",
+   "title": "Velocity continuation with Fourier neural operators for accelerated uncertainty quantification",
+   "abstract": "Seismic imaging is an ill-posed inverse problem that is challenged by noisy data and modeling inaccuracies -- due to errors in the background squared-slowness model. Uncertainty quantification is essential for determining how variability in the background models affects seismic imaging. Due to the costs associated with"
+  },
+  {
+   "arxiv_id": "2211.09539v2",
+   "title": "Real-time Earthquake Monitoring using Deep Learning: a case study on Turkey Earthquake Aftershock Sequence",
+   "abstract": "Seismic phase picking and magnitude estimation are essential components of real time earthquake monitoring and earthquake early warning systems. Reliable phase picking enables the timely detection of seismic wave arrivals, facilitating rapid earthquake characterization and early warning alerts. Accurate magnitude estim"
+  },
+  {
+   "arxiv_id": "2006.15472v1",
+   "title": "Spatiotemporal Modeling of Seismic Images for Acoustic Impedance Estimation",
+   "abstract": "Seismic inversion refers to the process of estimating reservoir rock properties from seismic reflection data. Conventional and machine learning-based inversion workflows usually work in a trace-by-trace fashion on seismic data, utilizing little to no information from the spatial structure of seismic images. We propose "
+  },
+  {
+   "arxiv_id": "2111.13581v1",
+   "title": "Machine learning-based porosity estimation from spectral decomposed seismic data",
+   "abstract": "Estimating porosity models via seismic data is challenging due to the signal noise and insufficient resolution of seismic data. Although impedance inversion is often used by combining with well logs, several hurdles remain to retrieve sub-seismic scale porosity. As an alternative, we propose a machine learning-based wo"
+  },
+  {
+   "arxiv_id": "1706.05276v1",
+   "title": "Quantitative and Qualitative Seismic Imaging and Seismic Inversion",
+   "abstract": "We consider seismic imaging to include seismic inversion. Imaging could use approximate operator or time instead of depth. Processing in time is an important part of seismic imaging as well as processing in depth. We can classify seismic imaging as quantitative versus qualitative methods. Quantitative method uses numer"
+  },
+  {
+   "arxiv_id": "2204.02870v1",
+   "title": "Deep Learning-based Small Magnitude Earthquake Detection and Seismic Phase Classification",
+   "abstract": "Reliable earthquake detection and seismic phase classification is often challenging especially in the circumstances of low magnitude events or poor signal-to-noise ratio. With improved seismometers and better global coverage, a sharp increase in the volume of recorded seismic data is witnessed. This makes the handling "
+  },
+  {
+   "arxiv_id": "2305.09136v1",
+   "title": "Seismic Coherent Noise Removal with Residual Network and Synthetic Seismic Simples",
+   "abstract": "Seismic coherent noise is often found in post-stack seismic data, which contaminates the resolution and integrity of seismic images. It is difficult to remove the coherent noise since the features of coherent noise, e.g., frequency, is highly related to signals. Recently, deep learning has proven to be uniquely advanta"
+  },
+  {
+   "arxiv_id": "2311.10910v2",
+   "title": "GAN-supervised Seismic Data Reconstruction: An Enhanced-Learning for Improved Generalization",
+   "abstract": "Seismic data interpolation of irregularly missing traces plays a crucial role in subsurface imaging, enabling accurate analysis and interpretation throughout the seismic processing workflow. Despite the widespread exploration of deep supervised learning methods for seismic data reconstruction, several challenges still "
+  },
+  {
+   "arxiv_id": "2501.14396v1",
+   "title": "Characterising the Atacama segment of the Chile subduction margin (24\u00b0S-31\u00b0S) with >165,000 earthquakes",
+   "abstract": "The Atacama segment in Northern Chile (24\u00b0S to 31\u00b0S) is a mature seismic gap with no major event (Mw>8) since 1922. In addition to regular seismicity, around the subducting Copiap\u00f3 ridge, the region hosts seismic swarms, and shallow and deep slow slip events. To characterize the fine structure of this seismic gap and i"
+  },
+  {
+   "arxiv_id": "1901.08539v2",
+   "title": "Multiresolution Analysis and Learning for Computational Seismic Interpretation",
+   "abstract": "We explore the use of multiresolution analysis techniques as texture attributes for seismic image characterization, especially in representing subsurface structures in large migrated seismic data. Namely, we explore the Gaussian pyramid, the discrete wavelet transform, Gabor filters, and the curvelet transform. These t"
+  },
+  {
+   "arxiv_id": "2302.03254v1",
+   "title": "Time-variant Seismic Resilience Analysis Model for Water Distribution Systems",
+   "abstract": "Water distribution systems (WDS) sustained severe damage in the past earthquakes. While previous studies investigated the seismic performance of buried water pipelines, the effects of corrosion on the pipeline seismic performance were ignored. The presence of corrosion on metallic pipeline walls aggravates seismic dama"
+  },
+  {
+   "arxiv_id": "1006.0678v1",
+   "title": "Characterization of the seismic environment at the Sanford Underground Laboratory, South Dakota",
+   "abstract": "An array of seismometers is being developed at the Sanford Underground Laboratory, the former Homestake mine, in South Dakota to study the properties of underground seismic fields and Newtonian noise, and to investigate the possible advantages of constructing a third-generation gravitational-wave detector underground. "
+  },
+  {
+   "arxiv_id": "2503.00637v1",
+   "title": "SeisDiff-deno: A Diffusion-Based Denoising Framework for Tube Wave Attenuation in VSP Data",
+   "abstract": "Tube waves present a significant challenge in vertical seismic profiling data, often obscuring critical seismic signals from seismic acquisition. In this study, we introduce the Seismic Diffusion Model for Denoising, a fast diffusion model specifically designed to remove the noise from seismic shotgather effectively. O"
+  },
+  {
+   "arxiv_id": "2604.07630v2",
+   "title": "Diffusional earthquakes and their slip-distance scaling",
+   "abstract": "The final size of an earthquake typically cannot be predicted from its ongoing seismic radiation. Expanding observations reveal distinct exceptions, such as slow earthquakes, injection-induced seismicity, and earthquake swarms, in which fault slip has an upper bound. A common thread among these anomalies is the diffusi"
+  },
+  {
+   "arxiv_id": "1902.00574v1",
+   "title": "3D Curvature Analysis of Seismic Waveforms and its Interpretational Implications",
+   "abstract": "The idea of curvature analysis has been widely used in subsurface structure interpretation from three-dimensional (3D) seismic data (e.g., fault/fracture detection and geomorphology delineation) by measuring the lateral changes in the geometry of seismic events. However, such geometric curvature utilizes only the kinem"
+  },
+  {
+   "arxiv_id": "2505.20518v2",
+   "title": "SeisCoDE: 3D Seismic Interpretation Foundation Model with Contrastive Self-Distillation Learning",
+   "abstract": "Seismic interpretation is vital for understanding subsurface structures but remains labor-intensive, subjective, and computationally demanding. While deep learning (DL) offers promise, its success hinges on large, high-quality datasets, often scarce in geophysics. Foundation Models (FMs), which have shown significant s"
+  },
+  {
+   "arxiv_id": "1001.1491v1",
+   "title": "Seismic potential map of Greece calculated for the years 2005 and 2010. Its correlation to the large (Ms>=6.0R) seismic events of the 2000 - 2009 period",
+   "abstract": "The seismic potential maps for Greece, particularly for the years 2005 and 2010 (end of 2009), have been calculated following the methodology of the \"lithospheric seismic energy flow model\". The compiled, for the year 2005, map is compared to the observed large seismicity of 2005 - 2010 period. Furthermore, a compariso"
+  },
+  {
+   "arxiv_id": "2312.02831v1",
+   "title": "Detection of Seismic Infrasonic Elephant Rumbles Using Spectrogram-Based Machine Learning",
+   "abstract": "This paper presents an effective method of identifying elephant rumbles in infrasonic seismic signals. The design and implementation of electronic circuitry to amplify, filter, and digitize the seismic signals captured through geophones are presented. A collection of seismic infrasonic elephant rumbles was collected at"
+  },
+  {
+   "arxiv_id": "2411.00911v2",
+   "title": "An Efficient Self-supervised Seismic Data Reconstruction Method Based on Self-Consistency Learning",
+   "abstract": "Seismic exploration remains the most critical method for characterizing subsurface structures in geophysics. However, complex surface conditions often cause a non-uniform distribution of seismic receivers along survey lines, leading to irregularly acquired seismic data, which affects subsequent processing and inversion"
+  },
+  {
+   "arxiv_id": "0407018v2",
+   "title": "Importance of small earthquakes for stress transfers and earthquake triggering",
+   "abstract": "We estimate the relative importance of small and large earthquakes for static stress changes and for earthquake triggering, assuming that earthquakes are triggered by static stress changes and that earthquakes are located on a fractal network of dimension D. This model predicts that both the number of events triggered "
+  },
+  {
+   "arxiv_id": "2010.13395v1",
+   "title": "Weather conditions several hours before the strong earthquake",
+   "abstract": "Physical phenomena observed before strong earthquake have been reported over centuries. Radon anomalies, electrical signals, water level changes, earthquake lights near the epicenter are recognized as pre-earthquake signals to approach earthquake prediction. Anomalous negative signals observed by ground-based atmospher"
+  },
+  {
+   "arxiv_id": "1207.4836v1",
+   "title": "Characteristic earthquake model, 1884 -- 2011, R.I.P",
+   "abstract": "Unfortunately, working scientists sometimes reflexively continue to use \"buzz phrases\" grounded in once prevalent paradigms that have been subsequently refuted. This can impede both earthquake research and hazard mitigation. Well-worn seismological buzz phrases include \"earthquake cycle,\" \"seismic cycle,\" \"seismic gap,"
+  },
+  {
+   "arxiv_id": "0210056v2",
+   "title": "Is Earthquake Triggering Driven by Small Earthquakes?",
+   "abstract": "Using a catalog of seismicity for Southern California, we measure how the number of triggered earthquakes increases with the earthquake magnitude. The trade-off between this relation and the distribution of earthquake magnitudes controls the relative role of small compared to large earthquakes. We show that seismicity "
+  },
+  {
+   "arxiv_id": "2510.02467v2",
+   "title": "From Local Earthquake Nowcasting to Natural Time Forecasting: A Simple Do-It-Yourself (DIY) Method",
+   "abstract": "Previous papers have outlined nowcasting methods to track the current state of earthquake hazard using only observed seismic catalogs. The basis for one of these methods, the \"counting method\", is the Gutenberg-Richter (GR) magnitude-frequency relation. The GR relation states that for every large earthquake of magnitud"
+  },
+  {
+   "arxiv_id": "1903.07079v1",
+   "title": "Forecasting the full distribution of earthquake numbers is fair, robust and better",
+   "abstract": "Forecasting the full distribution of the number of earthquakes is revealed to be inherently superior to forecasting their mean. Forecasting the full distribution of earthquake numbers is also shown to yield robust projections in the presence of \"surprise\" large earthquakes, which in the past have strongly deteriorated "
+  },
+  {
+   "arxiv_id": "2109.09008v1",
+   "title": "Earthquake Phase Association using a Bayesian Gaussian Mixture Model",
+   "abstract": "Earthquake phase association algorithms aggregate picked seismic phases from a network of seismometers into individual earthquakes and play an important role in earthquake monitoring. Dense seismic networks and improved phase picking methods produce massive earthquake phase data sets, particularly for earthquake swarms"
+  },
+  {
+   "arxiv_id": "2410.05237v1",
+   "title": "High-resolution borehole earthquake monitoring at San Andreas Fault Observatory at Depth, Parkfield, California",
+   "abstract": "Downhole earthquake monitoring, without the complex effects from the near surface, can record more and better seismic data than monitoring on surface. The San Andreas Fault Observatory at Depth (SAFOD) is a borehole observatory equipped with different instruments inside to study the earthquake mechanism of the San Andr"
+  },
+  {
+   "arxiv_id": "2006.10419v1",
+   "title": "Possibility of Land Movement Prediction for Creep or before Earthquake Using Lidar Geodetic Data in a Machine Learning Scheme",
+   "abstract": "Earthquake prediction is one of the most pursued problems in geoscience. Different geological and seismological approaches exist for the prediction of the earthquake and its subsequent land change. However, in many cases, they fail in their mission. In this paper, we address the well-established earthquake prediction p"
+  },
+  {
+   "arxiv_id": "1806.05114v2",
+   "title": "Earthquake Detection in 1-D Time Series Data with Feature Selection and Dictionary Learning",
+   "abstract": "Earthquakes can be detected by matching spatial patterns or phase properties from 1-D seismic waves. Current earthquake detection methods, such as waveform correlation and template matching, have difficulty detecting anomalous earthquakes that are not similar to other earthquakes. In recent years, machine-learning tech"
+  },
+  {
+   "arxiv_id": "1211.1796v2",
+   "title": "Common dependence on earthquake magnitudes for the trapped particles bursts approaching the earthquake",
+   "abstract": "Trapped particles bursts have long been observed to be frequently occurred several hours before earthquakes, especially for strong earthquakes, from several space experiments during past decades. However, the validity of earthquake origin of particles bursts events is still unsolved. In this paper, we firstly reported "
+  },
+  {
+   "arxiv_id": "2006.01332v1",
+   "title": "Real-time Earthquake Early Warning with Deep Learning: Application to the 2016 Central Apennines, Italy Earthquake Sequence",
+   "abstract": "Earthquake early warning systems are required to report earthquake locations and magnitudes as quickly as possible before the damaging S wave arrival to mitigate seismic hazards. Deep learning techniques provide potential for extracting earthquake source information from full seismic waveforms instead of seismic phase "
+  },
+  {
+   "arxiv_id": "1201.1659v1",
+   "title": "Long- and Short-Term Earthquake Forecasts during the Tohoku Sequence",
+   "abstract": "We consider two issues related to the 2011 Tohoku mega-earthquake: (1) what is the repeat time for the largest earthquakes in this area, and (2) what are the possibilities of numerical short-term forecasts during the 2011 earthquake sequence in the Tohoku area. Starting in 1999 we have carried out long- and short-term "
+  },
+  {
+   "arxiv_id": "1909.01197v2",
+   "title": "Self-similarity of low-frequency earthquakes",
+   "abstract": "Low-frequency earthquakes are a particular class of slow earthquakes that provide a unique source of information on the mechanical properties of a subduction zone during the preparation of large earthquakes. Despite increasing detection of these events in recent years, their source mechanisms are still poorly character"
+  },
+  {
+   "arxiv_id": "0806.2329v1",
+   "title": "On geometric complexity of earthquake focal zone and fault system: A statistical study",
+   "abstract": "We discuss various methods used to investigate the geometric complexity of earthquakes and earthquake faults, based both on a point-source representation and the study of interrelations between earthquake focal mechanisms. We briefly review the seismic moment tensor formalism and discuss in some detail the representati"
+  },
+  {
+   "arxiv_id": "0510043v1",
+   "title": "Dynamics of the Markov Time Scale of Seismic Activity May Provide a Short-Term Alert for Earthquakes",
+   "abstract": "We propose a novel method for analyzing precursory seismic data before an earthquake that treats them as a Markov process and distinguishes the background noise from real fluctuations due to an earthquake. A short time (on the order of several hours) before an earthquake the Markov time scale $t_M$ increases sharply, h"
+  },
+  {
+   "arxiv_id": "1709.02945v1",
+   "title": "NDSHA: robust and reliable seismic hazard assessment",
+   "abstract": "The Neo-Deterministic Seismic Hazard Assessment (NDSHA) method reliably and realistically simulates the suite of earthquake ground motions that may impact civil populations as well as their heritage buildings. The modeling technique is developed from comprehensive physical knowledge of the seismic source process, the p"
+  },
+  {
+   "arxiv_id": "0303070v2",
+   "title": "Importance of direct and indirect triggered seismicity",
+   "abstract": "Using the simple ETAS branching model of seismicity, which assumes that each earthquake can trigger other earthquakes, we quantify the role played by the cascade of triggered seismicity in controlling the rate of aftershock decay as well as the overall level of seismicity in the presence of a constant external seismici"
+  },
+  {
+   "arxiv_id": "1312.7712v1",
+   "title": "A Prospect of Earthquake Prediction Research",
+   "abstract": "Earthquakes occur because of abrupt slips on faults due to accumulated stress in the Earth's crust. Because most of these faults and their mechanisms are not readily apparent, deterministic earthquake prediction is difficult. For effective prediction, complex conditions and uncertain elements must be considered, which "
+  },
+  {
+   "arxiv_id": "2307.15201v1",
+   "title": "Fault-size dependent fracture energy explains multi-scale seismicity and cascading earthquakes",
+   "abstract": "Earthquakes vary in size over many orders of magnitude, yet the scaling of the earthquake energy budget remains enigmatic. We propose that fundamentally different \"small-slip\" and \"large-slip\" fracture processes govern earthquakes. We combine seismological observations with a physics-based mechanical earthquake model u"
+  },
+  {
+   "arxiv_id": "0411114v1",
+   "title": "Constraints on the Size of the Smallest Triggering Earthquake from the ETAS Model, Baath's Law, and Observed Aftershock Sequences",
+   "abstract": "The physics of earthquake triggering together with simple assumptions of self-similarity impose the existence of a minimum magnitude m0 below which earthquakes do not trigger other earthquakes. Noting that the magnitude md of completeness of seismic catalogs has no reason to be the same as the magnitude m0 of the small"
+  },
+  {
+   "arxiv_id": "1305.6967v1",
+   "title": "Recurrence Statistics of Great Earthquakes",
+   "abstract": "We investigate the sequence of great earthquakes over the past century. To examine whether the earthquake record includes temporal clustering, we identify aftershocks and remove those from the record. We focus on the recurrence time, defined as the time between two consecutive earthquakes. We study the variance in the "
+  },
+  {
+   "arxiv_id": "2310.02560v1",
+   "title": "Reduced seismic activity after mega earthquakes",
+   "abstract": "Mainshocks are often followed by increased earthquake activity (aftershocks). According to the Omori-Utsu law, the rate of aftershocks decays as a power law over time. While aftershocks typically occur in the vicinity of the mainshock, previous studies have suggested that mainshocks can also trigger earthquakes in remo"
+  },
+  {
+   "arxiv_id": "2402.11149v3",
+   "title": "Indications and implications of a borehole seismic monitoring result of the San Andreas Fault foresee future earthquake prediction",
+   "abstract": "The Parkfield M6 earthquake predicted from 1985 by the USGS to happen by 1993 happened 11 years later in 2004 instead. Till today, satisfactory answers to why this earthquake was mis-predicted have not been found. Seven months after the earthquake, we deployed a seismic array in the SAFOD main hole to monitor the San A"
+  },
+  {
+   "arxiv_id": "1003.1092v2",
+   "title": "Retrospective Evaluation of the Five-Year and Ten-Year CSEP-Italy Earthquake Forecasts",
+   "abstract": "On 1 August 2009, the global Collaboratory for the Study of Earthquake Predictability (CSEP) launched a prospective and comparative earthquake predictability experiment in Italy. The goal of the CSEP-Italy experiment is to test earthquake occurrence hypotheses that have been formalized as probabilistic earthquake forec"
+  },
+  {
+   "arxiv_id": "2604.21939v1",
+   "title": "Seismic noise suppression: array stations, waveform cross-correlation, and noise stochastization",
+   "abstract": "Seismic noise with an amplitude higher than that of the sought signal is a challenge for detection. Several techniques have been developed to suppress the ambient noise and to reduce the detection threshold in order to find signals with the lowest possible amplitudes produced by events with the magnitudes significant f"
+  },
+  {
+   "arxiv_id": "2110.10793v2",
+   "title": "L\u00e9vy-noise versus Gaussian-noise-induced Transitions in the Ghil-Sellers Energy Balance Model",
+   "abstract": "We study the impact of applying stochastic forcing to the Ghil-Sellers energy balance climate model in the form of a fluctuating solar irradiance. Through numerical simulations, we explore the noise-induced transitions between the competing warm and snowball climate states. We consider multiplicative stochastic forcing"
+  },
+  {
+   "arxiv_id": "2509.03629v3",
+   "title": "Noise is All You Need: rethinking the value of noise on seismic denoising via diffusion models",
+   "abstract": "We introduce SeisDiff-denoNIA, a diffusion-based seismic denoising framework that trains directly on noise extracted from field data, eliminating the dependence on synthetic datasets. Unlike conventional denoising methods that require clean signal labels, our approach uses field noise recorded as training targets, enab"
+  },
+  {
+   "arxiv_id": "2105.07250v2",
+   "title": "Seismic interferometry from correlated noise sources",
+   "abstract": "It is a well-established principle that cross-correlating seismic observations at different receiver locations can yield estimates of band-limited inter-receiver Green's functions. This principle, known as seismic interferometry, is a powerful technique that can transform noise into signals which allow us to remotely i"
+  },
+  {
+   "arxiv_id": "1702.01356v3",
+   "title": "Eastern Arctic ambient noise on a drifting vertical array",
+   "abstract": "Ambient noise in the eastern Arctic was studied from April to September 2013 using a 22 element vertical hydrophone array as it drifted from 89$^\\circ$23'N, 64$^\\circ$35'W to 83$^\\circ$45'N, 4$^\\circ$28'W. The hydrophones recorded for 108 min/day on six days/week with a sampling rate of 1953.125 Hz. After removal of da"
+  },
+  {
+   "arxiv_id": "2005.00131v1",
+   "title": "COVID-19 societal response captured by seismic noise in China and Italy",
+   "abstract": "Seismic noise with frequencies above 1 Hz is often called cultural noise and is generally correlated quite well with human activities. Recently, cities in mainland China and Italy imposed lockdown restrictions in response to COVID-19, which gave us an unprecedented opportunity to study the relationship between seismic "
+  },
+  {
+   "arxiv_id": "0004021v2",
+   "title": "Influence of Random Irregularities on Quasi-Thermal Noise Spectrum of Plasma",
+   "abstract": "The influence of random irregularities of electron density on quasi-thermal noise spectra in plasma is considered in the paper. Quasi-thermal noise spectrum of plasma in state near the thermal equilibrium is determined by effective dielectric constant tensor. Presence of random irregularities change dispersion law in p"
+  },
+  {
+   "arxiv_id": "2410.17768v1",
+   "title": "Seismic noise interferometry for phase transmission fibre optics",
+   "abstract": "Similar to Distributed Acoustic Sensing (DAS), phase transmission fibre optics allows for large bandwidth seismic data measurements using fibre-optic cables. However, while the application range of DAS is limited to tens of kilometres, phase transmission fibre optics has an application range that can go up to thousands"
+  },
+  {
+   "arxiv_id": "1612.04308v1",
+   "title": "Evaluating the wind-induced mechanical noise on the InSight seismometers",
+   "abstract": "The SEIS (Seismic Experiment for Interior Structures) instrument onboard the InSight mission to Mars is the critical instrument for determining the interior structure of Mars, the current level of tectonic activity and the meteorite flux. Meeting the performance requirements of the SEIS instrument is vital to successfu"
+  },
+  {
+   "arxiv_id": "1202.4826v1",
+   "title": "Global characterization of seismic noise with broadband seismometers",
+   "abstract": "In this paper, we present an analysis of seismic spectra that were calculated from all broadband channels (BH?) made available through IRIS, NIED F-net and Orfeus servers covering the past five years and beyond. A general characterization of the data is given in terms of spectral histograms and data-availability plots."
+  },
+  {
+   "arxiv_id": "2109.07344v1",
+   "title": "The potential of self-supervised networks for random noise suppression in seismic data",
+   "abstract": "Noise suppression is an essential step in any seismic processing workflow. A portion of this noise, particularly in land datasets, presents itself as random noise. In recent years, neural networks have been successfully used to denoise seismic data in a supervised fashion. However, supervised learning always comes with"
+  },
+  {
+   "arxiv_id": "1810.11778v2",
+   "title": "Blind Curvelet based Denoising of Seismic Surveys in Coherent and Incoherent Noise Environments",
+   "abstract": "The localized nature of curvelet functions, together with their frequency and dip characteristics, makes the curvelet transform an excellent choice for processing seismic data. In this work, a denoising method is proposed based on a combination of the curvelet transform and a whitening filter along with procedure for n"
+  },
+  {
+   "arxiv_id": "2110.13192v1",
+   "title": "Convolutional encoder decoder network for the removal of coherent seismic noise",
+   "abstract": "Seismologists often need to gather information about the subsurface structure of a location to determine if it is fit to be drilled for oil. However, there may be electrical noise in seismic data which is often removed by disregarding certain portions of the data with the use of a notch filter. Instead, we use a convol"
+  },
+  {
+   "arxiv_id": "1711.05439v1",
+   "title": "Huddle test measurement of a near Johnson noise limited geophone",
+   "abstract": "In this paper the sensor noise of two geophone configurations (L-22D and L-4C geophones from Sercel with custom built amplifiers) was measured by performing two huddle tests. It is shown that the accuracy of the results can be significantly improved by performing the huddle test in a seismically quiet environment and b"
+  },
+  {
+   "arxiv_id": "2405.05026v1",
+   "title": "An anti-noise seismic inversion method based on diffusion model",
+   "abstract": "Seismic impedance inversion is one of the most important part of geophysical exploration. However, due to random noise, the traditional semi-supervised learning (SSL) methods lack generalization and stability. To solve this problem, some authors have proposed SSL methods with anti-noise function to improve noise robust"
+  },
+  {
+   "arxiv_id": "2309.04944v1",
+   "title": "Seismic Data Strong Noise Attenuation Based on Diffusion Model and Principal Component Analysis",
+   "abstract": "Seismic data noise processing is an important part of seismic exploration data processing, and the effect of noise elimination is directly related to the follow-up processing of data. In response to this problem, many authors have proposed methods based on rank reduction, sparse transformation, domain transformation, a"
+  },
+  {
+   "arxiv_id": "2404.02767v1",
+   "title": "Fast Diffusion Model For Seismic Data Noise Attenuation",
+   "abstract": "Noise is one of the primary sources of interference in seismic exploration. Many authors have proposed various methods to remove noise from seismic data; however, in the face of strong noise conditions, satisfactory results are often not achievable. In recent years, methods based on diffusion models have been applied t"
+  },
+  {
+   "arxiv_id": "1602.05695v1",
+   "title": "Robust seismic velocity change estimation using ambient noise recordings",
+   "abstract": "We consider the problem of seismic velocity change estimation using ambient noise recordings. Motivated by [23] we study how the velocity change estimation is affected by seasonal fluctuations in the noise sources. More precisely, we consider a numerical model and introduce spatio-temporal seasonal fluctuations in the "
+  },
+  {
+   "arxiv_id": "2107.03713v3",
+   "title": "Seismic noise study in the underground Baksan Neutrino Observatory",
+   "abstract": "In this paper we report a study of the seismic noise measured in the underground Baksan Neutrino Observatory. The main spectral feature below 1 $Hz$ is the oceanic microseism, while for greater frequencies the measured horizontal and vertical accelerations approaches the Peterson low noise model. Using two synchronized"
+  },
+  {
+   "arxiv_id": "2311.02193v1",
+   "title": "An effective self-supervised learning method for various seismic noise attenuation",
+   "abstract": "Faced with the scarcity of clean label data in real scenarios, seismic denoising methods based on supervised learning (SL) often encounter performance limitations. Specifically, when a model trained on synthetic data is directly applied to field data, its performance would drastically decline due to significant differe"
+  },
+  {
+   "arxiv_id": "0711.2855v1",
+   "title": "Mitigating the effects of measurement noise on Granger causality",
+   "abstract": "Computing Granger causal relations among bivariate experimentally observed time series has received increasing attention over the past few years. Such causal relations, if correctly estimated, can yield significant insights into the dynamical organization of the system being investigated. Since experimental measurement"
+  },
+  {
+   "arxiv_id": "2408.02187v1",
+   "title": "Noise Suppression for CRP Gathers Based on Self2Self with Dropout",
+   "abstract": "Noise suppression in seismic data processing is a crucial research focus for enhancing subsequent imaging and reservoir prediction. Deep learning has shown promise in computer vision and holds significant potential for seismic data processing. However, supervised learning, which relies on clean labels to train network "
+  },
+  {
+   "arxiv_id": "2206.00301v1",
+   "title": "Coherent noise suppression via a self-supervised blind-trace deep learning scheme",
+   "abstract": "Coherent noise regularly plagues seismic recordings, causing artefacts and uncertainties in products derived from down-the-line processing and imaging tasks. The outstanding capabilities of deep learning in denoising of natural and medical images have recently spur a number of applications of neural networks in the con"
+  }
+ ]
+}
