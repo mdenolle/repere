@@ -123,7 +123,11 @@ function draw() {
   const svg = document.querySelector("#chart");
   svg.innerHTML = "";
 
-  const rows = state.rows.filter(
+  // `let`, not `const`: the x-axis filter below narrows this to the rows that
+  // actually carry the selected metric. Reassigning a `const` here threw
+  // "Assignment to constant variable" and killed the entire chart. A syntax
+  // check does not catch that — only rendering does.
+  let rows = state.rows.filter(
     (r) => state.category === "all" || categoryOf(r) === state.category
   );
 
@@ -218,11 +222,14 @@ function draw() {
 
   // arrowhead
   const defs = el("defs", {}, svg);
-  const marker = el("marker", {
+  // NB: named `arrowMarker`, not `marker` — a local `const marker` here would
+  // shadow the marker() helper above for the whole of draw() and throw a TDZ
+  // ReferenceError on first use, silently killing the chart.
+  const arrowMarker = el("marker", {
     id: "arrow", viewBox: "0 0 10 10", refX: 9, refY: 5,
     markerWidth: 5, markerHeight: 5, orient: "auto-start-reverse",
   }, defs);
-  el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#6f6890", opacity: 0.5 }, marker);
+  el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#6f6890", opacity: 0.5 }, arrowMarker);
 
   note.textContent =
     `${rows.length} model×eval pairs. Hollow marker = no skill; filled = skill loaded; ` +
