@@ -43,7 +43,42 @@ const OPENNESS_LABEL = {
   unknown: "unknown",
 };
 
-const state = { rows: [], category: "all", meta: {} };
+// Each eval gets its own MARKER SHAPE, so the two tasks are distinguishable
+// when both are plotted together (colour already encodes the model).
+const SUITE_SHAPE = {
+  dvv_processing: "circle",   // E2 · parameter selection
+  synthetic_stalta: "square", // E1 · code generation
+};
+const SUITE_LABEL = {
+  dvv_processing: "dv/v processing (parameter selection)",
+  synthetic_stalta: "STA/LTA detection (code generation)",
+};
+
+// Selectable x-axis. Cost alone flatters local models: they bill $0 but are far
+// slower, and that wall-clock latency is a real cost a laboratory pays. Model
+// size reframes skill lift as "how many parameters is this skill worth?".
+const X_AXES = {
+  cost: {
+    label: "Cost per run (USD) — local open-weight models bill $0",
+    none: (r) => r.cost_none_usd,
+    full: (r) => r.cost_full_usd,
+    fmt: (v) => (v === 0 ? "$0" : `$${v.toFixed(3)}`),
+  },
+  latency: {
+    label: "Wall-clock latency per run (s) — the cost a $0 model still charges",
+    none: (r) => r.latency_none_s,
+    full: (r) => r.latency_full_s,
+    fmt: (v) => `${Math.round(v)}s`,
+  },
+  size: {
+    label: "Model size (billion parameters)",
+    none: (r) => r.size_b,
+    full: (r) => r.size_b,
+    fmt: (v) => `${v}B`,
+  },
+};
+
+const state = { rows: [], category: "all", xaxis: "cost", meta: {} };
 
 /* ------------------------------------------------------------------ utils */
 const fmtCost = (v) => (v === 0 ? "$0 (local)" : `$${Number(v).toFixed(4)}`);
@@ -65,6 +100,15 @@ const W = 900, H = 480;
 const M = { top: 24, right: 26, bottom: 56, left: 62 };
 const PW = W - M.left - M.right;
 const PH = H - M.top - M.bottom;
+
+function marker(shape, cx, cy, r, attrs, parent) {
+  if (shape === "square") {
+    return el("rect", {
+      ...attrs, x: cx - r, y: cy - r, width: 2 * r, height: 2 * r, rx: 1.5,
+    }, parent);
+  }
+  return el("circle", { ...attrs, cx, cy, r }, parent);
+}
 
 function el(name, attrs = {}, parent = null) {
   const n = document.createElementNS(SVG_NS, name);
@@ -88,9 +132,19 @@ function draw() {
     return;
   }
 
-  // x: cost. Local models are exactly $0, which is the point — keep 0 on-axis.
-  const maxCost = Math.max(...rows.flatMap((r) => [r.cost_none_usd, r.cost_full_usd]), 0.01);
-  const xMax = maxCost * 1.18;
+  const ax = X_AXES[state.xaxis];
+  // Rows produced before a metric existed simply have no value for it.
+  const usable = rows.filter(
+    (r) => Number.isFinite(ax.none(r)) && Number.isFinite(ax.full(r))
+  );
+  if (!usable.length) {
+    note.textContent = `No data for the "${state.xaxis}" axis yet — re-run the eval to record it.`;
+    document.querySelector("#legend").innerHTML = "";
+    return;
+  }
+  rows = usable;
+  const maxX = Math.max(...rows.flatMap((r) => [ax.none(r), ax.full(r)]), 1e-9);
+  const xMax = maxX * 1.18;
   const x = (v) => M.left + (v / xMax) * PW;
   const y = (v) => M.top + (1 - v) * PH; // score is already 0..1
 
@@ -110,14 +164,14 @@ function draw() {
     const xv = (xMax / 4) * i;
     el("text", {
       class: "axis", x: x(xv), y: M.top + PH + 20, "text-anchor": "middle",
-    }, g).textContent = i === 0 ? "$0" : `$${xv.toFixed(3)}`;
+    }, g).textContent = ax.fmt(xv);
   }
   el("line", { class: "axis", x1: M.left, x2: M.left + PW, y1: M.top + PH, y2: M.top + PH }, g);
   el("line", { class: "axis", x1: M.left, x2: M.left, y1: M.top, y2: M.top + PH }, g);
 
   el("text", {
     class: "axis-label", x: M.left + PW / 2, y: H - 14, "text-anchor": "middle",
-  }, g).textContent = "Cost per eval run (USD) — local open-weight models bill $0";
+  }, g).textContent = ax.label;
   el("text", {
     class: "axis-label", transform: `rotate(-90)`, x: -(M.top + PH / 2), y: 16,
     "text-anchor": "middle",
@@ -131,20 +185,30 @@ function draw() {
   // one lift-line + two markers per row
   for (const r of rows) {
     const hex = modelHex(r.model_id);
-    const x0 = x(r.cost_none_usd), y0 = y(r.score_none);
-    const x1 = x(r.cost_full_usd), y1 = y(r.score_full);
+    const shape = SUITE_SHAPE[r.suite] || "circle";
+    const x0 = x(ax.none(r)), y0 = y(r.score_none);
+    const x1 = x(ax.full(r)), y1 = y(r.score_full);
 
     el("line", {
       class: "lift-line", x1: x0, y1: y0, x2: x1, y2: y1,
       stroke: hex, "marker-end": "url(#arrow)",
     }, g);
 
-    const hollow = el("circle", {
-      class: "pt", cx: x0, cy: y0, r: 6, fill: "#fff", stroke: hex, "stroke-width": 2,
-    }, g);
-    const filled = el("circle", {
-      class: "pt", cx: x1, cy: y1, r: 7, fill: hex, stroke: "#fff", "stroke-width": 1.5,
-    }, g);
+    // 95% CI over repeat runs, when the repeat study has been run.
+    for (const [xv, yv, ci] of [[x0, r.score_none, r.score_none_ci95],
+                                [x1, r.score_full, r.score_full_ci95]]) {
+      if (ci > 0) {
+        el("line", {
+          class: "errbar", x1: xv, x2: xv, y1: y(Math.min(1, yv + ci)),
+          y2: y(Math.max(0, yv - ci)), stroke: hex, "stroke-width": 1.2, opacity: 0.7,
+        }, g);
+      }
+    }
+
+    const hollow = marker(shape, x0, y0, 6,
+      { class: "pt", fill: "#fff", stroke: hex, "stroke-width": 2 }, g);
+    const filled = marker(shape, x1, y1, 7,
+      { class: "pt", fill: hex, stroke: "#fff", "stroke-width": 1.5 }, g);
 
     bindTip(hollow, r, "none");
     bindTip(filled, r, "full");
@@ -166,10 +230,9 @@ function draw() {
 }
 
 function renderLegend(rows) {
-  const seen = [...new Set(rows.map((r) => r.model_id))];
   const box = document.querySelector("#legend");
   box.innerHTML = "";
-  for (const id of seen) {
+  for (const id of [...new Set(rows.map((r) => r.model_id))]) {
     const item = document.createElement("span");
     item.className = "legend-item";
     const sw = document.createElement("span");
@@ -178,6 +241,38 @@ function renderLegend(rows) {
     item.appendChild(sw);
     item.appendChild(document.createTextNode(id));
     box.appendChild(item);
+  }
+  // Shape encodes the TASK; colour encodes the model.
+  for (const suite of [...new Set(rows.map((r) => r.suite))]) {
+    const item = document.createElement("span");
+    item.className = "legend-item";
+    const sw = document.createElement("span");
+    sw.className = "legend-swatch";
+    sw.style.background = "#6f6890";
+    if ((SUITE_SHAPE[suite] || "circle") === "square") sw.style.borderRadius = "2px";
+    item.appendChild(sw);
+    item.appendChild(document.createTextNode(SUITE_LABEL[suite] || suite));
+    box.appendChild(item);
+  }
+}
+
+function renderAxisPicker() {
+  const box = document.querySelector("#xaxis-picker");
+  if (!box) return;
+  box.innerHTML = "";
+  const labels = { cost: "Cost ($)", latency: "Latency (s)", size: "Model size (B)" };
+  for (const key of Object.keys(X_AXES)) {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.textContent = labels[key];
+    b.setAttribute("aria-pressed", state.xaxis === key);
+    b.addEventListener("click", () => {
+      state.xaxis = key;
+      renderAxisPicker();
+      draw();
+    });
+    box.appendChild(b);
   }
 }
 
@@ -326,6 +421,7 @@ async function main() {
     return;
   }
   renderFilters();
+  renderAxisPicker();
   draw();
   document.querySelector("#dl-csv").addEventListener("click", exportCsv);
   document.querySelector("#dl-png").addEventListener("click", exportPng);
