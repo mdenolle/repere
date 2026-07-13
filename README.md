@@ -10,7 +10,8 @@ The current repository contains:
 
 - A minimal core evaluation framework in `src/frugalmind`.
 - Benchmark suites across **three task families** (see below) in `src/frugalmind_suites/`.
-- Public sample fixtures for local development, plus a private-golden-data policy for hidden evaluation sets.
+- Public sample fixtures for local development, plus a private-golden-data policy for hidden evaluation sets
+  (how to hold hidden gold: [`docs/golden_data_provisioning.md`](docs/golden_data_provisioning.md)).
 - A static landing page + leaderboard in `site/` for GitHub Pages.
 - Manual CI scaffolding for smoke tests and future scheduled evals.
 
