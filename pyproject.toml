@@ -22,10 +22,11 @@ geo = [
 ]
 dvv = [
     # Scoring backend: regenerates the hidden synthetic and runs the pipeline.
-    # Pinned to the codameter v0.2.1 release (the graded golden benchmark;
-    # first tag that pip-installs cleanly) for reproducible scores. Bump this
-    # tag when codameter cuts a newer benchmark.
-    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@v0.2.1",
+    # Pinned to the *commit* behind codameter v0.2.1 (the graded golden
+    # benchmark; first release that pip-installs cleanly). A git tag is movable
+    # and would silently change scores, so we pin the immutable SHA and name the
+    # release here for humans. Bump both when codameter cuts a new benchmark.
+    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@d5997c711a16e589d609c7185aa4b396c07ae64a",  # v0.2.1
 ]
 plot = [
     "matplotlib>=3.8",

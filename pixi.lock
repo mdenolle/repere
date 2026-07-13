@@ -1311,18 +1311,18 @@ packages:
 - pypi: ./
   name: frugalmind
   version: 0.4.0
-  sha256: 969d5f9f9ce26ca56b40cb5bb01c7c2688fbe9dfbd8bf65d353bc63929791c71
+  sha256: 2adcaec32a55916446b7d52de2998e10760e74e1cab357b48f358e94d75fc69d
   requires_dist:
   - pyyaml>=6.0
   - pytest>=8.0 ; extra == 'test'
   - obspy>=1.4 ; extra == 'geo'
-  - codameter@ git+https://github.com/Denolle-Lab/codameter.git@33d9d198ad84cfb44165ef43d351f607c810dfc9 ; extra == 'dvv'
+  - codameter @ git+https://github.com/Denolle-Lab/codameter.git@d5997c711a16e589d609c7185aa4b396c07ae64a ; extra == 'dvv'
   - matplotlib>=3.8 ; extra == 'plot'
   - numpy>=1.26 ; extra == 'plot'
   - scikit-image>=0.22 ; extra == 'plot'
   - pytest>=8.0 ; extra == 'dev'
   - ruff>=0.4 ; extra == 'dev'
-  - inspect_ai>=0.3.50 ; extra == 'eval'
+  - inspect-ai>=0.3.50 ; extra == 'eval'
   requires_python: '>=3.10'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/giflib-5.2.2-hd590300_0.conda
