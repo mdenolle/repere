@@ -10,15 +10,42 @@
 % right. Import them into Zotero/BibDesk, confirm each DOI resolves, and
 % regenerate this file.
 %
-% STILL MISSING (add before submission — the Discussion/Main promise them):
-%   * AstaBench (Allen Institute for AI) — the closest prior art on agentic
-%     scientific evaluation; the Main text positions against it.
-%   * Inspect AI (UK AI Security Institute) — the evaluation substrate we align
-%     with. Cite as software.
-%   * At least one reference on benchmark/training-data contamination, to support
-%     the Methods "Contamination control" section.
+% VERIFICATION STATUS (2026-07-13):
+%   VERIFIED via Semantic Scholar / official sources:
+%     - jimenez2024swebench  (authors + DOI confirmed)
+%     - asta2025astabench    (arXiv:2510.21652 confirmed, Ai2 Asta Team)
+%     - inspectai            (UK AI Security Institute + Meridian Labs, 2024)
+%   NOT YET VERIFIED (arXiv + Semantic Scholar rate-limited during checking):
+%     - liang2023helm, mialon2024gaia, allen1978automatic, beyreuther2010obspy,
+%       sens2006passive, brenguier2008postseismic
+%   -> Import into Zotero, confirm each DOI resolves, regenerate.
+%
+% STILL MISSING (add before submission):
+%   * A reference on benchmark/training-data contamination, for the Methods
+%     "Contamination control" section.
 %   * A reference for Ollama, and for the codameter package.
 % ===========================================================================
+
+@article{asta2025astabench,
+  title   = {{AstaBench}: Rigorous Benchmarking of {AI} Agents with a Scientific
+             Research Suite},
+  author  = {{Asta Team, Allen Institute for AI}},
+  journal = {arXiv preprint arXiv:2510.21652},
+  year    = {2025},
+  doi     = {10.48550/arXiv.2510.21652},
+  note    = {VERIFIED: arXiv ID confirmed. Expand the author list from the paper
+             before submission. This is the closest prior art: it likewise
+             controls for model cost and tool access when comparing agents.}
+}
+
+@misc{inspectai,
+  title        = {Inspect {AI}: Framework for Large Language Model Evaluations},
+  author       = {{UK AI Security Institute}},
+  year         = {2024},
+  howpublished = {\url{https://github.com/UKGovernmentBEIS/inspect_ai}},
+  note         = {VERIFIED: UK AI Security Institute with Meridian Labs,
+                  first released May 2024. Software citation.}
+}
 
 @article{liang2023helm,
   title   = {Holistic Evaluation of Language Models},

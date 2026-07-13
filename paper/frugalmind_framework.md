@@ -4,6 +4,11 @@
 **Marine Denolle**
 *University of Washington, Department of Earth and Space Sciences*
 
+> **SUPERSEDED.** The submission target is Nature Machine Intelligence and the
+> canonical manuscript is now `paper/manuscript.md` (built with `make`). This
+> file is retained as the original framework draft; do not edit both. Any claim
+> corrected here must be corrected there too.
+
 **Status:** working draft (v0.1). Framework paper. The evaluation suite is an
 MVP demonstration; additional evals are in preparation (§8).
 
@@ -129,13 +134,23 @@ We take a scientific evaluation to be adequate only if it reports, jointly:
 
 Related efforts each satisfy some of this. Capability leaderboards (HELM and
 successors) establish breadth but treat cost as secondary and scaffolding as
-fixed. Agentic benchmarks (SWE-bench, GAIA, AstaBench) evaluate systems rather
-than models and take execution seriously, which we build on directly — our
-substrate is Inspect-aligned for this reason (§4) — but they do not make the
-frugality trade the object of study, and they are not organised around a
-laboratory's adoption decision. Domain scientific benchmarks establish task
-realism but typically score with rubrics or human judgement, which reintroduces
-exactly the noise a scientific claim cannot tolerate.
+fixed. Agentic benchmarks (SWE-bench, GAIA) evaluate systems rather than models
+and take execution seriously, which we build on directly — our substrate is
+Inspect-aligned for this reason (§4).
+
+**AstaBench** is the closest prior art and must be stated precisely rather than
+caricatured: it benchmarks agents on scientific research tasks *and explicitly
+accounts for model cost and tool access* as confounding variables. We therefore
+do **not** claim that cost has been ignored. We differ in what we do with
+scaffolding: AstaBench *controls* tool access so that agents can be compared
+fairly, whereas FrugalMind *varies* domain scaffolding in order to measure what
+it buys, reporting the resulting skill lift as a primary quantity. One asks which
+agent is better under matched conditions; the other asks which conditions a
+laboratory should buy.
+
+Domain scientific benchmarks establish task realism but typically score with
+rubrics or human judgement, which reintroduces exactly the noise a scientific
+claim cannot tolerate.
 
 FrugalMind's position is that these are not three separate desiderata to be
 balanced but one instrument to be built: **an eval is only decision-useful if the

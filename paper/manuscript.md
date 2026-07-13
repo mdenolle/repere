@@ -27,11 +27,23 @@ validated against live systems before they are trusted.
 The question a research group must answer before adopting an AI agent is narrow
 and practical: *given this task, this budget and this data-governance constraint,
 what is the cheapest system that produces science I am willing to sign my name
-to?* Existing benchmarks answer a different question. They rank models by
-capability on tasks selected for discriminative power, report accuracy, and treat
-cost — when they report it at all — as an appendix[@liang2023helm;
-@jimenez2024swebench; @mialon2024gaia]. This is appropriate for tracking frontier
-progress and close to useless for the adoption decision, for three reasons.
+to?*
+
+Capability leaderboards answer a different question. They rank models on tasks
+selected for discriminative power, report accuracy, and treat cost — when they
+report it at all — as an appendix[@liang2023helm; @jimenez2024swebench;
+@mialon2024gaia]. That is appropriate for tracking frontier progress and close to
+useless for an adoption decision.
+
+Agentic scientific benchmarking has begun to close this gap, and we build on it
+directly. AstaBench[@asta2025astabench] benchmarks agents on scientific research
+tasks while explicitly controlling for model cost and tool access, and is the
+closest prior art to this work; our substrate is aligned with
+Inspect[@inspectai] for the same reason. **We therefore do not claim that cost
+has been ignored.** Our claim is narrower and, we think, more consequential:
+cost-aware benchmarks still treat *scaffolding* as a confound to be controlled,
+whereas for a laboratory the scaffolding is the very thing it can choose. Three
+observations follow, and they are what FrugalMind is built from.
 
 First, **cost is not a footnote; it is half the decision**. A group that cannot
 spend a frontier-model call on every step of a workflow needs to know where a
@@ -40,12 +52,17 @@ tell it, because the cost axis is decoration when nothing fails. This has an
 uncomfortable corollary that we adopt deliberately: a useful benchmark must
 contain systems that are *not good enough*.
 
-Second, **the unit of deployment is not a model**. Laboratories do not deploy
-models; they deploy models together with scaffolding — a system prompt, a domain
-skill, a tool harness, an agent loop. Benchmarks that hold scaffolding fixed
-measure something nobody ships. The actionable quantity is how far a given piece
-of scaffolding *moves* a given model, and whether that movement is enough to
-substitute for a more expensive one.
+Second, **the unit of deployment is not a model, and scaffolding is a choice
+rather than a confound**. Laboratories do not deploy models; they deploy models
+together with scaffolding — a system prompt, a domain skill, a tool harness, an
+agent loop. Existing agentic benchmarks rightly *control* for tool access so that
+agents can be compared fairly[@asta2025astabench]. But a laboratory is not trying
+to compare agents under matched conditions; it is trying to decide *which
+conditions to buy*. The actionable quantity is therefore how far a given piece of
+scaffolding **moves** a given model — a quantity that is invisible when
+scaffolding is held fixed, however carefully. Making that movement the object of
+measurement, rather than a nuisance parameter, is this paper's central
+methodological commitment.
 
 Third, **much scientific data cannot leave the building**. Embargoed catalogues,
 pre-publication observations and collaborator data under agreement mean that, for
