@@ -45,11 +45,20 @@ The `codameter` dv/v suite generates its cases from recipes; a case's ground
 truth is a pure function of its truth parameters. So the hidden corpus is
 **stored nowhere**. The scoring job holds one secret and regenerates it:
 
+These triggers all run in the context of the upstream repository, so
+`secrets.*` is available to them. Note what is **absent**: `pull_request`.
+A pull request from a fork runs without access to repository secrets — by
+design, and rightly so, since anyone can open one. That means the scoring job
+simply cannot run on fork PRs, which is the behaviour we want: an outside
+contributor must never be able to make CI hand them the hidden golden set.
+
 ```yaml
 on:
-  workflow_dispatch:                 # NOT `pull_request` from forks:
-  schedule: [{cron: "0 6 * * 1"}]    # secrets are withheld there, and rightly so
+  workflow_dispatch:
+  schedule: [{cron: "0 6 * * 1"}]
   push: {branches: [main]}
+  # Deliberately NOT `pull_request`: fork PRs get no secrets, so the hidden
+  # golden set can never be materialised from an untrusted branch.
 
 jobs:
   eval:
