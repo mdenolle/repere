@@ -1,0 +1,67 @@
+cff-version: 1.2.0
+title: >-
+  FrugalMind: a cost-aware, rigor-preserving evaluation framework for
+  scientific AI agents
+message: >-
+  If you use this framework, or the concepts it introduces (frugality-first
+  evaluation against quality floors, the scorability spectrum, negative-case
+  discipline, skill-conditioned evaluation and skill lift, the three-family
+  taxonomy of scientific evals, or contamination control by secret generator
+  seed), please cite the framework paper.
+type: software
+authors:
+  - given-names: Marine
+    family-names: Denolle
+    affiliation: >-
+      Department of Earth and Space Sciences, University of Washington
+    orcid: 'https://orcid.org/0000-0002-1610-2250'
+repository-code: 'https://github.com/mdenolle/frugalmind'
+abstract: >-
+  FrugalMind is an evaluation framework for scientific AI agents built on the
+  premise that the decision a laboratory faces is not "is the model good" but
+  "what is the cheapest configuration that clears my scientific quality floor,
+  and am I permitted to run it on my data". It treats cost as a first-class
+  axis, measures the deployed (model, scaffolding) pair rather than the model,
+  verifies against references rather than judgements, treats negative cases as
+  first-class, and holds out a hidden test split whose generator is public but
+  whose seed is secret.
+keywords:
+  - AI for science
+  - evaluation
+  - benchmark
+  - scientific agents
+  - cost-aware evaluation
+  - geoscience
+  - seismology
+license: MIT
+
+# ---------------------------------------------------------------------------
+# Attribution model
+#
+# Framework authorship and eval authorship are recorded SEPARATELY. The
+# framework — the concepts listed in `message` above — is the contribution of
+# the author(s) listed here. Individual evaluations contributed to the hub carry
+# their own authors, their own versioned skill, and their own citable dataset,
+# and are credited as such on the leaderboard and in `preferred-citation` of the
+# eval's own record. Contributing an eval does not confer authorship of the
+# framework, and using the framework does not confer authorship of an eval.
+#
+# This is what lets the benchmark grow by community contribution without either
+# diluting contributors or absorbing them.
+# ---------------------------------------------------------------------------
+
+preferred-citation:
+  type: article
+  title: >-
+    When does scaffolding substitute for scale? A cost-aware, rigor-preserving
+    evaluation framework for scientific AI agents
+  authors:
+    - given-names: Marine
+      family-names: Denolle
+      affiliation: >-
+        Department of Earth and Space Sciences, University of Washington
+  year: 2026
+  status: preprint
+  notes: >-
+    Working draft in paper/frugalmind_framework.md. Update this block with the
+    arXiv identifier / DOI on posting.
