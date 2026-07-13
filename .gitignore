@@ -37,3 +37,18 @@ goldens/
 # Notebooks and OS files
 .ipynb_checkpoints/
 .DS_Store
+
+# ---------------------------------------------------------------------------
+# Hidden evaluation data (anti-contamination).
+#
+# The PUBLIC validation split ships in-repo so anyone can develop and reproduce
+# the demo board. The HIDDEN TEST split -- gold answers + the secret generator
+# parameters -- must never be committed: a benchmark whose answers are public
+# measures memorisation, not capability.
+#
+# Pull it (requires access to the gated HF dataset):
+#   pixi run -e full python scripts/pull_eval_data.py
+# ---------------------------------------------------------------------------
+data/private/
+*.private.yaml
+.hf_token
