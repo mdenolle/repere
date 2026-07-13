@@ -73,23 +73,55 @@ scorer.
 Frontier models are a later, cheap addition: the registry already carries them
 (`config/models.yaml`, `cloud` tier), and adding a row is one CLI flag.
 
-## What the current demo actually is (and is not)
+## The board is now a live measurement
 
-**Be precise about this.** The demo board on the landing page is a *harness
-demonstration*:
+The published board is a **real run**: four open 7–8B models under Ollama plus
+`claude-haiku` via the Anthropic API, real prompts, real skill injection, code
+executed in the sandbox, graded by the deterministic scorers, billed at actual
+token usage. Reproduce it with:
 
-- The **scorers, suites, truth sets, sandbox, and cost model are real** — they
-  are the same code paths a live run uses.
-- The **model responses are simulated deterministically** (a per-model
-  competence profile decides whether the model emits a sound or unsound answer),
-  because CI has no GPU, no Ollama daemon, and no API keys.
+```bash
+ollama serve &
+ollama pull qwen2.5:7b llama3.1:8b deepseek-r1:7b olmo2:7b
+pixi run -e full python scripts/demo_dashboard.py --live
+```
 
-So the board proves *the platform works end to end and the scoring
-discriminates*; it does **not** yet publish real measured capability for these
-models. Replacing the simulation with live Ollama calls is a one-line adapter
-swap (see `scripts/demo_dashboard.py` and the notebooks), and those numbers —
-once produced on a machine with the models pulled — are the ones that belong on
-a published leaderboard.
+`scripts/demo_dashboard.py` still has a **simulated** default (deterministic
+per-model competence profiles) so CI can exercise the pipeline with no GPU,
+daemon, or API key. That mode is a harness check, never a capability claim, and
+the dashboard says so.
 
-We label this clearly on the dashboard rather than letting a synthetic number be
-mistaken for a measurement. That labelling *is* the point of the project.
+### Why that distinction earned its keep
+
+The simulator had been reporting a confident `0.36 → 0.82` for the STA/LTA eval.
+The first live run scored **0.00 on every item, for every model** — because the
+task had been pasting ~1000 raw samples into the prompt and asking an LLM to
+execute a DSP algorithm in its head. A 7B model replied, reasonably: *"It looks
+like you've provided a list of numerical values. Could you please clarify what
+you would like to do with this data?"*
+
+A plausible-looking synthetic number had been standing in for a task that was not
+merely hard but **ill-posed**. Nothing but a real run could have caught that.
+The task is now a code-generation task (write the detector; the sandbox runs it).
+
+## What the live run found
+
+**Whether you can be frugal depends on the kind of task.**
+
+| Task | Free local 7B + skill | Cloud model | Verdict |
+|---|---|---|---|
+| dv/v **parameter choice** | **1.00** (qwen2.5, llama3.1) | 1.00 (claude-haiku, $0.035) | Frugality wins outright |
+| STA/LTA **code generation** | ~0.10 (all four fail) | 0.76 (claude-haiku, $0.073) | Pay for the frontier model |
+
+On config/parameter tasks, a good domain skill lifts a free 7B to frontier
+quality at zero marginal cost — the whole thesis, measured.
+
+On code generation, no skill rescues a model that cannot write correct numerical
+code. The 7B models import the right ObsPy functions (`classic_sta_lta`,
+`trigger_onset`) and then hand-roll a buggy loop that crashes with an
+`IndexError` — even when the skill explicitly tells them to use the library.
+Meanwhile claude-haiku writes the canonical detector (scoring exactly the naive
+reference, 0.56) and *acts on* the declustering guidance to reach 0.76.
+
+This is the output FrugalMind exists to produce: not "AI is great" or "small
+models are enough", but a decision rule a lab can act on, with the cost attached.

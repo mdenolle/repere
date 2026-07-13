@@ -234,15 +234,23 @@
           </div>
 
           <p class="fineprint">
-            <strong>What this board is:</strong> a <em>harness demonstration</em> across two
-            evals (synthetic STA/LTA detection and codameter dv/v processing). The suites,
-            truth sets, scorers, sandbox and cost model are the real code paths a live run
-            uses; the <strong>model responses are simulated deterministically</strong>, because
-            CI has no GPU, no Ollama daemon and no API keys. So this shows the platform works
-            end-to-end and that the scoring discriminates — it is <strong>not yet a measurement
-            of these models' real capability</strong>. Swapping in live Ollama calls is a
-            one-line adapter change. Private golden-set scores are published only after human
-            review.
+            <strong>LIVE RUN — real inference.</strong> Four open 7–8B models running locally
+            under Ollama (<code>qwen2.5</code>, <code>llama3.1</code>, <code>deepseek-r1</code>,
+            <code>olmo2</code>) plus <code>claude-haiku</code> via the Anthropic API, over two
+            evals: <em>dv/v processing</em> (codameter) and <em>STA/LTA detection</em>
+            (Ridgecrest synthetic). Real prompts, real skill injection, code executed in the
+            sandbox, graded by the deterministic scorers. <strong>Costs are actual token
+            usage</strong> — local open-weight models bill $0 marginal.
+          </p>
+          <p class="fineprint">
+            <strong>What it shows: whether you can be frugal depends on the task.</strong>
+            On dv/v <em>parameter choice</em>, free local models (qwen2.5:7b, llama3.1:8b) reach
+            a <strong>perfect 1.00 with the domain skill — matching claude-haiku at zero cost</strong>.
+            On STA/LTA <em>code generation</em>, every 7B model fails (~0.10): they import the
+            right ObsPy functions, then hand-roll a buggy detector that crashes. Only the cloud
+            model writes working code (0.56 → 0.76 with the declustering skill). Skills rescue a
+            small model on config tasks; they do not rescue one that cannot write correct
+            numerical code.
             <a href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">Why we demo at laptop scale →</a>
           </p>
 
