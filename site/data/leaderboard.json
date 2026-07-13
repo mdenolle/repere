@@ -18,7 +18,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 2,
@@ -35,7 +36,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 3,
@@ -52,7 +54,8 @@
       "openness": "closed-source-api",
       "toolset": "custom-interface",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 4,
@@ -69,7 +72,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 5,
@@ -86,7 +90,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 6,
@@ -103,7 +108,8 @@
       "openness": "closed-source-api",
       "toolset": "custom-interface",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 7,
@@ -120,7 +126,8 @@
       "openness": "closed-source-api",
       "toolset": "standard",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 8,
@@ -137,7 +144,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 9,
@@ -154,7 +162,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 10,
@@ -171,7 +180,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 11,
@@ -188,7 +198,8 @@
       "openness": "closed-source-api",
       "toolset": "standard",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     },
     {
       "rank": 12,
@@ -205,7 +216,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 13,
@@ -222,7 +234,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 14,
@@ -239,7 +252,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 15,
@@ -256,7 +270,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 16,
@@ -273,7 +288,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 17,
@@ -290,7 +306,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 18,
@@ -307,7 +324,8 @@
       "openness": "open-source-open-weight",
       "toolset": "custom-interface",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 19,
@@ -324,7 +342,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "stalta-detection",
-      "skill_version": "v0.3"
+      "skill_version": "v0.3",
+      "category": "software-agent"
     },
     {
       "rank": 20,
@@ -341,7 +360,8 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "dvv-processing",
-      "skill_version": "v0.1"
+      "skill_version": "v0.1",
+      "category": "software-agent"
     }
   ],
   "notes": [

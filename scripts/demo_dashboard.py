@@ -36,6 +36,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -78,6 +79,19 @@ MODELS = [
 SKILL = {
     "synthetic_stalta": ("stalta-detection", "v0.1-demo"),
     "dvv_processing": ("dvv-processing", "v0.1-demo"),
+}
+
+# EvalHub categories. The leaderboard filters on these; keep in sync with the
+# category cards on the site.
+#   document          — literature / RAG / translation / multimodal
+#   software-agent    — agents driving real scientific software (detectors,
+#                       noisepy, specfem, seisbench, codameter)
+#   research-workflow — orchestrators, scored on their call trajectory
+SUITE_CATEGORY = {
+    "synthetic_stalta": "software-agent",
+    "dvv_processing": "software-agent",
+    "lit_rag": "document",
+    "orchestration": "research-workflow",
 }
 
 
@@ -128,6 +142,11 @@ def _dvv_items():
 
 SUITES = {"synthetic_stalta": _stalta_items, "dvv_processing": _dvv_items}
 
+# (model_id, suite) -> uncertainty from the repeat study. Populated by
+# _main_live and merged into the emitted JSON by _emit, so SkillLiftRow
+# (a shared dataclass) does not have to change shape.
+UNCERTAINTY: dict[tuple[str, str], dict] = {}
+
 
 def _run_arm(model: dict, suite_name: str, items, mode: str) -> dict:
     # A model of competence p answers correctly the p-fraction of *easiest*
@@ -148,40 +167,78 @@ def _run_arm(model: dict, suite_name: str, items, mode: str) -> dict:
     return {"score": score_sum / n if n else 0.0, "cost": cost, "n": n}
 
 
-def _run_arm_live(adapter, skill, suite_name: str, items, mode: str) -> dict:
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs) if xs else 0.0
+
+
+def _ci95(xs: list[float]) -> float:
+    """Half-width of a 95% confidence interval on the mean, over repeat runs.
+
+    Student-t for small n (we typically have 3-7 repeats); 0.0 for a single run,
+    which is honest: one run carries no information about its own variance.
+    """
+    n = len(xs)
+    if n < 2:
+        return 0.0
+    m = _mean(xs)
+    var = sum((x - m) ** 2 for x in xs) / (n - 1)
+    se = math.sqrt(var / n)
+    # two-sided t_{0.975} by degrees of freedom; falls back to the normal value.
+    t = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+         6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228}.get(n - 1, 1.96)
+    return t * se
+
+
+def _run_arm_live(adapter, skill, suite_name: str, items, mode: str,
+                  temperature: float = 0.0) -> dict:
     """Real inference: render the prompt with the skill, call the model, score
     its actual text with the real scorer, and bill real token usage.
 
     A single item that errors (timeout, refusal, malformed backend reply) scores
     0 rather than killing the run — a model that cannot answer *is* a result.
+
+    `temperature` matters for the repeat study: at T=0 (the adapter default) the
+    decoding is greedy, so repeats return near-identical text and the resulting
+    error bars would be spuriously tiny. Pass a realistic T to measure genuine
+    sampling variance.
     """
     n = len(items)
+    per_item: list[float] = []
     score_sum = 0.0
     cost = 0.0
+    latency = 0.0        # wall-clock seconds of inference — the cost a $0 model still charges
+    out_tokens = 0
     errors = 0
     t0 = time.time()
     for i, (item_id, prompt, gold, scorer, _good, _degraded) in enumerate(items, 1):
         rendered = render_with_skill(prompt, skill, "full" if mode == "full" else "none")
         try:
-            gen = adapter.generate(rendered)
+            gen = adapter.generate(rendered, temperature=temperature)
             text = gen.text
             cost += float(getattr(gen, "cost_usd", 0.0) or 0.0)
+            latency += float(getattr(gen, "latency_s", 0.0) or 0.0)
+            out_tokens += int(getattr(gen, "output_tokens", 0) or 0)
         except Exception as exc:  # noqa: BLE001 - a failed call is a real datum
             errors += 1
             text = ""
             print(f"      ! {item_id}: {type(exc).__name__}: {exc}", flush=True)
         try:
-            score_sum += float(scorer(text, gold))
+            s = float(scorer(text, gold))
         except Exception:  # a scorer that chokes on garbage output scores 0
-            pass
+            s = 0.0
+        per_item.append(s)
+        score_sum += s
         if i % 5 == 0 or i == n:
             print(f"      {suite_name}/{mode}: {i}/{n} "
                   f"({time.time() - t0:.0f}s)", flush=True)
     return {
         "score": score_sum / n if n else 0.0,
         "cost": cost,
+        "latency_s": latency,
+        "out_tokens": out_tokens,
         "n": n,
         "errors": errors,
+        "per_item": per_item,
     }
 
 
@@ -215,6 +272,12 @@ def main() -> int:
                     help="cap items per suite (useful for a quick live smoke run)")
     ap.add_argument("--models", nargs="*", default=None,
                     help="model ids to run (default: the MODELS list)")
+    ap.add_argument("--repeats", type=int, default=1,
+                    help="repeat each configuration N times and report mean +/- 95%% CI")
+    ap.add_argument("--temperature", type=float, default=0.7,
+                    help="sampling temperature for --live. The adapters default to 0.0 "
+                         "(greedy); repeats at T=0 return near-identical text and would "
+                         "yield spuriously tiny error bars.")
     ap.add_argument("--merge", action="store_true",
                     help="keep rows from a previous run for models not in this one "
                          "(e.g. add a cloud row without re-running the local sweep)")
@@ -303,10 +366,17 @@ def _emit(flat, skill_rows, note: str, source: str, merge: bool = False) -> int:
 
     lb = build_leaderboard(flat, source=source)
     lb["notes"].insert(0, note)
+    for r in lb["leaderboard"]:
+        r["category"] = SUITE_CATEGORY.get(r.get("suite"), "software-agent")
     (site / "leaderboard.json").write_text(json.dumps(lb, indent=2) + "\n")
 
     sl = build_skill_lift_leaderboard(skill_rows, source=source)
     sl["notes"].insert(0, note)
+    for r in sl["rows"]:
+        r["category"] = SUITE_CATEGORY.get(r.get("suite"), "software-agent")
+        unc = UNCERTAINTY.get((r.get("model_id"), r.get("suite")))
+        if unc:
+            r.update(unc)
     (site / "skill_lift.json").write_text(json.dumps(sl, indent=2) + "\n")
 
     print(f"\nleaderboard rows: {len(lb['leaderboard'])}  skill-lift rows: {len(sl['rows'])}")
@@ -341,15 +411,44 @@ def _main_live(args) -> int:
         if args.limit:
             items = items[: args.limit]
         for card, adapter in live:
-            print(f"  {card.id} on {suite_name} ({len(items)} items x 2 arms)")
-            none = _run_arm_live(adapter, skill, suite_name, items, "none")
-            full = _run_arm_live(adapter, skill, suite_name, items, "full")
+            reps = max(1, args.repeats)
+            print(f"  {card.id} on {suite_name} ({len(items)} items x 2 arms "
+                  f"x {reps} repeat(s), T={args.temperature})")
+
+            runs = {"none": [], "full": []}
+            for r in range(reps):
+                for mode in ("none", "full"):
+                    if reps > 1:
+                        print(f"    repeat {r + 1}/{reps} · {mode}")
+                    runs[mode].append(
+                        _run_arm_live(adapter, skill, suite_name, items, mode,
+                                      temperature=args.temperature)
+                    )
+
+            # Aggregate across repeats: the mean is the point estimate, the 95%
+            # CI over runs is the sampling uncertainty. Costs are averaged per
+            # run (not summed), so the reported cost is the price of ONE run.
+            agg = {}
+            for mode in ("none", "full"):
+                scores = [a["score"] for a in runs[mode]]
+                agg[mode] = {
+                    "score": _mean(scores),
+                    "ci95": _ci95(scores),
+                    "scores": scores,
+                    "cost": _mean([a["cost"] for a in runs[mode]]),
+                    "latency_s": _mean([a["latency_s"] for a in runs[mode]]),
+                    "out_tokens": _mean([a["out_tokens"] for a in runs[mode]]),
+                    "n": runs[mode][0]["n"],
+                    "errors": sum(a["errors"] for a in runs[mode]),
+                }
+            none, full = agg["none"], agg["full"]
+
             cost_lift = (
                 (full["cost"] - none["cost"]) / none["cost"] * 100.0
                 if none["cost"] > 0 else None
             )
             op = openness.get(card.id, "unknown")
-            skill_rows.append(SkillLiftRow(
+            row = SkillLiftRow(
                 model_id=card.id, suite=suite_name,
                 skill_name=skill_name, skill_version=skill_version,
                 score_none=none["score"], score_full=full["score"],
@@ -357,7 +456,26 @@ def _main_live(args) -> int:
                 cost_none_usd=none["cost"], cost_full_usd=full["cost"],
                 cost_lift_pct=cost_lift, n_total=none["n"],
                 openness=op, toolset="custom-interface",
-            ))
+            )
+            skill_rows.append(row)
+            # Uncertainty rides alongside the dataclass (which we don't want to
+            # change): _emit merges these into the JSON rows.
+            UNCERTAINTY[(card.id, suite_name)] = {
+                "repeats": reps,
+                "temperature": args.temperature,
+                # Alternative x-axes. Cost alone flatters local models: they
+                # bill $0 but are far slower, and that latency is a real cost
+                # a laboratory pays in wall-clock time.
+                "latency_none_s": none["latency_s"],
+                "latency_full_s": full["latency_s"],
+                "out_tokens_none": none["out_tokens"],
+                "out_tokens_full": full["out_tokens"],
+                "size_b": getattr(card, "size_b", None),
+                "score_none_ci95": none["ci95"],
+                "score_full_ci95": full["ci95"],
+                "score_none_runs": none["scores"],
+                "score_full_runs": full["scores"],
+            }
             for mode, arm in (("none", none), ("full", full)):
                 cond = ("generic-coding-agent" if mode == "none"
                         else f"{skill_name}+skill-{skill_version}")

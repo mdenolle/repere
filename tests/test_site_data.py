@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SITE_DATA = REPO_ROOT / "site" / "data"
 SITE_HTML = REPO_ROOT / "site" / "index.html"
@@ -99,41 +98,69 @@ def test_html_selectors_exist_for_every_js_query():
     assert not missing, f"HTML is missing IDs that JS queries: {missing}"
 
 
-def test_html_has_openness_and_toolset_columns():
-    html = SITE_HTML.read_text()
-    assert "<th scope=\"col\">Openness</th>" in html, (
-        "main leaderboard / skill-lift tables must declare an Openness column"
-    )
-    assert "<th scope=\"col\">Toolset</th>" in html, (
-        "main leaderboard / skill-lift tables must declare a Toolset column"
-    )
+VALID_EVAL_CATEGORIES = {"document", "software-agent", "research-workflow"}
 
 
-def test_js_renders_pills_for_categories():
+def test_rows_carry_an_eval_category():
+    """The leaderboard filters on `category`; an untagged row would silently
+    vanish from every filtered view."""
+    for name, key in (("leaderboard.json", "leaderboard"), ("skill_lift.json", "rows")):
+        path = SITE_DATA / name
+        if not path.exists():
+            continue
+        rows = json.loads(path.read_text())[key]
+        assert rows, f"{name} has no rows"
+        for row in rows:
+            assert row.get("category") in VALID_EVAL_CATEGORIES, (
+                f"{name}: row {row.get('model_id')}/{row.get('suite')} has "
+                f"category={row.get('category')!r}; expected one of "
+                f"{sorted(VALID_EVAL_CATEGORIES)}"
+            )
+
+
+def test_js_knows_every_openness_and_category():
+    """The chart's lookup tables are the contract between JSON values and what
+    the tooltip/legend render. A value missing from the JS degrades silently to
+    'unknown' — fail loudly instead."""
     js = SITE_JS.read_text()
-    # Pill lookup tables are the contract between JSON values and CSS classes;
-    # if a category disappears from the JS, the rendered cell silently falls
-    # back to "unknown" — fail loudly instead.
     for key in VALID_OPENNESS - {"unknown"}:
-        assert f'"{key}"' in js, f"app.js missing openness lookup for {key!r}"
-    for key in VALID_TOOLSET - {"unknown"}:
-        assert f'"{key}"' in js, f"app.js missing toolset lookup for {key!r}"
-    # Each lookup table must reference appendPill so pills actually render.
-    assert "appendPill" in js
-    assert "OPENNESS_LABELS" in js
-    assert "TOOLSET_LABELS" in js
+        assert f'"{key}"' in js, f"app.js missing openness label for {key!r}"
+    for key in VALID_EVAL_CATEGORIES:
+        assert f'"{key}"' in js, f"app.js missing category entry for {key!r}"
+    assert "OPENNESS_LABEL" in js
+    assert "CATEGORIES" in js
 
 
-def test_css_has_pill_classes():
+def test_chart_exposes_csv_and_png_export():
+    """Figures must be publication-ready: downloadable as data and as an image."""
+    html = SITE_HTML.read_text()
+    js = SITE_JS.read_text()
+    assert 'id="dl-csv"' in html and 'id="dl-png"' in html
+    assert "exportCsv" in js and "exportPng" in js
+    # PNG export rasterises the SVG; without inlined CSS the image renders unstyled.
+    assert "EXPORT_CSS" in js
+
+
+def test_css_has_chart_and_category_classes():
+    """The chart is hand-rolled SVG, so its styling lives in styles.css. A missing
+    rule silently renders an unreadable figure rather than erroring."""
     css = (REPO_ROOT / "site" / "styles.css").read_text()
     for cls in (
-        ".pill",
-        ".pill-open",
-        ".pill-mixed",
-        ".pill-closed",
-        ".pill-unknown",
-        ".pill-toolset-standard",
-        ".pill-toolset-iface",
-        ".pill-toolset-custom",
+        ".lift-line",   # the skill-lift connector — the core visual claim
+        ".pt",          # markers
+        ".gridline",
+        ".axis-label",
+        ".chip",        # category filters
+        ".tag",         # eval tags
+        "#tooltip",     # hover card (model version + weights)
     ):
         assert cls in css, f"styles.css missing rule for {cls}"
+
+
+def test_site_uses_gaia_hazlab_palette():
+    """The hub is a GAIA HazLab surface; keep it on the lab's tokens rather than
+    drifting back to a bespoke theme."""
+    css = (REPO_ROOT / "site" / "styles.css").read_text()
+    assert "#4b2e83" in css, "UW Husky Purple (--purple) missing"
+    assert "#2a1a4f" in css, "deep purple ink (--ink) missing"
+    assert "Montserrat" in css and "Inter" in css

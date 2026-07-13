@@ -106,3 +106,38 @@ def test_stalta_code_scorer_grades_a_real_detector():
     assert scorer(no_code, gold) == 0.0
     assert 0.0 < scorer(naive, gold) < scorer(exact, gold)
     assert scorer(exact, gold) == pytest.approx(1.0)
+
+
+# --------------------------------------------------------------------------- #
+# Hidden test split (anti-contamination)
+# --------------------------------------------------------------------------- #
+def test_committed_cases_are_public_validation_only():
+    """The in-repo truth set must never contain test-split answers.
+
+    A ranked score is computed on the hidden split; if its gold onsets were
+    committed, the benchmark would measure memorisation, not capability.
+    """
+    import yaml
+
+    from frugalmind_suites.synthetic_stalta import items as it
+
+    doc = yaml.safe_load(it.CASES_PATH.read_text())
+    for c in doc["cases"]:
+        assert c["split"] == "validation", (
+            f"case {c['id']!r} has split={c['split']!r} in the COMMITTED cases.yaml. "
+            "Test-split answers must live only in the gated dataset "
+            "(scripts/build_synthetic_stalta.py --split test)."
+        )
+        assert c["visibility"] == "public"
+
+
+def test_test_split_requires_the_hidden_data(tmp_path, monkeypatch):
+    """Asking for the test split without the pulled data fails loudly, with
+    instructions — rather than silently scoring on the public split."""
+    from frugalmind_suites.synthetic_stalta import items as it
+
+    monkeypatch.setattr(it, "HIDDEN_CASES_PATH", tmp_path / "absent.yaml")
+    # public split keeps working with no hidden data (the CI / fresh-clone case)
+    assert len(it.SyntheticSTALTASuite(split="validation")._cases()) > 0
+    with pytest.raises(FileNotFoundError, match="hidden test split is not available"):
+        it.SyntheticSTALTASuite(split="test")._cases()
