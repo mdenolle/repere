@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# Manuscript metadata — Nature Machine Intelligence (Article)
+#
+# This file is the single source of truth for the author list. Editing it
+# regenerates the title page in both the PDF and the DOCX. Keep prose out of it.
+#
+# TODO(marine): fill in the 2–3 co-authors. For each we need:
+#   name, affiliation(s), ORCID, email (corresponding only), and their
+#   contribution sentence for the "Author contributions" section.
+# ---------------------------------------------------------------------------
+
+title: >-
+  When does scaffolding substitute for scale? Cost-aware evaluation of
+  scientific AI agents
+
+# Nature asks for a short "running" title (<= 50 characters).
+short-title: Cost-aware evaluation of scientific AI agents
+
+author:
+  - name: Marine Denolle
+    corresponding: true
+    email: mdenolle@uw.edu
+    orcid: 0000-0002-1610-2250
+    affiliation: [1]
+
+  # ---- CO-AUTHOR PLACEHOLDERS — replace, do not submit with these ----------
+  - name: "TODO Co-author Two"
+    orcid: "0000-0000-0000-0000"
+    affiliation: [1]
+  - name: "TODO Co-author Three"
+    orcid: "0000-0000-0000-0000"
+    affiliation: [1]
+  # -------------------------------------------------------------------------
+
+affiliations:
+  - id: 1
+    name: >-
+      Department of Earth and Space Sciences, University of Washington,
+      Seattle, WA, USA
+  # - id: 2
+  #   name: TODO second institution, if any
+
+# ---------------------------------------------------------------------------
+# Statements required by Nature Portfolio. Every one of these is mandatory at
+# submission; a missing statement is a common desk-reject.
+# ---------------------------------------------------------------------------
+
+author-contributions: >-
+  M.D. conceived the evaluation framework — the frugality-first framing against
+  quality floors, the scorability spectrum, negative-case discipline,
+  skill-conditioned evaluation and the skill-lift quantity, the three-family
+  taxonomy, and the secret-seed contamination-control design — designed and
+  implemented the software, designed and executed the live evaluation protocol,
+  analysed the results and wrote the manuscript.
+  TODO: one sentence per co-author, stating what they actually did (Nature
+  requires specificity; "contributed to the project" is not acceptable).
+
+competing-interests: >-
+  The authors declare no competing interests.
+
+data-availability: >-
+  The public validation splits, the live evaluation results underlying Fig. 1
+  and Tables 1–2, and the figure source data are available at
+  https://github.com/mdenolle/frugalmind. The hidden test splits are available
+  as a gated dataset; the generator is public and auditable, and only the master
+  seed is withheld, so the truth set can be inspected without disclosing its
+  answers (see Methods, "Contamination control").
+  TODO: mint a Zenodo DOI for the release and cite it here.
+
+code-availability: >-
+  FrugalMind, including the evaluation substrate, all scorers, the sandbox, the
+  skills and the scripts that reproduce every number and figure in this paper,
+  is available at https://github.com/mdenolle/frugalmind under an MIT licence.
+  TODO: archive the exact commit on Zenodo and cite the DOI.
+
+acknowledgements: >-
+  TODO: funding sources (grant numbers), compute, and any colleagues who advised
+  but do not meet authorship criteria.
+
+keywords:
+  - AI for science
+  - evaluation
+  - benchmarks
+  - language-model agents
+  - cost-aware machine learning
+  - seismology

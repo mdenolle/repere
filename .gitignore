@@ -52,3 +52,4 @@ goldens/
 data/private/
 *.private.yaml
 .hf_token
+paper/build/
