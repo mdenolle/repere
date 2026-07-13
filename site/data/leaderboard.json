@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-07-11T14:12:53Z",
+  "generated_at": "2026-07-13T02:47:27Z",
   "source": "scripts/demo_dashboard.py (2 evals x 3 models)",
   "leaderboard": [
     {
@@ -73,6 +73,23 @@
     },
     {
       "rank": 5,
+      "model_id": "deepseek-r1:7b",
+      "agent_condition": "dvv-processing+skill-v0.1-demo",
+      "suite": "dvv_processing",
+      "score": 0.85,
+      "quality_percent": 85.0,
+      "cost_usd": 0.00575,
+      "n_completed": 20,
+      "n_total": 20,
+      "efficiency_score": 147.82608695652175,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface",
+      "skill_name": "dvv-processing",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 6,
       "model_id": "claude-haiku-4-5-20251001",
       "agent_condition": "generic-coding-agent",
       "suite": "dvv_processing",
@@ -89,7 +106,24 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 6,
+      "rank": 7,
+      "model_id": "olmo2:7b",
+      "agent_condition": "stalta-detection+skill-v0.1-demo",
+      "suite": "synthetic_stalta",
+      "score": 0.8181818181818182,
+      "quality_percent": 81.81818181818183,
+      "cost_usd": 0.002277,
+      "n_completed": 11,
+      "n_total": 11,
+      "efficiency_score": 359.3244699964068,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 8,
       "model_id": "qwen2.5:7b",
       "agent_condition": "stalta-detection+skill-v0.1-demo",
       "suite": "synthetic_stalta",
@@ -106,7 +140,24 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 7,
+      "rank": 9,
+      "model_id": "deepseek-r1:7b",
+      "agent_condition": "stalta-detection+skill-v0.1-demo",
+      "suite": "synthetic_stalta",
+      "score": 0.8181818181818182,
+      "quality_percent": 81.81818181818183,
+      "cost_usd": 0.0031624999999999995,
+      "n_completed": 11,
+      "n_total": 11,
+      "efficiency_score": 258.7136183974129,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 10,
       "model_id": "claude-haiku-4-5-20251001",
       "agent_condition": "generic-coding-agent",
       "suite": "synthetic_stalta",
@@ -123,7 +174,24 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 8,
+      "rank": 11,
+      "model_id": "olmo2:7b",
+      "agent_condition": "dvv-processing+skill-v0.1-demo",
+      "suite": "dvv_processing",
+      "score": 0.8,
+      "quality_percent": 80.0,
+      "cost_usd": 0.0041400000000000005,
+      "n_completed": 20,
+      "n_total": 20,
+      "efficiency_score": 193.2367149758454,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "custom-interface",
+      "skill_name": "dvv-processing",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 12,
       "model_id": "qwen2.5:7b",
       "agent_condition": "dvv-processing+skill-v0.1-demo",
       "suite": "dvv_processing",
@@ -140,7 +208,7 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 9,
+      "rank": 13,
       "model_id": "llama3.1:8b",
       "agent_condition": "generic-coding-agent",
       "suite": "synthetic_stalta",
@@ -157,7 +225,7 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 10,
+      "rank": 14,
       "model_id": "llama3.1:8b",
       "agent_condition": "generic-coding-agent",
       "suite": "dvv_processing",
@@ -174,7 +242,41 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 11,
+      "rank": 15,
+      "model_id": "deepseek-r1:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "dvv_processing",
+      "score": 0.55,
+      "quality_percent": 55.00000000000001,
+      "cost_usd": 0.005,
+      "n_completed": 20,
+      "n_total": 20,
+      "efficiency_score": 110.0,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "standard",
+      "skill_name": "dvv-processing",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 16,
+      "model_id": "deepseek-r1:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "synthetic_stalta",
+      "score": 0.5454545454545454,
+      "quality_percent": 54.54545454545454,
+      "cost_usd": 0.00275,
+      "n_completed": 11,
+      "n_total": 11,
+      "efficiency_score": 198.34710743801654,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "standard",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 17,
       "model_id": "qwen2.5:7b",
       "agent_condition": "generic-coding-agent",
       "suite": "dvv_processing",
@@ -191,7 +293,24 @@
       "skill_version": "v0.1-demo"
     },
     {
-      "rank": 12,
+      "rank": 18,
+      "model_id": "olmo2:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "synthetic_stalta",
+      "score": 0.36363636363636365,
+      "quality_percent": 36.36363636363637,
+      "cost_usd": 0.00198,
+      "n_completed": 11,
+      "n_total": 11,
+      "efficiency_score": 183.65472910927457,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "standard",
+      "skill_name": "stalta-detection",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 19,
       "model_id": "qwen2.5:7b",
       "agent_condition": "generic-coding-agent",
       "suite": "synthetic_stalta",
@@ -205,6 +324,23 @@
       "openness": "open-source-open-weight",
       "toolset": "standard",
       "skill_name": "stalta-detection",
+      "skill_version": "v0.1-demo"
+    },
+    {
+      "rank": 20,
+      "model_id": "olmo2:7b",
+      "agent_condition": "generic-coding-agent",
+      "suite": "dvv_processing",
+      "score": 0.35,
+      "quality_percent": 35.0,
+      "cost_usd": 0.0036000000000000003,
+      "n_completed": 20,
+      "n_total": 20,
+      "efficiency_score": 97.2222222222222,
+      "run_file": "demo_dashboard.py",
+      "openness": "open-source-open-weight",
+      "toolset": "standard",
+      "skill_name": "dvv-processing",
       "skill_version": "v0.1-demo"
     }
   ],

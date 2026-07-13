@@ -90,6 +90,45 @@ models:
       provider: alibaba
       license: apache-2.0
 
+  # A reasoning-distilled model at laptop scale: useful for probing whether
+  # chain-of-thought style training helps on the numeric/param-choice suites
+  # where the small chat models tend to guess.
+  - id: deepseek-r1:7b
+    family: deepseek-r1
+    tier: small
+    size_b: 7.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: deepseek
+      license: mit
+      note: reasoning-distilled (R1 distill onto a 7B base)
+
+  # AI2's OLMo: the most *transparent* entry in the registry — open weights AND
+  # open training data/code, so a leaderboard row can be traced to what the
+  # model was actually trained on. That matters for a benchmark whose whole
+  # point is evidence over hype (and for reasoning about data contamination).
+  #
+  # NOTE: OLMo 3 is not published to the Ollama library yet (`olmo3` 404s as of
+  # this writing); OLMo 2 7B is. Swap the id to `olmo3:7b` once it lands — the
+  # rest of this entry stays valid.
+  - id: olmo2:7b
+    family: olmo2
+    tier: small
+    size_b: 7.0
+    context_window: 4096
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: allenai
+      license: apache-2.0
+      note: fully open (weights + training data + code)
+
   # ---- medium: 14-35B open weights -----------------------------------------
   - id: qwen2.5:14b
     family: qwen2.5

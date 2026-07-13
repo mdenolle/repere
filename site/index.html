@@ -234,8 +234,16 @@
           </div>
 
           <p class="fineprint">
-            Current public data is a smoke benchmark for wiring the pipeline end-to-end.
-            Private golden-set scores are published here only after human review.
+            <strong>What this board is:</strong> a <em>harness demonstration</em> across two
+            evals (synthetic STA/LTA detection and codameter dv/v processing). The suites,
+            truth sets, scorers, sandbox and cost model are the real code paths a live run
+            uses; the <strong>model responses are simulated deterministically</strong>, because
+            CI has no GPU, no Ollama daemon and no API keys. So this shows the platform works
+            end-to-end and that the scoring discriminates — it is <strong>not yet a measurement
+            of these models' real capability</strong>. Swapping in live Ollama calls is a
+            one-line adapter change. Private golden-set scores are published only after human
+            review.
+            <a href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">Why we demo at laptop scale →</a>
           </p>
 
           <div class="table-wrap">
@@ -328,6 +336,10 @@
             <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/dataset_submission.md">
               <h3>Submit a dataset →</h3>
               <p>The strict schema, the Hugging Face pull, and how hidden test splits prevent leakage.</p>
+            </a>
+            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">
+              <h3>Why laptop-scale? →</h3>
+              <p>Small open models make the frugality claim falsifiable, the board reproducible without a credit card, and the data able to stay in the building.</p>
             </a>
             <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/ROADMAP.md">
               <h3>Roadmap →</h3>

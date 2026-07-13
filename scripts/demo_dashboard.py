@@ -39,9 +39,18 @@ from frugalmind_suites.synthetic_stalta.scorers import (  # noqa: E402
 )
 
 # --- 3 models: competence + how much a skill lifts them + illustrative cost --
+# Four laptop-scale open-weight models (Ollama, 7-8B) plus one cloud API model
+# as the reference ceiling. Small models start lower and gain *more* from a
+# domain skill -- that inverse relationship is the frugality thesis, and it is
+# only visible when the board contains models that don't automatically clear the
+# quality floor. See docs/laptop_scale_mvp.md.
 MODELS = [
+    {"id": "olmo2:7b", "openness": "open-source-open-weight",
+     "base": 0.34, "skill_gain": 0.44, "cost": 0.00018},
     {"id": "qwen2.5:7b", "openness": "open-source-open-weight",
      "base": 0.40, "skill_gain": 0.42, "cost": 0.00020},
+    {"id": "deepseek-r1:7b", "openness": "open-source-open-weight",
+     "base": 0.55, "skill_gain": 0.31, "cost": 0.00025},
     {"id": "llama3.1:8b", "openness": "open-source-open-weight",
      "base": 0.62, "skill_gain": 0.26, "cost": 0.00030},
     {"id": "claude-haiku-4-5-20251001", "openness": "closed-source-api",
