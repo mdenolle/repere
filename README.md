@@ -26,6 +26,8 @@ Geoscience work is diverse, so the suite spans three families, each scored by th
 
 Grading runs on a **scorability spectrum** — every task is pushed as far toward a deterministic reference (T0) as it will go, falling back to an LLM-judge rubric (T4) only when nothing else fits. To contribute a dataset, see [`docs/dataset_submission.md`](docs/dataset_submission.md).
 
+The demo leaderboard is deliberately populated with **laptop-scale open models** (7–8B via Ollama: `qwen2.5`, `llama3.1`, `deepseek-r1`, `olmo2`) plus one cloud model as a reference ceiling. Small models make the frugality claim falsifiable (they *don't* automatically clear the quality floor), keep the board reproducible without a credit card, and are the models allowed to touch embargoed data. See [`docs/laptop_scale_mvp.md`](docs/laptop_scale_mvp.md) — which also states plainly what the demo board is and is not.
+
 ## Why this exists
 
 Multi-agent systems often use expensive frontier models for every step, even when a smaller model is good enough for extraction, plotting, code generation, or reporting. FrugalMind aims to learn and enforce task-specific quality floors from hidden/private golden datasets, then route subagent work by cost subject to rigor constraints.

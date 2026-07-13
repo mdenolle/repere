@@ -41,10 +41,18 @@ jobs:
       - name: Run tests
         run: pixi run test
 
-      - name: Generate public smoke leaderboard
+      - name: Ensure leaderboard data (committed demo preferred)
         run: |
-          pixi run smoke-eval
-          pixi run export-leaderboard --results-dir results --output site/data/leaderboard.json
+          # A committed site/data/leaderboard.json (e.g. the two-eval demo from
+          # scripts/demo_dashboard.py, which needs codameter) is deployed as-is.
+          # Only fall back to a smoke leaderboard if none is committed.
+          if [ ! -f site/data/leaderboard.json ]; then
+            echo "No committed leaderboard; generating a smoke leaderboard."
+            pixi run smoke-eval
+            pixi run export-leaderboard --results-dir results --output site/data/leaderboard.json
+          else
+            echo "Deploying committed leaderboard data as-is."
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -18,6 +18,7 @@ skills:
       - sta_lta.trigger_code
       - sta_lta.plot
       - sta_lta.report
+      - synthetic_stalta.ridgecrest_detection
     notes: |
       Full-pipeline skill. Use this when the agent runs the entire STA/LTA
       benchmark end to end. Per-task narrow skills below override per suite
@@ -37,6 +38,15 @@ skills:
     suites:
       - sta_lta.report
     notes: "Narrow skill: only the one-paragraph report step."
+
+  - name: dvv-processing
+    suites:
+      - dvv_processing.param_recommendation
+    notes: |
+      Ambient-noise dv/v pipeline configuration. Teaches the coupling that the
+      param-recommendation task actually turns on: the band follows the target
+      depth, and the coda window follows the band. Bound to the codameter-backed
+      dv/v suite.
 
   - name: seismo-data-agent
     suites: []

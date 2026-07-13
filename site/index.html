@@ -234,8 +234,24 @@
           </div>
 
           <p class="fineprint">
-            Current public data is a smoke benchmark for wiring the pipeline end-to-end.
-            Private golden-set scores are published here only after human review.
+            <strong>LIVE RUN — real inference.</strong> Four open 7–8B models running locally
+            under Ollama (<code>qwen2.5</code>, <code>llama3.1</code>, <code>deepseek-r1</code>,
+            <code>olmo2</code>) plus <code>claude-haiku</code> via the Anthropic API, over two
+            evals: <em>dv/v processing</em> (codameter) and <em>STA/LTA detection</em>
+            (Ridgecrest synthetic). Real prompts, real skill injection, code executed in the
+            sandbox, graded by the deterministic scorers. <strong>Costs are actual token
+            usage</strong> — local open-weight models bill $0 marginal.
+          </p>
+          <p class="fineprint">
+            <strong>What it shows: whether you can be frugal depends on the task.</strong>
+            On dv/v <em>parameter choice</em>, free local models (qwen2.5:7b, llama3.1:8b) reach
+            a <strong>perfect 1.00 with the domain skill — matching claude-haiku at zero cost</strong>.
+            On STA/LTA <em>code generation</em>, every 7B model fails (~0.10): they import the
+            right ObsPy functions, then hand-roll a buggy detector that crashes. Only the cloud
+            model writes working code (0.56 → 0.76 with the declustering skill). Skills rescue a
+            small model on config tasks; they do not rescue one that cannot write correct
+            numerical code.
+            <a href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">Why we demo at laptop scale →</a>
           </p>
 
           <div class="table-wrap">
@@ -328,6 +344,10 @@
             <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/dataset_submission.md">
               <h3>Submit a dataset →</h3>
               <p>The strict schema, the Hugging Face pull, and how hidden test splits prevent leakage.</p>
+            </a>
+            <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/docs/laptop_scale_mvp.md">
+              <h3>Why laptop-scale? →</h3>
+              <p>Small open models make the frugality claim falsifiable, the board reproducible without a credit card, and the data able to stay in the building.</p>
             </a>
             <a class="helper" href="https://github.com/mdenolle/frugalmind/blob/main/ROADMAP.md">
               <h3>Roadmap →</h3>

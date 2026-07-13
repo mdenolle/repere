@@ -1,6 +1,6 @@
 ---
 name: stalta-detection
-version: v0.2
+version: v0.3
 task_kind: code_generation
 description: >-
   End-to-end seismology workflow skill for STA/LTA event detection. Use when the
@@ -23,7 +23,7 @@ validators:
   - "negative_window_explicitly_reported"
 ---
 
-# STA/LTA Detection Skill v0.2
+# STA/LTA Detection Skill v0.3
 
 End-to-end guidance for STA/LTA-based seismic event detection. Use this skill
 when the task requires fetching waveform data, detecting triggers, and
@@ -80,6 +80,58 @@ are first-class outputs, not failures.
    - anthropogenic event (quarry blast, mine blast, controlled source);
    - no event / noise / instrumental transient.
    Do not claim an earthquake solely because a trigger exists.
+
+## Declustering: STA/LTA re-triggers on the coda
+
+**This is the single most common way a correct-looking detector gets the wrong
+answer.** `trigger_onset` returns *every* interval where the characteristic
+function exceeds `thr_on`. After a real arrival, the coda rings: the ratio dips
+below `thr_off`, then crosses `thr_on` again. One earthquake therefore produces
+several onsets — typically the true onset plus 2–4 spurious ones a few tens of
+seconds later.
+
+If you report all of them you have not found several events; you have found one
+event and three artefacts, and your precision collapses.
+
+**Always decluster before reporting.** Enforce a minimum separation (dead time)
+between accepted onsets:
+
+```python
+times = sorted(float(o[0]) / fs for o in trigger_onset(cft, thr_on, thr_off))
+picks, last = [], -1e9
+for t in times:
+    if t - last >= dead_time_s:      # dead_time_s ~ 30-50 s for regional events
+        picks.append(t)
+        last = t
+```
+
+Choosing `dead_time_s`:
+- It must be **longer than the coda ringing** you want to suppress (tens of
+  seconds for a regional event at these distances).
+- It must be **shorter than the separation between genuine events** you still
+  need to resolve. If two real earthquakes are ~1 minute apart, a 60 s dead time
+  will silently merge them into one.
+- ~30–50 s is a reasonable default for regional records; state the value you
+  chose and why.
+
+An alternative to a fixed dead time is to keep, within each cluster, the onset
+whose characteristic-function peak is largest. Either is defensible; reporting
+the raw `trigger_onset` output is not.
+
+## Noise robustness
+
+On low-SNR records the detector will both miss the true arrival and fire on
+noise. Before concluding "no event", check that you have actually given the
+detector a chance:
+
+- `detrend("demean")` and `detrend("linear")` first — a DC offset or trend
+  inflates the LTA and suppresses the ratio.
+- Band-pass to the band where the signal lives, but **respect Nyquist**: at a
+  10 Hz sampling rate the Nyquist frequency is 5 Hz, so a 1–4.5 Hz band is near
+  the edge and an aggressive filter can destroy the very signal you are hunting.
+  When the sampling rate is low, filter gently or not at all.
+- A genuinely quiet window should return **no** onsets. Returning an empty list
+  is a correct, valuable answer — do not invent a detection to look productive.
 
 ## Regional/local earthquake association
 

@@ -32,7 +32,7 @@ def test_skills_dir_loads_all_skills():
 
 def test_stalta_detection_skill_has_full_frontmatter_and_files():
     skill = SkillLoader(skills_dir=SKILLS_DIR).get("stalta-detection")
-    assert skill.version == "v0.2"
+    assert skill.version == "v0.3"
     assert skill.task_kind == "code_generation"
     assert skill.references == ("pnsn-catalog.md", "obspy-recipes.md", "stalta-tuning.md")
     assert skill.examples == ("nisqually-detection.md", "quiet-window.md")
