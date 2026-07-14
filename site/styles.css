@@ -214,3 +214,13 @@ pre code { background: none; color: inherit; padding: 0; }
 }
 
 .errbar { stroke-linecap: round; }
+
+/* Legend: two independent encodings (colour = model, shape = task) plus the
+   skill fill. Grouping them is what makes the chart readable without prose. */
+.legend { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 14px; align-items: flex-start; }
+.legend-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.legend-title {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--purple); white-space: nowrap;
+}
+.legend-shape { flex: 0 0 14px; overflow: visible; }

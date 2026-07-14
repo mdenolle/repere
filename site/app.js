@@ -238,30 +238,76 @@ function draw() {
   renderLegend(rows);
 }
 
+function legendGroup(box, title) {
+  const g = document.createElement("div");
+  g.className = "legend-group";
+  const h = document.createElement("span");
+  h.className = "legend-title";
+  h.textContent = title;
+  g.appendChild(h);
+  box.appendChild(g);
+  return g;
+}
+
+/* The chart carries TWO independent encodings and the legend must say so
+ * explicitly, or the reader has to reverse-engineer it:
+ *   colour = base model      shape = task
+ * Splitting them into labelled groups is the difference between a legend that
+ * documents the chart and one that merely lists things. */
 function renderLegend(rows) {
   const box = document.querySelector("#legend");
   box.innerHTML = "";
-  for (const id of [...new Set(rows.map((r) => r.model_id))]) {
+
+  // ---- 1. Base models (colour) ----
+  const gModels = legendGroup(box, "Base model");
+  for (const id of [...new Set(rows.map((r) => r.model_id))].sort()) {
+    const meta = MODEL_META[id] || {};
     const item = document.createElement("span");
     item.className = "legend-item";
     const sw = document.createElement("span");
     sw.className = "legend-swatch";
     sw.style.background = modelHex(id);
     item.appendChild(sw);
-    item.appendChild(document.createTextNode(id));
-    box.appendChild(item);
+    const label = meta.params && meta.params !== "n/d" ? `${id} (${meta.params})` : id;
+    item.appendChild(document.createTextNode(label));
+    gModels.appendChild(item);
   }
-  // Shape encodes the TASK; colour encodes the model.
-  for (const suite of [...new Set(rows.map((r) => r.suite))]) {
+
+  // ---- 2. Tasks (shape) ----
+  // Draw the ACTUAL marker shape, not a coloured dot: shape is the message here,
+  // so a circle/square swatch is the only honest key.
+  const gTasks = legendGroup(box, "Task");
+  for (const suite of [...new Set(rows.map((r) => r.suite))].sort()) {
+    const shape = SUITE_SHAPE[suite] || "circle";
     const item = document.createElement("span");
     item.className = "legend-item";
-    const sw = document.createElement("span");
-    sw.className = "legend-swatch";
-    sw.style.background = "#6f6890";
-    if ((SUITE_SHAPE[suite] || "circle") === "square") sw.style.borderRadius = "2px";
-    item.appendChild(sw);
+
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("width", 14);
+    svg.setAttribute("height", 14);
+    svg.setAttribute("class", "legend-shape");
+    marker(shape, 7, 7, 5, { fill: "#6f6890", stroke: "#fff", "stroke-width": 1 }, svg);
+    item.appendChild(svg);
+
     item.appendChild(document.createTextNode(SUITE_LABEL[suite] || suite));
-    box.appendChild(item);
+    gTasks.appendChild(item);
+  }
+
+  // ---- 3. Skill condition (fill) — needed to read the arrows at all ----
+  const gSkill = legendGroup(box, "Skill");
+  for (const [label, filled] of [["no skill", false], ["skill loaded", true]]) {
+    const item = document.createElement("span");
+    item.className = "legend-item";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("width", 14);
+    svg.setAttribute("height", 14);
+    svg.setAttribute("class", "legend-shape");
+    marker("circle", 7, 7, 5, filled
+      ? { fill: "#6f6890", stroke: "#fff", "stroke-width": 1 }
+      : { fill: "#fff", stroke: "#6f6890", "stroke-width": 1.8 }, svg);
+    item.appendChild(svg);
+    item.appendChild(document.createTextNode(label));
+    gSkill.appendChild(item);
   }
 }
 

@@ -48,3 +48,25 @@ def test_every_model_and_eval_appears_on_the_chart():
     assert markers >= 2 * len(rows), (
         f"expected >= {2 * len(rows)} markers for {len(rows)} rows, drew {markers}"
     )
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_legend_is_grouped_by_encoding():
+    """The chart carries two independent encodings — colour = base model, shape =
+    task — plus the skill fill. The legend must group them explicitly, or the
+    reader has to reverse-engineer which visual channel means what."""
+    proc = subprocess.run(
+        ["node", str(REPO / "site" / "test" / "legend_check.mjs")],
+        cwd=REPO, capture_output=True, text=True, timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr[-800:]
+    out = proc.stdout
+    for group in ("[Base model]", "[Task]", "[Skill]"):
+        assert group in out, f"legend missing the {group} group:\n{out}"
+
+    # every model on the board appears under Base model
+    rows = json.loads((REPO / "site" / "data" / "skill_lift.json").read_text())["rows"]
+    for model in {r["model_id"] for r in rows}:
+        assert model in out, f"{model} missing from the legend"
+    # and each task appears exactly once, not once per model
+    assert out.count("STA/LTA detection") == 1
