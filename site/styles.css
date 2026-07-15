@@ -224,3 +224,61 @@ pre code { background: none; color: inherit; padding: 0; }
   letter-spacing: 0.08em; color: var(--purple); white-space: nowrap;
 }
 .legend-shape { flex: 0 0 14px; overflow: visible; }
+
+/* ---------- data table (mobile-first read + screen-reader path) ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.data-table-wrap { margin-top: 16px; }
+.data-table-wrap > summary {
+  cursor: pointer; font-size: 0.86rem; font-weight: 600; color: var(--purple);
+  padding: 6px 0; user-select: none;
+}
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 8px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th, .data-table td {
+  padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.data-table th[scope="col"] { color: var(--purple); font-weight: 700; }
+.data-table th[scope="row"], .data-table td:nth-child(2) {
+  text-align: left; font-weight: 600;
+}
+.data-table tbody tr:hover { background: var(--lav-2); }
+
+/* ==========================================================================
+   Mobile — the chart is an SVG that downscales; the JS also switches to a
+   narrower viewBox with larger type under 700px. These rules handle the rest of
+   the page furniture so nothing overflows a phone screen.
+   ========================================================================== */
+@media (max-width: 700px) {
+  .shell { width: calc(100% - 24px); }
+
+  .hero { border-radius: 0 0 20px 20px; padding-bottom: 36px; margin-bottom: 32px; }
+  .hero-inner { padding-top: 32px; }
+  .nav-links { gap: 12px; font-size: 0.86rem; }
+  .nav-links a:nth-child(n+4) { display: none; }  /* keep nav to one line */
+
+  .grid-3, .cats, .steps { grid-template-columns: 1fr; }
+  section { margin-bottom: 40px; }
+
+  .chart-card { padding: 14px 12px 10px; }
+  .chart-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .filters { gap: 6px; }
+  .chip, .btn-sm { font-size: 0.78rem; padding: 7px 12px; }  /* >=44px tap target height with line-box */
+  .downloads { justify-content: flex-end; }
+
+  /* Legend: stack the encoding groups vertically so labels never truncate. */
+  .legend { flex-direction: column; gap: 10px; }
+  .legend-group { gap: 10px; }
+
+  /* On a phone the table is the PRIMARY read, so open it by default. */
+  .data-table-wrap[open] > summary { margin-bottom: 4px; }
+}
+
+/* The whole point of the tooltip is touch reachability; make sure it can never
+   sit off-screen or overflow on a narrow viewport. */
+@media (max-width: 700px) {
+  #tooltip { max-width: min(300px, calc(100vw - 24px)); font-size: 0.8rem; }
+}

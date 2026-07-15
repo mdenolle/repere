@@ -19,8 +19,9 @@ globalThis.document = {
   createElement(n) { const e = node(n); made.push(e); return e; },
   createTextNode(t) { return node("#text"); },
   querySelector(sel) { return (store[sel] ||= node("div")); },
+  addEventListener() {},
 };
-globalThis.window = { innerWidth: 1200 };
+globalThis.window = { innerWidth: 1200, innerHeight: 900, addEventListener() {} };
 globalThis.fetch = async (path) => ({
   ok: true,
   json: async () => JSON.parse(fs.readFileSync("site/data/" + path.split("/").pop(), "utf8")),

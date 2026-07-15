@@ -12,8 +12,9 @@ globalThis.document = {
   createElement(n){const e=node(n);made.push(e);return e;},
   createTextNode(t){const e=node("#text");e._text=t;return e;},
   querySelector(s){return (store[s] ||= node("div"));},
+  addEventListener(){},
 };
-globalThis.window={innerWidth:1200};
+globalThis.window={innerWidth:1200,innerHeight:900,addEventListener(){}};
 globalThis.fetch=async(p)=>({ok:true,json:async()=>JSON.parse(fs.readFileSync("site/data/"+p.split("/").pop(),"utf8"))});
 fs.writeFileSync("/tmp/_app2.mjs", fs.readFileSync("site/app.js","utf8"));
 await import("/tmp/_app2.mjs");

@@ -174,6 +174,28 @@
 
           <div class="legend" id="legend"></div>
           <p class="chart-note" id="chart-note"></p>
+
+          <details class="data-table-wrap" id="data-table-details">
+            <summary>Show the numbers as a table</summary>
+            <div class="table-scroll">
+              <table id="data-table" class="data-table">
+                <caption class="sr-only">
+                  Score and cost for each model and eval, without and with the domain skill.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Model</th>
+                    <th scope="col">Eval</th>
+                    <th scope="col">Score (no skill)</th>
+                    <th scope="col">Score (skill)</th>
+                    <th scope="col">Lift</th>
+                    <th scope="col">Cost</th>
+                  </tr>
+                </thead>
+                <tbody id="data-table-body"></tbody>
+              </table>
+            </div>
+          </details>
           <p class="meta-line"><span id="generated-at">Loading…</span> · <span id="source-label"></span></p>
         </div>
 

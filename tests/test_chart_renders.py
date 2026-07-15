@@ -68,5 +68,41 @@ def test_legend_is_grouped_by_encoding():
     rows = json.loads((REPO / "site" / "data" / "skill_lift.json").read_text())["rows"]
     for model in {r["model_id"] for r in rows}:
         assert model in out, f"{model} missing from the legend"
-    # and each task appears exactly once, not once per model
-    assert out.count("STA/LTA detection") == 1
+    # each task appears exactly once, not once per model (both, per review)
+    for task in ("STA/LTA detection", "dv/v processing"):
+        assert out.count(task) == 1, f"{task!r} should appear once, saw {out.count(task)}"
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_chart_uses_a_readable_layout_on_a_phone(tmp_path):
+    """On a ~375px phone a 900-unit viewBox downscales text to ~4px. The chart
+    must switch to the narrow layout (smaller viewBox, larger user-unit type) so
+    it stays legible."""
+    base = (REPO / "site" / "test" / "render_test.mjs").read_text()
+    phone = base.replace("innerWidth:1200,innerHeight:900",
+                         "innerWidth:375,innerHeight:812")
+    f = tmp_path / "phone_render.mjs"
+    f.write_text(phone)
+    proc = subprocess.run(
+        ["node", str(f)], cwd=REPO, capture_output=True, text=True, timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr[-800:]
+    assert "CHART RENDERS" in proc.stdout
+
+
+def test_mobile_affordances_exist():
+    """The tooltip is the only way to read a marker's data, and there is no hover
+    on touch; and an SVG scatter is invisible to screen readers. So a phone needs
+    tap-tooltips and a data-table fallback."""
+    js = (REPO / "site" / "app.js").read_text()
+    html = (REPO / "site" / "index.html").read_text()
+    css = (REPO / "site" / "styles.css").read_text()
+    # touch reachability for the tooltip
+    assert "touchstart" in js, "no touch handler — marker data is unreachable on mobile"
+    # the responsive layout switch
+    assert "function layout()" in js and "innerWidth < 700" in js
+    # a data-table fallback (also the screen-reader path)
+    assert 'id="data-table-body"' in html and "renderTable" in js
+    assert ".sr-only" in css
+    # a mobile breakpoint
+    assert "max-width: 700px" in css
