@@ -43,15 +43,18 @@ const OPENNESS_LABEL = {
   unknown: "unknown",
 };
 
-// Each eval gets its own MARKER SHAPE, so the two tasks are distinguishable
-// when both are plotted together (colour already encodes the model).
+// Each eval gets its own MARKER SHAPE, so the tasks are distinguishable when
+// plotted together (colour already encodes the model). One shape per suite —
+// a suite with no shape here would silently collide with dv/v on `circle`.
 const SUITE_SHAPE = {
-  dvv_processing: "circle",   // E2 · parameter selection
-  synthetic_stalta: "square", // E1 · code generation
+  dvv_processing: "circle",   // parameter selection (software-agent)
+  synthetic_stalta: "square", // code generation (software-agent)
+  lit_rag: "triangle",        // known-item retrieval (document)
 };
 const SUITE_LABEL = {
   dvv_processing: "dv/v processing (parameter selection)",
   synthetic_stalta: "STA/LTA detection (code generation)",
+  lit_rag: "literature retrieval (document)",
 };
 
 // Selectable x-axis. Cost alone flatters local models: they bill $0 but are far
@@ -132,6 +135,11 @@ function marker(shape, cx, cy, r, attrs, parent) {
     return el("rect", {
       ...attrs, x: cx - r, y: cy - r, width: 2 * r, height: 2 * r, rx: 1.5,
     }, parent);
+  }
+  if (shape === "triangle") {
+    const h = r * 1.15;
+    const pts = `${cx},${cy - h} ${cx - h},${cy + h * 0.8} ${cx + h},${cy + h * 0.8}`;
+    return el("polygon", { ...attrs, points: pts }, parent);
   }
   return el("circle", { ...attrs, cx, cy, r }, parent);
 }

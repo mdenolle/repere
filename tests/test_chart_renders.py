@@ -43,7 +43,8 @@ def test_every_model_and_eval_appears_on_the_chart():
         cwd=REPO, capture_output=True, text=True, timeout=60,
     )
     counts = json.loads(proc.stdout.split("SVG elements drawn:")[1].split("\n")[0])
-    markers = counts.get("circle", 0) + counts.get("rect", 0)
+    # markers: circle (dv/v) + rect (STA/LTA) + polygon (retrieval triangle)
+    markers = counts.get("circle", 0) + counts.get("rect", 0) + counts.get("polygon", 0)
     # two markers (no-skill, skill) per row
     assert markers >= 2 * len(rows), (
         f"expected >= {2 * len(rows)} markers for {len(rows)} rows, drew {markers}"
@@ -69,7 +70,15 @@ def test_legend_is_grouped_by_encoding():
     for model in {r["model_id"] for r in rows}:
         assert model in out, f"{model} missing from the legend"
     # each task appears exactly once, not once per model (both, per review)
-    for task in ("STA/LTA detection", "dv/v processing"):
+    # each task label appears once in the legend, not once per model. Only the
+    # families with data on the current board are checked (retrieval joined once
+    # the document eval was run live).
+    board = json.loads((REPO / "site" / "data" / "skill_lift.json").read_text())["rows"]
+    labels = {"synthetic_stalta": "STA/LTA detection",
+              "dvv_processing": "dv/v processing",
+              "lit_rag": "literature retrieval"}
+    for suite in {r["suite"] for r in board}:
+        task = labels[suite]
         assert out.count(task) == 1, f"{task!r} should appear once, saw {out.count(task)}"
 
 
