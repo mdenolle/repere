@@ -26,7 +26,7 @@ from typing import Any
 from frugalmind import DenolleGroupSuite, TaskKind
 from frugalmind.export import BenchmarkRow
 
-DATASET_ID = "dvv_processing"
+DATASET_ID = "codameter"  # was "dvv_processing" before codameter v0.3.0
 VERSION = "v0.1"
 _VALID_SPLITS = ("validation", "test")
 

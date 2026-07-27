@@ -56,7 +56,7 @@ skills:
 
   - name: dvv-processing
     suites:
-      - dvv_processing.param_recommendation
+      - codameter.param_recommendation
     notes: |
       Ambient-noise dv/v pipeline configuration. Teaches the coupling that the
       param-recommendation task actually turns on: the band follows the target
