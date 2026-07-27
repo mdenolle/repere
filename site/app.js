@@ -57,6 +57,23 @@ const SUITE_LABEL = {
   lit_rag: "literature retrieval (document)",
 };
 
+// A suite with no declared shape must NOT silently fall back to `circle` — that
+// is how lit_rag once rendered indistinguishably from dv/v. Give unknowns a
+// distinct fallback shape (deterministic per suite id) and warn, so a new task
+// is always visually separable even before its shape is registered.
+const _FALLBACK_SHAPES = ["diamond", "triangle", "square", "circle"];
+const _warnedShapes = new Set();
+function shapeFor(suite) {
+  if (SUITE_SHAPE[suite]) return SUITE_SHAPE[suite];
+  if (!_warnedShapes.has(suite)) {
+    _warnedShapes.add(suite);
+    console.warn(`No marker shape registered for suite "${suite}" — using a fallback. Add it to SUITE_SHAPE.`);
+  }
+  let h = 0;
+  for (const c of suite) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return _FALLBACK_SHAPES[h % _FALLBACK_SHAPES.length];
+}
+
 // Selectable x-axis. Cost alone flatters local models: they bill $0 but are far
 // slower, and that wall-clock latency is a real cost a laboratory pays. Model
 // size reframes skill lift as "how many parameters is this skill worth?".
@@ -140,6 +157,12 @@ function marker(shape, cx, cy, r, attrs, parent) {
     const h = r * 1.15;
     const pts = `${cx},${cy - h} ${cx - h},${cy + h * 0.8} ${cx + h},${cy + h * 0.8}`;
     return el("polygon", { ...attrs, points: pts }, parent);
+  }
+  if (shape === "diamond") {
+    const d = r * 1.25;
+    return el("polygon", {
+      ...attrs, points: `${cx},${cy - d} ${cx + d},${cy} ${cx},${cy + d} ${cx - d},${cy}`,
+    }, parent);
   }
   return el("circle", { ...attrs, cx, cy, r }, parent);
 }
@@ -234,7 +257,7 @@ function draw() {
   // one lift-line + two markers per row
   for (const r of rows) {
     const hex = modelHex(r.model_id);
-    const shape = SUITE_SHAPE[r.suite] || "circle";
+    const shape = shapeFor(r.suite);
     const x0 = x(ax.none(r)), y0 = y(r.score_none);
     const x1 = x(ax.full(r)), y1 = y(r.score_full);
 
@@ -322,7 +345,7 @@ function renderLegend(rows) {
   // so a circle/square swatch is the only honest key.
   const gTasks = legendGroup(box, "Task");
   for (const suite of [...new Set(rows.map((r) => r.suite))].sort()) {
-    const shape = SUITE_SHAPE[suite] || "circle";
+    const shape = shapeFor(suite);
     const item = document.createElement("span");
     item.className = "legend-item";
 
@@ -542,6 +565,12 @@ const EXPORT_CSS = `
 
 function exportPng() {
   const src = document.querySelector("#chart");
+  // W/H are no longer module-level constants — the layout is chosen per render
+  // by layout(). Read the dimensions off the SVG's live viewBox so the export
+  // always matches what is on screen (and can never desync from draw() again).
+  const [, , W, H] = (src.getAttribute("viewBox") || "0 0 900 480")
+    .split(/\s+/)
+    .map(Number);
   const clone = src.cloneNode(true);
   clone.setAttribute("xmlns", SVG_NS);
   clone.setAttribute("width", W);

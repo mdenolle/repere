@@ -12,6 +12,7 @@ it appends to the SVG.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -87,16 +88,20 @@ def test_chart_uses_a_readable_layout_on_a_phone(tmp_path):
     """On a ~375px phone a 900-unit viewBox downscales text to ~4px. The chart
     must switch to the narrow layout (smaller viewBox, larger user-unit type) so
     it stays legible."""
-    base = (REPO / "site" / "test" / "render_test.mjs").read_text()
-    phone = base.replace("innerWidth:1200,innerHeight:900",
-                         "innerWidth:375,innerHeight:812")
-    f = tmp_path / "phone_render.mjs"
-    f.write_text(phone)
+    # Set the viewport via env, not a brittle string-replace: the stub's exact
+    # formatting must not silently decide whether the narrow layout is exercised.
+    env = {**os.environ, "FM_VW": "375", "FM_VH": "812"}
+    render = REPO / "site" / "test" / "render_test.mjs"
     proc = subprocess.run(
-        ["node", str(f)], cwd=REPO, capture_output=True, text=True, timeout=60,
+        ["node", str(render)], cwd=REPO, capture_output=True, text=True,
+        timeout=60, env=env,
     )
     assert proc.returncode == 0, proc.stderr[-800:]
     assert "CHART RENDERS" in proc.stdout
+    # Prove the narrow layout actually fired: its viewBox is 420 wide, not 900.
+    assert "viewBox: 0 0 420" in proc.stdout, (
+        f"phone render did not switch to the narrow (420-wide) layout:\n{proc.stdout}"
+    )
 
 
 def test_mobile_affordances_exist():
@@ -115,3 +120,15 @@ def test_mobile_affordances_exist():
     assert ".sr-only" in css
     # a mobile breakpoint
     assert "max-width: 700px" in css
+
+
+def test_unknown_suite_gets_a_distinct_shape_not_a_silent_collision():
+    """A suite absent from SUITE_SHAPE must not fall back to `circle` and become
+    indistinguishable from dv/v (the exact bug lit_rag once had). shapeFor()
+    gives unknowns a distinct fallback and warns."""
+    js = (REPO / "site" / "app.js").read_text()
+    assert "function shapeFor(" in js
+    # both draw sites go through shapeFor, not a raw `|| "circle"` default
+    assert 'SUITE_SHAPE[r.suite] || "circle"' not in js
+    assert 'SUITE_SHAPE[suite] || "circle"' not in js
+    assert "_FALLBACK_SHAPES" in js and "console.warn" in js
