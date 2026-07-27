@@ -19,8 +19,13 @@ globalThis.document = {
   createElement(n) { const e = node(n); made.push(e); return e; },
   createTextNode(t) { return node("#text"); },
   querySelector(sel) { return (store[sel] ||= node("div")); },
+  addEventListener() {},
 };
-globalThis.window = { innerWidth: 1200 };
+globalThis.window = {
+  innerWidth: Number(process.env.FM_VW) || 1200,
+  innerHeight: Number(process.env.FM_VH) || 900,
+  addEventListener() {},
+};
 globalThis.fetch = async (path) => ({
   ok: true,
   json: async () => JSON.parse(fs.readFileSync("site/data/" + path.split("/").pop(), "utf8")),
@@ -33,6 +38,8 @@ await new Promise((r) => setTimeout(r, 300));
 
 const counts = made.reduce((a, e) => ((a[e.tag] = (a[e.tag] || 0) + 1), a), {});
 console.log("SVG elements drawn:", JSON.stringify(counts));
+const vb = (store["#chart"] && store["#chart"].attrs && store["#chart"].attrs.viewBox) || "";
+console.log("viewBox:", vb);
 const note = store["#chart-note"]?.textContent || "";
 console.log("chart note:", note.slice(0, 70));
 const ok = (counts.circle || 0) + (counts.rect || 0) >= 20 && (counts.line || 0) > 0;

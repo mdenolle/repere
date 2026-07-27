@@ -43,16 +43,36 @@ const OPENNESS_LABEL = {
   unknown: "unknown",
 };
 
-// Each eval gets its own MARKER SHAPE, so the two tasks are distinguishable
-// when both are plotted together (colour already encodes the model).
+// Each eval gets its own MARKER SHAPE, so the tasks are distinguishable when
+// plotted together (colour already encodes the model). One shape per suite —
+// a suite with no shape here would silently collide with dv/v on `circle`.
 const SUITE_SHAPE = {
-  dvv_processing: "circle",   // E2 · parameter selection
-  synthetic_stalta: "square", // E1 · code generation
+  dvv_processing: "circle",   // parameter selection (software-agent)
+  synthetic_stalta: "square", // code generation (software-agent)
+  lit_rag: "triangle",        // known-item retrieval (document)
 };
 const SUITE_LABEL = {
   dvv_processing: "dv/v processing (parameter selection)",
   synthetic_stalta: "STA/LTA detection (code generation)",
+  lit_rag: "literature retrieval (document)",
 };
+
+// A suite with no declared shape must NOT silently fall back to `circle` — that
+// is how lit_rag once rendered indistinguishably from dv/v. Give unknowns a
+// distinct fallback shape (deterministic per suite id) and warn, so a new task
+// is always visually separable even before its shape is registered.
+const _FALLBACK_SHAPES = ["diamond", "triangle", "square", "circle"];
+const _warnedShapes = new Set();
+function shapeFor(suite) {
+  if (SUITE_SHAPE[suite]) return SUITE_SHAPE[suite];
+  if (!_warnedShapes.has(suite)) {
+    _warnedShapes.add(suite);
+    console.warn(`No marker shape registered for suite "${suite}" — using a fallback. Add it to SUITE_SHAPE.`);
+  }
+  let h = 0;
+  for (const c of suite) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return _FALLBACK_SHAPES[h % _FALLBACK_SHAPES.length];
+}
 
 // Selectable x-axis. Cost alone flatters local models: they bill $0 but are far
 // slower, and that wall-clock latency is a real cost a laboratory pays. Model
@@ -60,12 +80,14 @@ const SUITE_LABEL = {
 const X_AXES = {
   cost: {
     label: "Cost per run (USD) — local open-weight models bill $0",
+    short: "Cost per run (USD)",
     none: (r) => r.cost_none_usd,
     full: (r) => r.cost_full_usd,
     fmt: (v) => (v === 0 ? "$0" : `$${v.toFixed(3)}`),
   },
   latency: {
     label: "Wall-clock latency per run (s) — the cost a $0 model still charges",
+    short: "Latency per run (s)",
     none: (r) => r.latency_none_s,
     full: (r) => r.latency_full_s,
     fmt: (v) => `${Math.round(v)}s`,
@@ -74,6 +96,7 @@ const X_AXES = {
     // Static property of the model, so it needs no measurement and works even on
     // result files produced before the run recorded `size_b`.
     label: "Model size (billion parameters) — how many parameters is the skill worth?",
+    short: "Model size (B params)",
     none: (r) => r.size_b ?? (MODEL_META[r.model_id] || {}).size_b,
     full: (r) => r.size_b ?? (MODEL_META[r.model_id] || {}).size_b,
     fmt: (v) => `${v}B`,
@@ -98,15 +121,47 @@ async function loadJson(path) {
 }
 
 /* ------------------------------------------------------------------- chart */
-const W = 900, H = 480;
-const M = { top: 24, right: 26, bottom: 56, left: 62 };
-const PW = W - M.left - M.right;
-const PH = H - M.top - M.bottom;
+/* Responsive geometry.
+ *
+ * The SVG scales to its container, so a 900-unit viewBox on a ~355px phone is
+ * drawn at 0.4x — an 11px label renders at ~4px and a 6px marker at ~2.5px:
+ * illegible and untappable. Compensating with CSS alone does not work, because
+ * the whole coordinate system shrinks.
+ *
+ * So on narrow screens we use a NARROWER viewBox (less downscaling) and larger
+ * type and markers in user units, which survive the scale. */
+function layout() {
+  const w = typeof window !== "undefined" ? window.innerWidth : 1200;
+  const narrow = w < 700;
+  if (narrow) {
+    return {
+      W: 420, H: 460,
+      M: { top: 20, right: 14, bottom: 74, left: 46 },
+      fAxis: 13, fLabel: 14, rHollow: 7, rFilled: 8, lw: 2.2, narrow: true,
+    };
+  }
+  return {
+    W: 900, H: 480,
+    M: { top: 24, right: 26, bottom: 56, left: 62 },
+    fAxis: 11, fLabel: 12, rHollow: 6, rFilled: 7, lw: 1.6, narrow: false,
+  };
+}
 
 function marker(shape, cx, cy, r, attrs, parent) {
   if (shape === "square") {
     return el("rect", {
       ...attrs, x: cx - r, y: cy - r, width: 2 * r, height: 2 * r, rx: 1.5,
+    }, parent);
+  }
+  if (shape === "triangle") {
+    const h = r * 1.15;
+    const pts = `${cx},${cy - h} ${cx - h},${cy + h * 0.8} ${cx + h},${cy + h * 0.8}`;
+    return el("polygon", { ...attrs, points: pts }, parent);
+  }
+  if (shape === "diamond") {
+    const d = r * 1.25;
+    return el("polygon", {
+      ...attrs, points: `${cx},${cy - d} ${cx + d},${cy} ${cx},${cy + d} ${cx - d},${cy}`,
     }, parent);
   }
   return el("circle", { ...attrs, cx, cy, r }, parent);
@@ -122,6 +177,12 @@ function el(name, attrs = {}, parent = null) {
 function draw() {
   const svg = document.querySelector("#chart");
   svg.innerHTML = "";
+
+  const L = layout();
+  const { W, H, M } = L;
+  const PW = W - M.left - M.right;
+  const PH = H - M.top - M.bottom;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
 
   // `let`, not `const`: the x-axis filter below narrows this to the rows that
   // actually carry the selected metric. Reassigning a `const` here threw
@@ -162,42 +223,47 @@ function draw() {
       class: "gridline", x1: M.left, x2: M.left + PW, y1: y(yv), y2: y(yv),
     }, g);
     el("text", {
-      class: "axis", x: M.left - 10, y: y(yv) + 4, "text-anchor": "end",
+      class: "axis", x: M.left - 8, y: y(yv) + 4, "text-anchor": "end",
+      "font-size": L.fAxis,
     }, g).textContent = fmtPct(yv);
   }
   // x ticks
-  for (let i = 0; i <= 4; i++) {
-    const xv = (xMax / 4) * i;
+  const nTicks = L.narrow ? 2 : 4;   // 4 tick labels collide on a phone
+  for (let i = 0; i <= nTicks; i++) {
+    const xv = (xMax / nTicks) * i;
     el("text", {
       class: "axis", x: x(xv), y: M.top + PH + 20, "text-anchor": "middle",
+      "font-size": L.fAxis,
     }, g).textContent = ax.fmt(xv);
   }
   el("line", { class: "axis", x1: M.left, x2: M.left + PW, y1: M.top + PH, y2: M.top + PH }, g);
   el("line", { class: "axis", x1: M.left, x2: M.left, y1: M.top, y2: M.top + PH }, g);
 
   el("text", {
-    class: "axis-label", x: M.left + PW / 2, y: H - 14, "text-anchor": "middle",
-  }, g).textContent = ax.label;
+    class: "axis-label", x: M.left + PW / 2, y: H - (L.narrow ? 44 : 14),
+    "text-anchor": "middle", "font-size": L.fLabel,
+  }, g).textContent = L.narrow ? (ax.short || ax.label) : ax.label;
   el("text", {
-    class: "axis-label", transform: `rotate(-90)`, x: -(M.top + PH / 2), y: 16,
-    "text-anchor": "middle",
-  }, g).textContent = "Performance (deterministic score)";
+    class: "axis-label", transform: `rotate(-90)`, x: -(M.top + PH / 2),
+    y: L.narrow ? 14 : 16, "text-anchor": "middle", "font-size": L.fLabel,
+  }, g).textContent = L.narrow ? "Score" : "Performance (deterministic score)";
 
   // "better" hint
   el("text", {
-    class: "axis", x: M.left + 6, y: M.top + 14, fill: "#6d5bd0",
-  }, g).textContent = "↖ cheaper + better";
+    class: "axis", x: M.left + 4, y: M.top + 12, fill: "#6d5bd0",
+    "font-size": L.fAxis,
+  }, g).textContent = L.narrow ? "↖ better" : "↖ cheaper + better";
 
   // one lift-line + two markers per row
   for (const r of rows) {
     const hex = modelHex(r.model_id);
-    const shape = SUITE_SHAPE[r.suite] || "circle";
+    const shape = shapeFor(r.suite);
     const x0 = x(ax.none(r)), y0 = y(r.score_none);
     const x1 = x(ax.full(r)), y1 = y(r.score_full);
 
     el("line", {
       class: "lift-line", x1: x0, y1: y0, x2: x1, y2: y1,
-      stroke: hex, "marker-end": "url(#arrow)",
+      stroke: hex, "stroke-width": L.lw, "marker-end": "url(#arrow)",
     }, g);
 
     // 95% CI over repeat runs, when the repeat study has been run.
@@ -211,9 +277,9 @@ function draw() {
       }
     }
 
-    const hollow = marker(shape, x0, y0, 6,
+    const hollow = marker(shape, x0, y0, L.rHollow,
       { class: "pt", fill: "#fff", stroke: hex, "stroke-width": 2 }, g);
-    const filled = marker(shape, x1, y1, 7,
+    const filled = marker(shape, x1, y1, L.rFilled,
       { class: "pt", fill: hex, stroke: "#fff", "stroke-width": 1.5 }, g);
 
     bindTip(hollow, r, "none");
@@ -236,32 +302,106 @@ function draw() {
     `the line is the lift. ${state.meta.note || ""}`;
 
   renderLegend(rows);
+  renderTable(rows);
 }
 
+function legendGroup(box, title) {
+  const g = document.createElement("div");
+  g.className = "legend-group";
+  const h = document.createElement("span");
+  h.className = "legend-title";
+  h.textContent = title;
+  g.appendChild(h);
+  box.appendChild(g);
+  return g;
+}
+
+/* The chart carries TWO independent encodings and the legend must say so
+ * explicitly, or the reader has to reverse-engineer it:
+ *   colour = base model      shape = task
+ * Splitting them into labelled groups is the difference between a legend that
+ * documents the chart and one that merely lists things. */
 function renderLegend(rows) {
   const box = document.querySelector("#legend");
   box.innerHTML = "";
-  for (const id of [...new Set(rows.map((r) => r.model_id))]) {
+
+  // ---- 1. Base models (colour) ----
+  const gModels = legendGroup(box, "Base model");
+  for (const id of [...new Set(rows.map((r) => r.model_id))].sort()) {
+    const meta = MODEL_META[id] || {};
     const item = document.createElement("span");
     item.className = "legend-item";
     const sw = document.createElement("span");
     sw.className = "legend-swatch";
     sw.style.background = modelHex(id);
     item.appendChild(sw);
-    item.appendChild(document.createTextNode(id));
-    box.appendChild(item);
+    const label = meta.params && meta.params !== "n/d" ? `${id} (${meta.params})` : id;
+    item.appendChild(document.createTextNode(label));
+    gModels.appendChild(item);
   }
-  // Shape encodes the TASK; colour encodes the model.
-  for (const suite of [...new Set(rows.map((r) => r.suite))]) {
+
+  // ---- 2. Tasks (shape) ----
+  // Draw the ACTUAL marker shape, not a coloured dot: shape is the message here,
+  // so a circle/square swatch is the only honest key.
+  const gTasks = legendGroup(box, "Task");
+  for (const suite of [...new Set(rows.map((r) => r.suite))].sort()) {
+    const shape = shapeFor(suite);
     const item = document.createElement("span");
     item.className = "legend-item";
-    const sw = document.createElement("span");
-    sw.className = "legend-swatch";
-    sw.style.background = "#6f6890";
-    if ((SUITE_SHAPE[suite] || "circle") === "square") sw.style.borderRadius = "2px";
-    item.appendChild(sw);
+
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("width", 14);
+    svg.setAttribute("height", 14);
+    svg.setAttribute("class", "legend-shape");
+    marker(shape, 7, 7, 5, { fill: "#6f6890", stroke: "#fff", "stroke-width": 1 }, svg);
+    item.appendChild(svg);
+
     item.appendChild(document.createTextNode(SUITE_LABEL[suite] || suite));
-    box.appendChild(item);
+    gTasks.appendChild(item);
+  }
+
+  // ---- 3. Skill condition (fill) — needed to read the arrows at all ----
+  const gSkill = legendGroup(box, "Skill");
+  for (const [label, filled] of [["no skill", false], ["skill loaded", true]]) {
+    const item = document.createElement("span");
+    item.className = "legend-item";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("width", 14);
+    svg.setAttribute("height", 14);
+    svg.setAttribute("class", "legend-shape");
+    marker("circle", 7, 7, 5, filled
+      ? { fill: "#6f6890", stroke: "#fff", "stroke-width": 1 }
+      : { fill: "#fff", stroke: "#6f6890", "stroke-width": 1.8 }, svg);
+    item.appendChild(svg);
+    item.appendChild(document.createTextNode(label));
+    gSkill.appendChild(item);
+  }
+}
+
+function renderTable(rows) {
+  const body = document.querySelector("#data-table-body");
+  if (!body) return;
+  body.innerHTML = "";
+  const sorted = [...rows].sort(
+    (a, b) => a.suite.localeCompare(b.suite) || b.lift - a.lift
+  );
+  for (const r of sorted) {
+    const tr = document.createElement("tr");
+    const cells = [
+      r.model_id,
+      SUITE_LABEL[r.suite] || r.suite,
+      fmtPct(r.score_none),
+      fmtPct(r.score_full),
+      `${r.lift >= 0 ? "+" : ""}${(r.lift * 100).toFixed(0)} pp`,
+      fmtCost(r.cost_full_usd),
+    ];
+    cells.forEach((c, i) => {
+      const cell = document.createElement(i === 0 ? "th" : "td");
+      if (i === 0) cell.setAttribute("scope", "row");
+      cell.textContent = c;
+      tr.appendChild(cell);
+    });
+    body.appendChild(tr);
   }
 }
 
@@ -307,19 +447,53 @@ function bindTip(node, r, arm) {
     <span class="kv">score:</span> <b>${fmtPct(score)}</b> · <span class="kv">cost:</span> ${fmtCost(cost)}<br/>
     <span class="kv">skill lift:</span> ${(r.lift * 100).toFixed(0)} pp
   `;
-  node.addEventListener("mouseenter", (e) => {
+
+  function show(clientX, clientY) {
     const t = tip();
     t.innerHTML = html;
     t.style.opacity = 1;
-    move(e);
-  });
-  node.addEventListener("mousemove", move);
-  node.addEventListener("mouseleave", () => (tip().style.opacity = 0));
-  function move(e) {
-    const t = tip();
-    t.style.left = `${Math.min(e.clientX + 14, window.innerWidth - 300)}px`;
-    t.style.top = `${e.clientY + 14}px`;
+    place(clientX, clientY);
   }
+  function place(clientX, clientY) {
+    const t = tip();
+    const w = 300, pad = 10;
+    // Keep the card on-screen. On a phone a naive x+14 pushes it off the right
+    // edge and the text is unreadable.
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let left = clientX + 14;
+    if (left + w + pad > vw) left = Math.max(pad, clientX - w - 14);
+    let top = clientY + 14;
+    if (top + 160 > vh) top = Math.max(pad, clientY - 170);
+    t.style.left = `${left}px`;
+    t.style.top = `${top}px`;
+  }
+  const hide = () => (tip().style.opacity = 0);
+
+  // Pointer (mouse) — hover.
+  node.addEventListener("mouseenter", (e) => show(e.clientX, e.clientY));
+  node.addEventListener("mousemove", (e) => place(e.clientX, e.clientY));
+  node.addEventListener("mouseleave", hide);
+
+  // TOUCH — there is no hover on a phone, so without this every marker's data is
+  // simply unreachable on mobile. Tap shows the card; tapping elsewhere hides it.
+  node.addEventListener("touchstart", (e) => {
+    e.preventDefault();          // don't also fire a synthetic mouse event
+    e.stopPropagation();
+    const t = e.touches[0];
+    show(t.clientX, t.clientY);
+  }, { passive: false });
+  node.addEventListener("click", (e) => {
+    e.stopPropagation();
+    show(e.clientX, e.clientY);
+  });
+}
+
+// Dismiss the tooltip when tapping anywhere else.
+if (typeof document !== "undefined" && document.addEventListener) {
+  document.addEventListener("touchstart", () => {
+    const t = document.querySelector("#tooltip");
+    if (t) t.style.opacity = 0;
+  });
 }
 
 /* ----------------------------------------------------------------- filters */
@@ -391,6 +565,12 @@ const EXPORT_CSS = `
 
 function exportPng() {
   const src = document.querySelector("#chart");
+  // W/H are no longer module-level constants — the layout is chosen per render
+  // by layout(). Read the dimensions off the SVG's live viewBox so the export
+  // always matches what is on screen (and can never desync from draw() again).
+  const [, , W, H] = (src.getAttribute("viewBox") || "0 0 900 480")
+    .split(/\s+/)
+    .map(Number);
   const clone = src.cloneNode(true);
   clone.setAttribute("xmlns", SVG_NS);
   clone.setAttribute("width", W);
@@ -437,8 +617,19 @@ async function main() {
   renderFilters();
   renderAxisPicker();
   draw();
+  // On a phone the table is easier to read than a downscaled scatter, so open it.
+  const det = document.querySelector("#data-table-details");
+  if (det && typeof window !== "undefined" && window.innerWidth < 700) det.open = true;
   document.querySelector("#dl-csv").addEventListener("click", exportCsv);
   document.querySelector("#dl-png").addEventListener("click", exportPng);
+
+  // Re-draw on resize/rotate: the phone and desktop layouts use different
+  // viewBoxes, so a rotation must rebuild the chart, not just rescale it.
+  let t;
+  window.addEventListener("resize", () => {
+    clearTimeout(t);
+    t = setTimeout(draw, 150);
+  });
 }
 
 main();
