@@ -76,7 +76,7 @@ def test_legend_is_grouped_by_encoding():
     # the document eval was run live).
     board = json.loads((REPO / "site" / "data" / "skill_lift.json").read_text())["rows"]
     labels = {"synthetic_stalta": "STA/LTA detection",
-              "dvv_processing": "dv/v processing",
+              "codameter": "dv/v processing",
               "lit_rag": "literature retrieval"}
     for suite in {r["suite"] for r in board}:
         task = labels[suite]

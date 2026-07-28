@@ -3,7 +3,7 @@
 Evals
 -----
 - ``synthetic_stalta`` (STA/LTA detection on Ridgecrest-derived synthetic cases)
-- ``dvv_processing``   (codameter dv/v param-recommendation; the pinned
+- ``codameter``        (codameter dv/v param-recommendation; the pinned
   codameter includes the installed-golden-dir fix, so its golden data resolves
   or regenerates on an installed copy with no workaround here)
 
@@ -83,7 +83,7 @@ MODELS = [
 ]
 SKILL = {
     "synthetic_stalta": ("stalta-detection", "v0.1-demo"),
-    "dvv_processing": ("dvv-processing", "v0.1-demo"),
+    "codameter": ("dvv-processing", "v0.1-demo"),
     "lit_rag": ("literature-retrieval", "v0.1-demo"),
 }
 
@@ -95,7 +95,7 @@ SKILL = {
 #   research-workflow — orchestrators, scored on their call trajectory
 SUITE_CATEGORY = {
     "synthetic_stalta": "software-agent",
-    "dvv_processing": "software-agent",
+    "codameter": "software-agent",
     "lit_rag": "document",
     "orchestration": "research-workflow",
 }
@@ -165,7 +165,7 @@ def _dvv_items():
 
 SUITES = {
     "synthetic_stalta": _stalta_items,
-    "dvv_processing": _dvv_items,
+    "codameter": _dvv_items,
     "lit_rag": _lit_rag_items,
 }
 
