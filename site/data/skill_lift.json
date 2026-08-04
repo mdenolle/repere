@@ -6,7 +6,7 @@
   "rows": [
     {
       "model_id": "qwen2.5:7b",
-      "suite": "dvv_processing",
+      "suite": "codameter",
       "skill_name": "dvv-processing",
       "skill_version": "v0.1",
       "score_none": 0.17437687801132662,
@@ -37,7 +37,7 @@
     },
     {
       "model_id": "claude-haiku-4-5-20251001",
-      "suite": "dvv_processing",
+      "suite": "codameter",
       "skill_name": "dvv-processing",
       "skill_version": "v0.1",
       "score_none": 0.35002752232369094,
@@ -68,7 +68,7 @@
     },
     {
       "model_id": "llama3.1:8b",
-      "suite": "dvv_processing",
+      "suite": "codameter",
       "skill_name": "dvv-processing",
       "skill_version": "v0.1",
       "score_none": 0.4108281476036237,
@@ -99,7 +99,7 @@
     },
     {
       "model_id": "deepseek-r1:7b",
-      "suite": "dvv_processing",
+      "suite": "codameter",
       "skill_name": "dvv-processing",
       "skill_version": "v0.1",
       "score_none": 0.16336685030497144,
@@ -130,7 +130,7 @@
     },
     {
       "model_id": "olmo2:7b",
-      "suite": "dvv_processing",
+      "suite": "codameter",
       "skill_name": "dvv-processing",
       "skill_version": "v0.1",
       "score_none": 0.37294735131622053,

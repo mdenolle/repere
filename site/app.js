@@ -14,7 +14,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
  * this map is the fallback for older data files that predate it. */
 const SUITE_CATEGORY = {
   synthetic_stalta: "software-agent",
-  dvv_processing: "software-agent",
+  codameter: "software-agent",
   lit_rag: "document",
   orchestration: "research-workflow",
 };
@@ -47,12 +47,12 @@ const OPENNESS_LABEL = {
 // plotted together (colour already encodes the model). One shape per suite —
 // a suite with no shape here would silently collide with dv/v on `circle`.
 const SUITE_SHAPE = {
-  dvv_processing: "circle",   // parameter selection (software-agent)
+  codameter: "circle",       // parameter selection (software-agent)
   synthetic_stalta: "square", // code generation (software-agent)
   lit_rag: "triangle",        // known-item retrieval (document)
 };
 const SUITE_LABEL = {
-  dvv_processing: "dv/v processing (parameter selection)",
+  codameter: "dv/v processing (parameter selection)",
   synthetic_stalta: "STA/LTA detection (code generation)",
   lit_rag: "literature retrieval (document)",
 };

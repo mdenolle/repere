@@ -50,7 +50,7 @@ registered in `frugalmind.cli._all_registered_suites()` whenever `codameter` is
 importable):
 
 ```bash
-frugalmind export-suite --suite dvv_processing.param_recommendation --out datasets/
+frugalmind export-suite --suite codameter.param_recommendation --out datasets/
 # or, from codameter: pixi run frugalmind-export
 ```
 

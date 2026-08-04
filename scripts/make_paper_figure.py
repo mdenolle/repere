@@ -29,7 +29,7 @@ OUT = REPO / "paper" / "figures"
 
 # Suite -> human label + panel order
 SUITES = {
-    "dvv_processing": "E2 · dv/v processing\n(parameter selection)",
+    "codameter": "E2 · dv/v processing\n(parameter selection)",
     "synthetic_stalta": "E1 · STA/LTA detection\n(code generation)",
 }
 COLORS = {
