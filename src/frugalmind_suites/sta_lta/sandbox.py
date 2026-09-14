@@ -95,10 +95,14 @@ _PREAMBLE = textwrap.dedent(
 )
 
 
-def _persist_artifacts(out_dir: str) -> tuple[dict[str, Any], list[str]]:
+def _persist_artifacts(
+    out_dir: str, skip_names: frozenset[str] = frozenset()
+) -> tuple[dict[str, Any], list[str]]:
     """Collect the ``record(...)`` artefact dict and any non-internal files
     produced by the snippet, copying the files to a separate tmpdir so they
-    survive the ``out_dir`` cleanup. Shared between host and docker paths."""
+    survive the ``out_dir`` cleanup. Shared between host and docker paths.
+    ``skip_names`` lists staged input files that must not be reported as
+    artefacts (RCA suite, ``input_files``)."""
     result_file = Path(out_dir) / "__fm_result__.json"
     artifacts: dict[str, Any] = {}
     if result_file.exists():
@@ -114,7 +118,7 @@ def _persist_artifacts(out_dir: str) -> tuple[dict[str, Any], list[str]]:
     # a plain file the caller can later open and read.
     artifact_files: list[str] = []
     for path in Path(out_dir).iterdir():
-        if path.name in ("snippet.py", "__fm_result__.json"):
+        if path.name in ("snippet.py", "__fm_result__.json") or path.name in skip_names:
             continue
         if not path.is_file():
             continue
@@ -138,16 +142,33 @@ def _persist_artifacts(out_dir: str) -> tuple[dict[str, Any], list[str]]:
     return artifacts, artifact_files
 
 
+def _stage_inputs(out_dir: str, input_files: dict[str, str] | None) -> frozenset[str]:
+    """Copy ``{name: host_path}`` into ``out_dir`` so the snippet sees them in
+    its working directory (host backend) or under ``/work`` (docker backend).
+    Returns the staged basenames so artefact collection can skip them."""
+    if not input_files:
+        return frozenset()
+    staged: set[str] = set()
+    for name, src in input_files.items():
+        base = Path(name).name  # never allow a path to escape out_dir
+        dst = Path(out_dir) / base
+        dst.write_bytes(Path(src).read_bytes())
+        staged.add(base)
+    return frozenset(staged)
+
+
 def _run_snippet_host(
     code: str,
     *,
     timeout_s: float,
     extra_env: dict[str, str] | None,
+    input_files: dict[str, str] | None = None,
 ) -> ExecResult:
     """Execute the snippet under the host's ``sys.executable``."""
     with tempfile.TemporaryDirectory(prefix="fm_sta_lta_") as out_dir:
         snippet_path = Path(out_dir) / "snippet.py"
         snippet_path.write_text(_PREAMBLE + "\n" + code)
+        staged = _stage_inputs(out_dir, input_files)
 
         env = {"FM_OUT_DIR": out_dir, "PATH": "/usr/bin:/bin"}
         if extra_env:
@@ -174,7 +195,7 @@ def _run_snippet_host(
             stderr = stderr_raw + f"\n[TIMEOUT after {timeout_s}s]"
             rc = None
 
-        artifacts, artifact_files = _persist_artifacts(out_dir)
+        artifacts, artifact_files = _persist_artifacts(out_dir, staged)
         return ExecResult(
             ok=(rc == 0 and not timed_out),
             stdout=stdout,
@@ -192,6 +213,7 @@ def _run_snippet_docker(
     timeout_s: float,
     extra_env: dict[str, str] | None,
     image: str,
+    input_files: dict[str, str] | None = None,
 ) -> ExecResult:
     """Execute the snippet inside the pinned Docker sandbox image.
 
@@ -222,6 +244,7 @@ def _run_snippet_docker(
     with tempfile.TemporaryDirectory(prefix="fm_sta_lta_") as out_dir:
         snippet_path = Path(out_dir) / "snippet.py"
         snippet_path.write_text(_PREAMBLE + "\n" + code)
+        staged = _stage_inputs(out_dir, input_files)
         # ``tempfile.TemporaryDirectory`` ships at mode 0700 owned by the
         # host UID. The container runs as a non-root ``fmuser`` whose UID
         # almost never matches the host's, so the default permissions
@@ -281,7 +304,7 @@ def _run_snippet_docker(
             stderr = stderr_raw + f"\n[TIMEOUT after {timeout_s}s (docker)]"
             rc = None
 
-        artifacts, artifact_files = _persist_artifacts(out_dir)
+        artifacts, artifact_files = _persist_artifacts(out_dir, staged)
         return ExecResult(
             ok=(rc == 0 and not timed_out),
             stdout=stdout,
@@ -307,6 +330,7 @@ def run_snippet(
     timeout_s: float = 30.0,
     extra_env: dict[str, str] | None = None,
     image: str | None = None,
+    input_files: dict[str, str] | None = None,
 ) -> ExecResult:
     """Execute a Python snippet in a fresh subprocess with a timeout.
 
@@ -319,10 +343,19 @@ def run_snippet(
     the explicit ``image`` argument (a per-suite image — e.g. a seisbench or
     noisepy sandbox for numerical-regression tasks), then ``FM_SANDBOX_IMAGE``,
     then :data:`DEFAULT_SANDBOX_IMAGE`. The host backend ignores ``image``.
+
+    ``input_files`` (``{basename: host_path}``) are copied into the snippet's
+    working directory before execution and are excluded from the returned
+    ``artifact_files``. Added for the RCA suite (shape B ``inputs.files``);
+    default ``None`` leaves the historical behaviour unchanged.
     """
     if not code.strip():
         return ExecResult(False, "", "empty code", None, False, {}, [])
 
+    # Only forward ``input_files`` when the caller supplied it, so the
+    # historical call signature (and every existing test double) is unchanged
+    # for callers that don't stage inputs.
+    extra: dict[str, Any] = {"input_files": input_files} if input_files else {}
     if _docker_requested():
         resolved = image or os.environ.get(ENV_SANDBOX_IMAGE) or DEFAULT_SANDBOX_IMAGE
         return _run_snippet_docker(
@@ -330,5 +363,6 @@ def run_snippet(
             timeout_s=timeout_s,
             extra_env=extra_env,
             image=resolved,
+            **extra,
         )
-    return _run_snippet_host(code, timeout_s=timeout_s, extra_env=extra_env)
+    return _run_snippet_host(code, timeout_s=timeout_s, extra_env=extra_env, **extra)
