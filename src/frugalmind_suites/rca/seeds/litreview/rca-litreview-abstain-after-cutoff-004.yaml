@@ -1,0 +1,60 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. NEGATIVE CASE for the lit-review agent: the correct answer is an
+# abstention. Scores 0 for any citation.
+schema_version: rca.golden.v0.1
+id: rca-litreview-abstain-after-cutoff-004
+family: litreview
+group: 2_litreview
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: easy
+tags: [negative-case, abstention, temporal-holdout, contamination]
+
+prompt: |
+  Which papers published in 2026 report results from the COSZO stations
+  CZMID, CZOFF, CZOSH or CZSHF on the OOI cabled array? Cite corpus
+  document ids only. If the corpus has none, say so plainly.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    The four COSZO stations appear in the EarthScope station service with
+    start dates of 2026-08-22 (queried 2026-09-14) and on coszo.org, and are
+    absent from aRCADA's catalog and paper index at @14294bc (June 2026).
+    Under a cutoff of 2026-06-04 no corpus paper can concern them.
+  source_ref: "https://service.earthscope.org/fdsnws/station/1/query?net=OO&level=station&format=text"
+  source_kind: fdsn_station_metadata
+  notes: >-
+    Temporal holdout in the AstaBench sense: the question is about content
+    after the snapshot. A model that answers from parametric memory or an
+    unrestricted web search fails; the frugalmind literature_search tool
+    enforces the cutoff inside the tool.
+
+holdout:
+  split: validation
+  visibility: public
+  construction: temporal_after_index
+  leakage_note: "Nothing to leak; the gold is 'no such paper before the cutoff'."
+  canary: null
+
+cutoff_date: "2026-06-04"
+
+corpus_snapshot:
+  corpus_id: arcada-paper-index
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 papers.json sha256 3d9f119612aa948c1a619254bbb5e9cd84125735f7bca1d8bd2abc817622f6b1"
+
+reference_output: "No papers in the corpus before the cutoff date concern these stations."
+reference_citations: []
+
+scoring:
+  method: exact_match
+  metrics: [pass_fail]
+  config:
+    mode: abstain
+
+todos:
+  - "Co-author: approve the abstention phrase list in inspect_tasks._ABSTAIN or replace it with a structured abstention field in the answer format."
+  - "Corpus: when the paper index is rebuilt with real dates, re-check that no pre-cutoff paper mentions the CZ* station codes (they were named on coszo.org before deployment)."

@@ -1,0 +1,62 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Tests coverage of PI-operated instruments (DAS) in the lit agent.
+schema_version: rca.golden.v0.1
+id: rca-litreview-das-2025-005
+family: litreview
+group: 2_litreview
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: medium
+tags: [das, pi-instrument, fibre, "2025"]
+
+prompt: |
+  What has been published from distributed acoustic sensing (DAS) on the
+  OOI Regional Cabled Array cables, and which deployment year does each
+  paper use? Return a JSON array of corpus document ids, most relevant
+  first, then one line per paper with the deployment year.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    aRCADA @14294bc catalog/instruments.json lists three DAS entries
+    (PI-DAS-OPTASENSE, PI-DAS24, PI-DAS25; PI-DAS25 end_date 2026-01-28,
+    description citing github.com/uwfiberlab/OOI_DAS_2025); papers.json
+    contains titles such as "Observations of fin whales and vessels offshore
+    oregon using fibre optic distributed ..." (Horne 2025,
+    10.3389/fmars.2025.1603541), "Denoising Offshore Distributed Acoustic
+    Sensing Using Masked Auto-Encoders ..." (Shi 2025,
+    10.1029/2024JB029728), "DASFormer" (Ding 2025), and full text of
+    "Lapins et al. 2024, DAS-N2N". Relevance to RCA cables specifically is
+    unverified.
+  source_ref: "https://github.com/mhemmett/arcada/blob/14294bca45ce5f65fd6541bea68ab40fbc870659/catalog/papers.json"
+  source_kind: arcada_paper_index
+
+holdout:
+  split: validation
+  visibility: public
+  construction: catalog_perturbed
+  leakage_note: >-
+    The deployment-year sub-question requires reading the paper, not the
+    catalog; catalog DAS entries carry a start_date that may differ from the
+    paper's experiment dates (co-author to check).
+  canary: null
+
+cutoff_date: "2026-06-04"
+
+corpus_snapshot:
+  corpus_id: arcada-paper-index
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 papers.json sha256 3d9f119612aa948c1a619254bbb5e9cd84125735f7bca1d8bd2abc817622f6b1"
+
+reference_citations: []
+
+scoring:
+  method: retrieval_metrics
+  metrics: [ndcg_at_k]
+  reference:
+    k: 10
+
+todos:
+  - "Co-author (DAS): grade the candidates; mark generic DAS-method papers that do not use RCA cables as grade 0."

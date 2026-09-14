@@ -1,0 +1,64 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Grounded-QA form (citation_support): the answer must cite provided
+# corpus ids and contain specific facts; no LLM judge.
+schema_version: rca.golden.v0.1
+id: rca-litreview-axial-2015-eruption-002
+family: litreview
+group: 2_litreview
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: medium
+tags: [axial-seamount, eruption-2015, seismicity, grounded-qa]
+
+prompt: |
+  Using only the papers in the corpus, what did cabled-array seismic
+  observations reveal about the April 2015 eruption of Axial Seamount?
+  Cite each claim inline with the corpus document id in square brackets.
+  Do not cite anything that is not in the corpus.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    Corpus as in rca-litreview-sensor-science-hys14-001 (aRCADA papers.json
+    @14294bc). The reader observed entries whose titles concern Axial
+    Seamount's 2015 eruption (e.g. Wang 2025, "Monitoring Dynamic Magma
+    Movement in the Lower Crust During the 2015 Eruption of ...",
+    10.1029/2024JB030481) but did not read them; which papers actually
+    report seismic observations of the eruption is for the co-author to
+    establish.
+  source_ref: "https://github.com/mhemmett/arcada/blob/14294bca45ce5f65fd6541bea68ab40fbc870659/catalog/papers.json"
+  source_kind: arcada_paper_index
+
+holdout:
+  split: validation
+  visibility: public
+  construction: catalog_perturbed
+  leakage_note: >-
+    The corpus contains abstracts; the required facts (required_terms) must
+    be chosen from paper bodies or from cross-paper synthesis so that
+    copying one abstract does not satisfy the checker. Co-author to verify.
+  canary: null
+
+cutoff_date: "2026-06-04"
+
+corpus_snapshot:
+  corpus_id: arcada-paper-index
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 papers.json sha256 3d9f119612aa948c1a619254bbb5e9cd84125735f7bca1d8bd2abc817622f6b1"
+
+reference_output: "TODO(co-author): 3-5 sentence reference answer with inline [ids]."
+reference_citations: []
+
+scoring:
+  method: citation_support
+  metrics: [citation_precision, citation_recall]
+  reference:
+    valid_sources: []
+    required_terms: []
+    forbidden_terms: []
+
+todos:
+  - "Co-author (lit): fill reference_citations (grades) and reference.valid_sources (= ids a correct answer may cite), required_terms (specific numbers/names a correct answer must contain, e.g. an event count or a timing), and forbidden_terms (a plausible wrong claim)."
+  - "Design: citation_support scores 0.5 x valid-citation fraction + 0.5 x required-term fraction (docs/lit_rag_scorers.md); decide whether recall over valid_sources should also count."
