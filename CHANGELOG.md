@@ -11,6 +11,22 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
+### Added (branch `design/rca-harness`)
+
+- **FrugalMind-RCA design and skeleton.** `DESIGN.md` (taxonomy, tiers,
+  architecture decision memo), `OPEN_QUESTIONS.md`, `docs/rca/` (inventory,
+  authoring guide, ABC audit, prior-art notes, rubric stubs) and
+  `src/frugalmind_suites/rca/`: JSON-Schema golden-record contract with two
+  shapes and an explicit verification tier, validator with rules R01 to R15,
+  16 template seed records, frozen price map skeleton, cost layer with
+  model-pin and price-verification flags, T2 checkers, T1 chronfix clock
+  oracle, Inspect task and tier-dispatching scorer with a void taxonomy,
+  runner with repeats and bootstrap CI (`rca.result.v0.1`), do-nothing and
+  BM25-only baselines, pinned external-data fetch script, tests.
+- `sandbox.run_snippet(..., input_files=...)` stages input files into the
+  snippet's working directory (additive; default behaviour unchanged).
+- `[rca]` optional extra (`jsonschema`, `numpy`).
+
 Phase 3 work begins here. Candidate items: P3.1 submit STA/LTA as an
 `inspect_evals` benchmark, P3.2 grow the truth set to 30–50 events,
 P3.3 hidden test split, P3.4 skill-conditioned 3-axis leaderboard,

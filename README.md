@@ -15,6 +15,17 @@ The current repository contains:
 - A static landing page + leaderboard in `site/` for GitHub Pages.
 - Manual CI scaffolding for smoke tests and future scheduled evals.
 
+## FrugalMind-RCA (design branch)
+
+A suite for agents serving the NSF Ocean Observatories Initiative Regional
+Cabled Array is being designed on `design/rca-harness`: three agent families
+(coding, literature review, sensor), seven task groups, four verification
+tiers, a golden-record schema with a validator, a frozen price map, a
+cost-and-repeats runner, and 16 template records. Start at
+[`DESIGN.md`](DESIGN.md) and [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md);
+the documentation index is [`docs/rca/README.md`](docs/rca/README.md).
+Every record is a template until a named co-author verifies it.
+
 ## Task families
 
 Geoscience work is diverse, so the suite spans three families, each scored by the most verifiable method the task allows:

@@ -49,7 +49,10 @@ def test_pixi_lock_matches_pyproject_metadata():
     lock_body = _frugalmind_lock_block()
     requires_dist = _lock_requires_dist(lock_body)
 
-    assert f"  version: {project['version']}" in lock_body
+    # Lock format v6 recorded the editable package's version; v7 (pixi >= 0.7x)
+    # does not carry it for path dependencies, so only check when present.
+    if "  version: " in lock_body:
+        assert f"  version: {project['version']}" in lock_body
 
     for dependency in project["dependencies"]:
         name = _requirement_name(dependency)
