@@ -21,7 +21,7 @@ Geoscience work is diverse, so the suite spans three families, each scored by th
 
 | Family | What it tests | Scored by | Suites | Design doc |
 |---|---|---|---|---|
-| **1 · Literature & multimodal** | review/critique, translation, interpolation, retrieval-augmented QA over papers, figures, waveforms | retrieval metrics (recall@k, nDCG), domain-term preservation, citation grounding | `lit_rag` | [`docs/lit_rag_scorers.md`](docs/lit_rag_scorers.md) |
+| **1 · Literature & multimodal** | retrieval-augmented literature review over the real OOI Regional Cabled Array corpus (142 papers from aRCADA): known-item retrieval, grounded QA cited by DOI, abstention on unanswerable queries, translation | retrieval (MRR, nDCG), attribution (citation validity / precision / recall, fabricated ids, fact coverage), abstention (proper scoring rule), term preservation | `lit_rag` | [`docs/lit_rag_scorers.md`](docs/lit_rag_scorers.md) |
 | **2 · Coding agents** | prompt→code (run + check artifact) and prompt→data (drive a real pipeline — seisbench, noisepy, codameter — and check the numbers) | sandboxed execution + numerical regression within tolerance | `sta_lta`, `pipeline_regression`, `dvv`, `gaia_data_downloader` | [`docs/numerical_regression_scorer.md`](docs/numerical_regression_scorer.md) |
 | **3 · Orchestration** | non-linear workflows: which sub-agents to call, in what order, with what dependencies | sub-agent call-DAG vs a reference (right steps, right deps, frugal fan-out) | `orchestration` | [`docs/orchestration_scorer.md`](docs/orchestration_scorer.md) |
 
@@ -59,7 +59,7 @@ frugalmind/
 │       ├── pipeline_regression/     # Family 2 — prompt→data numerical regression
 │       ├── dvv/                     # Family 2 — dv/v processing (codameter-backed)
 │       ├── gaia_data_downloader/    # Family 2 — data-download coding agent
-│       ├── lit_rag/                 # Family 1 — retrieval / translation / grounded QA
+│       ├── lit_rag/                 # Family 1 — OOI-RCA literature RAG: retrieval / abstention / grounded QA / translation
 │       └── orchestration/           # Family 3 — non-linear subagent workflows
 ├── config/
 │   └── models.yaml                  # 13-model registry (nano/small/medium/big/cloud)

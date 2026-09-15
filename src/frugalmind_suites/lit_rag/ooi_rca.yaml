@@ -1,0 +1,524 @@
+# OOI Regional Cabled Array literature truth set (Family 1), verifiable-core.
+#
+# Every item is grounded in data/ooi_rca_corpus.json: 142 REAL papers (titles,
+# abstracts, DOIs) frozen from the aRCADA project's Zotero "OOI RCA"
+# collection. Nothing here is synthetic. Gold is objective by construction:
+#
+#   known_item   the query paraphrases one paper's contribution; gold = its DOI.
+#   abstention   the query has NO relevant paper in the corpus (checked by
+#                keyword audit at authoring time), or is a matched answerable
+#                control; a proper scoring rule grades the decision to decline.
+#   grounded_qa  the question is answered by a number or phrase that appears
+#                verbatim in one abstract; the model is shown that source plus
+#                hard distractors and must cite by DOI.
+#   translation  a real abstract sentence whose identifiers must survive.
+#
+# This committed file holds ONLY the public validation split. Ranked scores are
+# computed on a hidden test split that lives outside git
+# (FM_EVAL_DATA_DIR/lit_rag_ooi_rca_test.yaml, same schema); see
+# docs/golden_data_provisioning.md. Two known Zotero metadata defects are
+# excluded as gold targets: 10.1029/2020gl087372 (abstract belongs to another
+# paper) and 10.1002/rob.21961 (abstract duplicated from 10.1029/2020EA001269).
+#
+# Per-item metadata slices the leaderboard: site, topic, difficulty,
+# hazard_relevant (questions whose wrong answer has operational consequence,
+# reported separately per the paper plan), answerable.
+
+meta:
+  corpus: data/ooi_rca_corpus.json
+  corpus_id: ooi_rca_zotero
+  version: v0.1
+  candidates_per_item: 10   # known_item / abstention: 1 target + hard distractors
+  sources_per_item: 6       # grounded_qa: relevant + hard distractors
+  sentinel: NO_RELEVANT_PAPERS
+
+items:
+  # ------------------------------------------------------------------------ #
+  # known_item — paraphrased research questions, one paper each
+  # ------------------------------------------------------------------------ #
+  - id: ki-lower-crust-magma-2015
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which study reconstructs daily shear-wave velocity in the top of the
+      lower crust beneath Axial Seamount from Rayleigh-wave admittance, and
+      reports an exponential velocity decrease starting about eight weeks
+      before the 2015 eruption as a forecasting signal?
+    gold: ["10.1029/2024JB030481"]
+    abstention_control: true
+    metadata: {site: axial, topic: volcano-seismology, difficulty: medium, hazard_relevant: true}
+
+  - id: ki-drift-corrected-pressure-2018-2021
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      I need the paper on the self-calibrating seafloor pressure recorder
+      deployed at Axial Seamount in July 2018 with two quartz gauges calibrated
+      in situ by a deadweight tester, reporting linear drift rates near
+      0.4 kPa per year and inflation through December 2021.
+    gold: ["10.1029/2022EA002434"]
+    metadata: {site: axial, topic: seafloor-geodesy, difficulty: hard, hazard_relevant: true}
+
+  - id: ki-hydrophone-wind-dependence
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Find the study fitting a piecewise log-linear model between wind speed
+      from a NOAA surface model and eight years of 200 Hz bottom hydrophone
+      data at a continental-slope site and an open-ocean site.
+    gold: ["10.1121/10.0039811"]
+    abstention_control: true
+    metadata: {site: slope-base, topic: ambient-sound, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-fin-whale-das-denoising
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which paper compares matched filtering, Gabor filtering, and noise
+      envelope subtraction for pulling low-SNR fin whale calls out of the
+      November 2021 RCA distributed acoustic sensing dataset with 2 m channel
+      spacing?
+    gold: ["10.1121/10.0036696"]
+    metadata: {site: rca-cable, topic: das-bioacoustics, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-das-strain-to-pressure
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      I am looking for the work that uses 20 Hz fin whale calls to calibrate
+      the conversion from DAS-recorded strain to acoustic pressure across three
+      cable deployments, finding that a single water compressibility value
+      explains the conversion.
+    gold: ["10.1121/10.0036351"]
+    metadata: {site: rca-cable, topic: das-calibration, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-real-time-double-difference
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which study implements a real-time double-difference relocation system
+      on the seven OOI seismometers at Axial Seamount, with a base catalog of
+      nearly 100,000 earthquakes revealing a figure-8 ring fault system?
+    gold: ["10.1029/2019JB018796"]
+    abstention_control: true
+    metadata: {site: axial, topic: volcano-seismology, difficulty: medium, hazard_relevant: true}
+
+  - id: ki-tidal-b-value
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Find the paper showing that the earthquake b value of roughly 60,000
+      Axial microearthquakes is inversely correlated with tidal stress above a
+      threshold amplitude, at about 0.09 per kPa of Coulomb stress.
+    gold: ["10.1016/j.epsl.2019.01.047"]
+    metadata: {site: axial, topic: tidal-triggering, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-dynamic-triggering-permeability
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which work tests whether teleseismic waves dynamically trigger
+      microseismicity at Axial Seamount using a 2015-2022 catalog, finds
+      triggering for about 18% of teleseisms, and uses vent-fluid temperature
+      phase lags to test whether permeability change is the mechanism?
+    gold: ["10.1016/j.epsl.2024.118625"]
+    metadata: {site: axial, topic: tidal-triggering, difficulty: medium, hazard_relevant: false}
+
+  - id: ki-shr-bubble-plume-time-series
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      I want the three-year time series of acoustic bubble-plume imaging and
+      water column methane samples above Southern Hydrate Ridge that found
+      plumes rising to 320-620 m depth and sustained venting at the Pinnacle
+      site.
+    gold: ["10.1002/2016GC006250"]
+    abstention_control: true
+    metadata: {site: hydrate-ridge, topic: methane-seeps, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-covis-heat-flux-inversion
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which paper extends multibeam sonar mapping of diffuse hydrothermal flow
+      to estimate heat-flux density in MW per square metre, calibrating sonar
+      temperature statistics against thermistor data at the ASHES vent field?
+    gold: ["10.1029/2021EA001974"]
+    metadata: {site: ashes, topic: hydrothermal, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-slow-slip-ocean-noise-removal
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Find the offshore Oregon pilot study that compares reference-pressure
+      subtraction, complex EOF analysis, and optimal interpolation of pressure
+      with near-bottom currents to remove ocean noise for detecting shallow
+      slow slip, using synthetic 2 cm, 7-day events.
+    gold: ["10.1029/2020jb020065"]
+    metadata: {site: cascadia-margin, topic: seafloor-geodesy, difficulty: hard, hazard_relevant: true}
+
+  - id: ki-depth-matched-differencing
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which study uses 2011-2015 Cascadia seafloor pressure records to show
+      that differencing against a depth-matched reference reduces oceanographic
+      noise to about 1 cm RMS, and recommends deploying instruments along
+      isobaths for slow-slip detection?
+    gold: ["10.1029/2019JB018053"]
+    metadata: {site: cascadia-margin, topic: seafloor-geodesy, difficulty: hard, hazard_relevant: true}
+
+  - id: ki-eruption-brine-release
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      I am after the paper explaining the nearly synchronous 0.6-0.7 degree
+      temperature increases across the southern Axial caldera after the 2015
+      eruption as the release of a warm brine previously stored in the crust.
+    gold: ["10.1029/2018gc007607"]
+    abstention_control: true
+    metadata: {site: axial, topic: hydrothermal, difficulty: medium, hazard_relevant: false}
+
+  - id: ki-covid-shipping-noise
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which analysis of six years of RCA hydrophone data at station HYS14
+      attributes a 1.6 dB drop in the 63 Hz third-octave band in spring 2020 to
+      reduced shipping during the COVID-19 pandemic?
+    gold: ["10.1121/10.0005192"]
+    metadata: {site: hydrate-ridge, topic: ambient-sound, difficulty: medium, hazard_relevant: false}
+
+  - id: ki-pythias-oasis-seep
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Find the report of a newly discovered warm, high-flux seafloor seep on
+      the central Oregon segment of Cascadia whose fluids are 9 degrees above
+      background, enriched in boron and lithium, and likely drain an
+      overpressured reservoir along the Alvin Canyon Fault.
+    gold: ["10.1126/sciadv.add6688"]
+    metadata: {site: cascadia-margin, topic: fluid-flow, difficulty: easy, hazard_relevant: true}
+
+  - id: ki-obdas-t-waves
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which paper uses the 4-day OOI community DAS experiment offshore Oregon
+      to detect T-waves, catalog 92 oceanic earthquakes mostly absent from
+      existing catalogs, and test seismic ocean thermometry with repeating
+      earthquakes?
+    gold: ["10.1029/2023JB027799"]
+    metadata: {site: rca-cable, topic: das-seismology, difficulty: medium, hazard_relevant: false}
+
+  - id: ki-ring-fault-slip-reversal
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which study locates 2015-2016 Axial microearthquakes on an
+      outward-dipping ring fault and shows from focal mechanisms that the slip
+      direction reversed during the eruption as the caldera floor subsided?
+    gold: ["10.1130/G39978.1"]
+    abstention_control: true
+    metadata: {site: axial, topic: volcano-seismology, difficulty: hard, hazard_relevant: false}
+
+  - id: ki-optical-fiber-strainmeter
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      I need the paper measuring seafloor strain with a Michelson fiber
+      interferometer stretched 200 m between anchors at 1900 m depth west of
+      Newport, reporting a tidal loading response of about -101 nanostrain per
+      metre of tide height.
+    gold: ["10.1029/2018EA000418"]
+    metadata: {site: cascadia-margin, topic: seafloor-geodesy, difficulty: medium, hazard_relevant: false}
+
+  - id: ki-plume-sulfur-oxidizers
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Which proteomic study of an Axial Seamount hydrothermal plume finds that
+      free-living SUP05-clade gamma-proteobacterial sulfur oxidizers dominate
+      carbon fixation in the dark ocean?
+    gold: ["10.1038/ismej.2013.113"]
+    metadata: {site: axial, topic: microbiology, difficulty: easy, hazard_relevant: false}
+
+  - id: ki-compliance-shear-velocity
+    kind: known_item
+    split: validation
+    visibility: public
+    query: >-
+      Find the work inverting weekly seafloor compliance from two cabled
+      broadband seismometers with collocated pressure sensors for shear
+      velocity beneath Axial, inferring melt fractions of 14% in the shallow
+      reservoir and at least 4% in the lower crust.
+    gold: ["10.1130/G46831.1"]
+    metadata: {site: axial, topic: volcano-seismology, difficulty: hard, hazard_relevant: false}
+
+  # ------------------------------------------------------------------------ #
+  # abstention — no relevant paper exists in the corpus (keyword-audited);
+  # the candidates shown are the nearest lexical neighbours, i.e. what a BM25
+  # RAG would retrieve, so the model must decline in the face of plausible hits.
+  # ------------------------------------------------------------------------ #
+  - id: neg-permafrost-methane
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Which RCA studies quantify methane release from thawing subsea
+      permafrost on the Arctic shelf?
+    gold: []
+    metadata: {site: none, topic: methane-seeps, difficulty: hard, hazard_relevant: false}
+
+  - id: neg-mars-insight
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      What papers in this collection analyse marsquakes recorded by the InSight
+      lander seismometer?
+    gold: []
+    metadata: {site: none, topic: planetary-seismology, difficulty: easy, hazard_relevant: false}
+
+  - id: neg-columbia-river-plume
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Which studies use the cabled array to track the Columbia River freshwater
+      plume across the Oregon shelf?
+    gold: []
+    metadata: {site: none, topic: physical-oceanography, difficulty: medium, hazard_relevant: false}
+
+  - id: neg-kelp-forest
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Find research on kelp forest canopy extent monitored from the Endurance
+      Array.
+    gold: []
+    metadata: {site: none, topic: ecology, difficulty: easy, hazard_relevant: false}
+
+  - id: neg-microplastics
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Which papers measure microplastic concentrations in sediment cores from
+      the Cascadia methane seeps?
+    gold: []
+    metadata: {site: none, topic: pollution, difficulty: hard, hazard_relevant: false}
+
+  - id: neg-ionospheric-tec
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      What work detects ionospheric total electron content disturbances from
+      Cascadia earthquakes using GNSS?
+    gold: []
+    metadata: {site: none, topic: earthquake-monitoring, difficulty: hard, hazard_relevant: true}
+
+  - id: neg-shark-telemetry
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Which studies track tagged sharks with the RCA hydrophones using acoustic
+      telemetry?
+    gold: []
+    metadata: {site: none, topic: bioacoustics, difficulty: hard, hazard_relevant: false}
+
+  - id: neg-offshore-wind-farm
+    kind: abstention
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      Find papers characterising underwater noise from offshore wind farm
+      construction recorded on the cabled array.
+    gold: []
+    metadata: {site: none, topic: ambient-sound, difficulty: hard, hazard_relevant: false}
+
+  # ------------------------------------------------------------------------ #
+  # grounded_qa — the answer is a number or phrase verbatim in one abstract;
+  # sources shown = gold + hard distractors, cited by DOI. Two are
+  # unanswerable from the sources shown and must be declined.
+  # ------------------------------------------------------------------------ #
+  - id: gq-2015-onset-ring-fault
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      On what date did the seismic network capture the onset of the 2015 Axial
+      Seamount eruption, and what structure accommodated the pre-eruption
+      inflation?
+    gold: ["10.1126/science.aah5563"]
+    sources: ["10.1126/science.aah5563", "10.1130/G39978.1", "10.1126/science.aah4666",
+              "10.1002/2016GL071327", "10.1029/2020jb019356", "10.1029/2024JB030481"]
+    required_terms: ["24 April 2015", "ring fault"]
+    metadata: {site: axial, topic: volcano-seismology, difficulty: easy, hazard_relevant: true}
+
+  - id: gq-drift-rates-2018-recorder
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      What linear sensor drift rates were estimated for the two pressure
+      gauges of the drift-corrected recorder deployed at Axial Seamount in
+      July 2018?
+    gold: ["10.1029/2022EA002434"]
+    sources: ["10.1029/2022EA002434", "10.1002/2016EA000190", "10.1029/2023JB026413",
+              "10.1126/science.aah4666", "10.1029/2021GC010153"]
+    required_terms: ["0.45", "0.36", "kPa"]
+    metadata: {site: axial, topic: seafloor-geodesy, difficulty: medium, hazard_relevant: true}
+
+  - id: gq-covid-shipping-band
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      By how much, and in which third-octave band, did shipping noise at
+      station HYS14 drop in spring 2020?
+    gold: ["10.1121/10.0005192"]
+    sources: ["10.1121/10.0005192", "10.1121/10.0009836", "10.1121/10.0039811",
+              "10.3389/fmars.2023.1025464", "10.1121/10.0017104"]
+    required_terms: ["63 Hz", "1.6 dB"]
+    metadata: {site: hydrate-ridge, topic: ambient-sound, difficulty: easy, hazard_relevant: false}
+
+  - id: gq-obdas-event-count
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      How many oceanic earthquakes were detected with ocean-bottom DAS during
+      the 4-day OOI community experiment offshore Oregon?
+    gold: ["10.1029/2023JB027799"]
+    sources: ["10.1029/2023JB027799", "10.1029/2024JB029728", "10.1007/s44267-025-00085-y",
+              "10.1785/0120210214", "10.1121/10.0017104"]
+    required_terms: ["92"]
+    metadata: {site: rca-cable, topic: das-seismology, difficulty: easy, hazard_relevant: false}
+
+  - id: gq-shr-plume-rise-depth
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      To what depths below sea level were bubble plumes detected above
+      Southern Hydrate Ridge in the three-year acoustic time series?
+    gold: ["10.1002/2016GC006250"]
+    sources: ["10.1002/2016GC006250", "10.1038/s41467-018-05736-x", "10.3389/feart.2021.613234",
+              "10.1016/j.dsr2.2018.04.001", "10.1029/2021gc009894"]
+    required_terms: ["320", "620"]
+    metadata: {site: hydrate-ridge, topic: methane-seeps, difficulty: medium, hazard_relevant: false}
+
+  - id: gq-b-value-tidal-sensitivity
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      By how much does the earthquake b value at Axial Seamount change per
+      unit of tidal Coulomb stress?
+    gold: ["10.1016/j.epsl.2019.01.047"]
+    sources: ["10.1016/j.epsl.2019.01.047", "10.1038/s41467-019-10605-2", "10.1016/j.epsl.2024.118625",
+              "10.1029/2020gl088447", "10.1126/science.aah5563"]
+    required_terms: ["0.09", "kPa"]
+    metadata: {site: axial, topic: tidal-triggering, difficulty: medium, hazard_relevant: false}
+
+  - id: gq-post-eruption-brine-temperature
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    query: >-
+      What size of temperature increase was recorded across the southern Axial
+      caldera after the 2015 eruption, and what is the proposed cause?
+    gold: ["10.1029/2018gc007607"]
+    sources: ["10.1029/2018gc007607", "10.5670/oceanog.2018.120", "10.1029/2018GC007802",
+              "10.1002/2016gc006734", "10.1002/2015gc006144"]
+    required_terms: ["0.6", "0.7", "brine"]
+    metadata: {site: axial, topic: hydrothermal, difficulty: medium, hazard_relevant: false}
+
+  - id: gq-unanswerable-pga-2015
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      What peak ground acceleration did the OOI seismometers record during the
+      2015 Axial Seamount eruption?
+    gold: []
+    sources: ["10.1126/science.aah5563", "10.1130/G39978.1", "10.1029/2020gl088447",
+              "10.1002/2016gc006734", "10.1029/2019JB018796"]
+    metadata: {site: axial, topic: volcano-seismology, difficulty: hard, hazard_relevant: true}
+
+  - id: gq-unanswerable-vessel-count
+    kind: grounded_qa
+    split: validation
+    visibility: public
+    answerable: false
+    query: >-
+      How many vessels per day cross the RCA cable route according to AIS
+      records?
+    gold: []
+    sources: ["10.1016/j.apor.2025.104422", "10.3389/fmars.2025.1603541", "10.1121/10.0005192",
+              "10.1121/10.0017104"]
+    metadata: {site: rca-cable, topic: ambient-sound, difficulty: hard, hazard_relevant: false}
+
+  # ------------------------------------------------------------------------ #
+  # translation — real abstract sentences; identifiers must survive verbatim
+  # ------------------------------------------------------------------------ #
+  - id: tr-sasagawa-deployment-es
+    kind: translation
+    split: validation
+    visibility: public
+    source: "10.1029/2022EA002434"
+    target_language: Spanish
+    text: >-
+      A drift corrected pressure recorder was deployed on Axial Seamount on
+      6 July 2018, at coordinates 45° 57.29' North latitude, -130° 0.56' East
+      longitude, depth 1,535 m.
+    required_terms: ["Axial Seamount", "45° 57.29'", "130° 0.56'", "1,535"]
+    forbidden_terms: ["1.535"]
+    metadata: {site: axial, topic: seafloor-geodesy, difficulty: medium, hazard_relevant: false}
+
+  - id: tr-dahl-hys14-fr
+    kind: translation
+    split: validation
+    visibility: public
+    source: "10.1121/10.0005192"
+    target_language: French
+    text: >-
+      The data originate from station HYS14 located 87 km offshore of Newport,
+      OR. The results indicate that the third-octave band level centered at
+      63 Hz and attributable to shipping activity is reduced in the spring of
+      2020 by about 1.6 dB relative to the mean of the prior five years.
+    required_terms: ["HYS14", "87 km", "63 Hz", "1.6 dB", "2020"]
+    forbidden_terms: []
+    metadata: {site: hydrate-ridge, topic: ambient-sound, difficulty: easy, hazard_relevant: false}

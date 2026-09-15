@@ -36,6 +36,7 @@ HF_REPO = os.environ.get("FM_HF_DATASET", "gaia-hazlab/frugalmind-hidden")
 # test split is hidden.
 HIDDEN_FILES = [
     "synthetic_stalta_test.yaml",
+    "lit_rag_ooi_rca_test.yaml",
 ]
 
 
@@ -44,7 +45,8 @@ def main() -> int:
     ap.add_argument("--repo", default=HF_REPO, help=f"HF dataset repo (default {HF_REPO})")
     ap.add_argument("--out", default=str(PRIVATE_DIR), help="destination dir")
     ap.add_argument(
-        "--check", action="store_true",
+        "--check",
+        action="store_true",
         help="only report whether the hidden split is already present locally",
     )
     args = ap.parse_args()

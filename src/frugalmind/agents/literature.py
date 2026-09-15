@@ -8,7 +8,7 @@ versioned corpus with stable ids**. Live web search is non-deterministic
 contract in ``ROADMAP.md``), and returns URLs rather than the stable ids the
 scorer parses. So retrieval here runs over a snapshotted corpus:
 
-* :func:`load_corpus` reads a JSON corpus (default: the seed OOI/COZI fixture,
+* :func:`load_corpus` reads a JSON corpus (default: the real OOI-RCA corpus,
   overridable with ``FM_LITRAG_CORPUS``).
 * :func:`search_corpus` ranks documents by a deterministic lexical score and
   **enforces the cutoff** — a paper published after ``cutoff_date`` is never
@@ -31,14 +31,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-# Default corpus fixture. Replace its contents with the group's real
-# OOI/COZI papers; the schema and tooling stay the same.
+# Real OOI Regional Cabled Array literature (titles, abstracts, DOIs), frozen
+# from aRCADA's Zotero collection by scripts/build_ooi_rca_corpus.py.
 _DEFAULT_CORPUS = (
     Path(__file__).resolve().parents[2]
     / "frugalmind_suites"
     / "lit_rag"
     / "data"
-    / "ooi_corpus.json"
+    / "ooi_rca_corpus.json"
 )
 
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
@@ -55,10 +55,19 @@ class Document:
     published: str | None = None  # ISO date "YYYY-MM-DD"; falls back to year
     doi: str | None = None
     keywords: tuple[str, ...] = ()
+    journal: str | None = None
+    first_author: str | None = None
+    linked_instruments: tuple[str, ...] = ()
 
     @property
     def searchable_text(self) -> str:
         return " ".join([self.title, self.abstract, " ".join(self.keywords)])
+
+    @property
+    def citation(self) -> str:
+        """Short human citation, e.g. ``Wilcock (2016), Science``."""
+        head = f"{self.first_author} ({self.year})" if self.first_author else str(self.year)
+        return f"{head}, {self.journal}" if self.journal else head
 
 
 def corpus_path(path: str | os.PathLike[str] | None = None) -> Path:
@@ -96,6 +105,9 @@ def load_corpus(path: str | os.PathLike[str] | None = None) -> list[Document]:
                 published=row.get("published"),
                 doi=row.get("doi"),
                 keywords=tuple(str(k) for k in row.get("keywords", [])),
+                journal=row.get("journal"),
+                first_author=row.get("first_author"),
+                linked_instruments=tuple(str(i) for i in row.get("linked_instruments", [])),
             )
         )
     return docs
@@ -168,6 +180,8 @@ def search_corpus(
                 "abstract": doc.abstract,
                 "year": doc.year,
                 "doi": doc.doi,
+                "first_author": doc.first_author,
+                "journal": doc.journal,
                 "score": score,
             }
         )

@@ -1,67 +1,178 @@
-# Literature / RAG / multimodal scoring (Family 1)
+# Literature / RAG scoring (Family 1): dimensions and metrics
 
-Status: proposed (Phase 4 candidate). Reference implementation:
-`src/frugalmind_suites/lit_rag/`.
+Status: implemented. Reference: `src/frugalmind_suites/lit_rag/`. Corpus:
+the real OOI Regional Cabled Array literature that the deployed
+[aRCADA](https://github.com/mhemmett/arcada) assistant retrieves over.
 
-## Why
+## What is being evaluated
 
-Literature tasks (review, critique, translation, RAG question-answering,
-figure interpretation) look "open-ended" and tempt you toward one T4 LLM-judge
-blob. That is noisy and expensive. The verifiable-core stance: **decompose each
-task into the piece that has a reference gold**, and score that with no LLM in
-the loop. The judge becomes an opt-in fallback, not the primary signal.
+aRCADA's literature mode is a retrieval-augmented pipeline: BM25 over paper
+abstracts and full-text chunks, top-k context, a model that answers and cites.
+Every question a facility might trust it with reduces to a small number of
+checks that have a reference answer, so this suite scores those checks with
+no LLM in the loop (tier T0 on the scorability spectrum) and leaves rubric
+judging as an explicit, opt-in fallback. The paper plan calls this the
+*reference-verified* tier: literature retrieval and attribution scored against
+a date-bounded corpus.
 
-## Decomposition
+## The corpus
 
-| Sub-task | Verifiable core | Scorer | Tier |
-|----------|-----------------|--------|------|
-| RAG retrieval | ranked docs vs gold relevant set | `retrieval_metrics` | T0 |
-| Translation | domain terms must survive verbatim | `term_preservation` | T0 |
-| Grounded QA | citations resolve to real sources; facts present | `citation_support` | T0 |
-| Interpolation | held-out text/value predicted | reuse `numerical_regression` / lexical | T0–T1 |
-| Review / critique | rubric criteria | pinned-rubric LLM-judge (P3.5) | T4 |
-| Multimodal | answer about a figure/waveform | any of the above on the answer | T0–T4 |
+`data/ooi_rca_corpus.json` — 142 papers (2013–2025) frozen from the Zotero
+"OOI RCA" collection by `scripts/build_ooi_rca_corpus.py`. Each document
+carries title, abstract, DOI, year, journal, first author and the instruments
+aRCADA links it to. The document `id` **is the DOI**, the same key aRCADA's
+own index cites (`paper::<doi>`), so gold in this suite refers to what the
+deployed system would return. The file records its provenance (source repo,
+commit, sha256 of the upstream file, build time); a leaderboard row pins to
+that hash.
 
-The three scorers shipped here are the T0 core. Review/critique reuses the
-STA/LTA `report` scorer's judge-fallback pattern (lexical first, `max(lexical,
-judge)`) and the `pre-submission-reviewer` skill's rubric — not duplicated here.
+Nothing in the corpus or the truth set is synthetic. Two upstream metadata
+defects are excluded as gold targets (`10.1029/2020gl087372` carries another
+paper's abstract; `10.1002/rob.21961` duplicates `10.1029/2020EA001269`) and
+11 papers have no usable abstract; all stay in the corpus as distractors.
+Publication dates are year-only, so `cutoff_date` compares by year until a
+`published` field is added (Crossref enrichment is the obvious source).
 
-## Scorers (all deterministic, pure Python)
+## Dimensions
 
-### `retrieval_metrics`
-`gold` = list of relevant document ids; model returns a ranked JSON array.
-Metrics: `recall_at_k`, `precision_at_k`, `mrr`, `ndcg_at_k` (binary-gain,
-ideal-DCG normalised). Report retrieval **separately** from answer quality — a
-good answer over bad retrieval is luck, not grounding.
+Each dimension is one deterministic scorer, reconstructable from a
+serialisable `scorer_spec`, so a row can be scored anywhere.
 
-### `term_preservation`
-Translation must preserve identifiers exactly (station codes `NC.JBGB`,
-magnitudes `M4.2`, phases `Pn`). Score = fraction of `required_terms` present −
-penalty per `forbidden_terms` hit (e.g. a rounded magnitude `M4.0`, a renamed
-phase `Pg`). Case-sensitive by default so `HHZ` ≠ `hhz`.
+| Dimension | Question it answers | Scorer | Scalar | Reported alongside |
+|---|---|---|---|---|
+| **Retrieval** | Did the right paper come back, and how high? | `retrieval_metrics` | MRR (single-shot ranking) or nDCG@5 (agent) | recall@k, precision@k |
+| **Attribution** | Are the citations real, are they the right ones, and are the facts there? | `attribution` | ⅓·validity + ⅓·citation recall + ⅓·fact coverage − 0.25·forbidden | `citation_validity`, `citation_precision`, `citation_recall`, `fabricated` (the list), `fact_coverage`, `n_forbidden`, `abstained` |
+| **Abstention** | Does it decline exactly when it should? | `abstention` | proper rule (below) | `abstained`, `answerable` |
+| **Term preservation** | Do identifiers survive translation verbatim? | `term_preservation` | required present − forbidden present | — |
+| **Tool use** (agentic runs) | Could it drive the harness? | `tool_use_stats` | — | `n_tool_calls`, `n_tool_errors`, `submitted`, `converged` |
+| **Cost** | What did it cost to get there? | telemetry | USD, tokens | wall clock, epochs |
+| **Reliability** | Same answer on a re-run? | Inspect `epochs` | mean ± stderr per task | per-sample variance |
 
-### `citation_support`
-The RAG hallucination guard, and the negative-case discipline generalised.
-Answer must cite inline `[S#]`; score = 0.5·(fraction of citations that resolve
-to a **provided** source) + 0.5·(fraction of required facts present) − penalty
-for forbidden tokens (e.g. a fabricated `[S9]`). No citations → 0 on the
-validity half.
+The attribution breakdown rides in `Score.metadata` on every Inspect sample
+so a blended scalar never hides a fabricated citation: a run can score 0.83
+and still carry `fabricated: ["10.9999/made-up"]` in plain sight.
 
-## Serialisable spec
+### Retrieval
 
-Each `tasks.yaml` row carries its own `scorer: {name, config}`; the generic
-Inspect `lit_rag_scorer` reconstructs it from `sample.metadata['scorer_spec']`.
+Gold is the paper a question was written from (known-item), so relevance is
+objective. Candidates shown to the model are **hard distractors**: the corpus
+documents with the highest content-word overlap with the gold. Random
+distractors made the arXiv suite trivially solvable by keyword matching
+(two unrelated models scored 1.0 unskilled), which is the failure mode this
+guards against. Display order is a hash, so the gold's slot varies.
 
-## Not in this reference (design only)
+### Attribution
 
-- **Multimodal input.** `Sample.input` must carry `ContentImage` (waveform
-  figures, station maps, spectrograms) and `adapters.py` must forward images to
-  vision models. This is the one genuine substrate change Family 1 needs; the
-  *answer* still scores via the T0–T4 scorers above. Add to `adapters.py` before
-  authoring multimodal tasks.
-- **Faithfulness LLM-judge.** A judge that checks each claim is entailed by a
-  retrieved passage, wired like the STA/LTA report judge (opt-in, off in CI).
-  Use it only where `citation_support` can't express the check.
-- **Judge reliability.** When a rubric judge is used, score it against a few
-  human-labelled anchors and report agreement, so the leaderboard shows judge
-  reliability rather than treating judge output as ground truth.
+Citations are recognised as DOIs anywhere in the answer
+(`[10.1126/science.aah5563]`, `doi:10…`, `https://doi.org/10…`) or as
+bracketed short keys (`[S2]`). Comparison is case-insensitive.
+
+* *validity* — cited ids that resolve to a provided source. One fabricated
+  id out of two cited halves it.
+* *citation recall* — gold sources that were cited. A lit-review answer that
+  never cites the paper that says the thing is not grounded, however fluent.
+* *citation precision* — cited ids that are gold. Reported, not blended:
+  citing a provided but irrelevant source is visible without being punished
+  twice.
+* *fact coverage* — `required_terms` present verbatim. Terms are quoted from
+  the gold abstract (a test enforces this), so coverage is objective; the
+  cost is that a correct paraphrase ("two months" for "8 weeks") scores 0 on
+  that term. Author required terms as numbers, dates and named entities, not
+  phrases.
+* *forbidden* — wrong numbers or renamed sites a confabulating model tends to
+  produce; each costs 0.25.
+
+An uncited answer scores 0 on validity and recall by construction.
+
+### Abstention
+
+A retrieval system that always answers has a false-positive problem the
+retrieval metrics cannot see. The suite pairs unanswerable queries (no
+relevant paper exists in the corpus; audited by keyword at authoring time,
+several deliberately sharing vocabulary with real papers so BM25 returns
+plausible hits) with answerable controls drawn from the known-item set. The
+model must reply with exactly `NO_RELEVANT_PAPERS` to decline.
+
+Scoring rule:
+
+| | declines | answers |
+|---|---|---|
+| unanswerable | 1 | 0 |
+| answerable | 0 | fraction of gold cited |
+
+Declining is never free and never punished when it is right, so the rule is
+proper: the score-maximising policy is to abstain exactly when there is no
+relevant evidence. The deployed lexical retriever never abstains; its row on
+this suite is the floor.
+
+### Term preservation
+
+Real abstract sentences; identifiers (station codes, coordinates, dates,
+numbers with units) must appear verbatim in the translation. Forbidden terms
+catch locale reformatting (`1.535` for `1,535`).
+
+## Slicing metadata
+
+Every item carries `site`, `topic`, `difficulty`, `hazard_relevant` and
+`answerable`. `hazard_relevant` marks questions whose wrong answer has
+operational consequence (eruption forecasting, slow slip, early warning);
+the paper reports those separately from aggregate accuracy.
+
+## Baselines
+
+`agent_tasks.py@lexical_retrieval_baseline` runs the deployed retriever alone
+(`search_corpus`, top-k, no model) through the same tasks and scorers. Every
+agent row is read against it: an agent that does not beat BM25 on retrieval,
+or does not abstain where BM25 cannot, has not earned its cost.
+
+## Reliability
+
+All Inspect tasks take `-T epochs=N`; the scorer reports `mean` and `stderr`
+per task. Five epochs is the minimum before comparing two rows on the
+leaderboard; temperature 0 does not make a tool-using trajectory
+deterministic.
+
+## Running
+
+```bash
+# single-shot, candidates in the prompt
+inspect eval src/frugalmind_suites/lit_rag/inspect_tasks.py@retrieval   --model ollama/qwen2.5:7b
+inspect eval src/frugalmind_suites/lit_rag/inspect_tasks.py@abstention  --model ollama/qwen2.5:7b -T epochs=5
+inspect eval src/frugalmind_suites/lit_rag/inspect_tasks.py@grounded_qa --model anthropic/claude-haiku-4-5
+
+# agentic: the model must search the corpus itself
+inspect eval src/frugalmind_suites/lit_rag/agent_tasks.py@grounded_qa_agent \
+    --solver src/frugalmind/agents/solver.py@lit_rag_react --model ollama/qwen2.5:7b
+
+# the deployed retriever, no model
+inspect eval src/frugalmind_suites/lit_rag/agent_tasks.py@retrieval_agent \
+    --solver src/frugalmind_suites/lit_rag/agent_tasks.py@lexical_retrieval_baseline --model none/none
+```
+
+## Truth set and splits
+
+`ooi_rca.yaml` is the public validation split (20 known-item, 8 unanswerable
++ 6 answerable abstention items, 7 + 2 grounded-QA, 2 translation). Ranked
+scores come from a hidden test split in the same schema at
+`$FM_EVAL_DATA_DIR/lit_rag_ooi_rca_test.yaml`, merged when present and never
+committed; requesting `split="test"` without it fails loudly. Authoring
+rules, enforced by tests: gold ids exist in the corpus and are not the
+defective records; grounded-QA required terms appear verbatim in the gold
+abstract; unanswerable items have empty gold; the committed file contains
+only `validation`/`public` rows.
+
+To add items from real user requests (the paper's task-provenance
+requirement), append to the YAML under the kind that fits and run
+`pytest tests/test_lit_rag_scorers.py`.
+
+## Not implemented (by design)
+
+- **Faithfulness judge.** A T4 judge that checks each claim is entailed by a
+  retrieved passage, wired like the STA/LTA report judge (opt-in, off in
+  CI). Use only where `attribution` cannot express the check, and report
+  agreement with human anchors next to any judge score.
+- **Full-text chunks.** aRCADA indexes PDF chunks for one paper today;
+  the corpus here is abstract-level. When full text lands, `required_terms`
+  can be drawn from body text and the same scorers apply.
+- **Multimodal input.** Figure/waveform questions need vision plumbing in
+  `adapters.py` first; the answer still scores through the scorers above.

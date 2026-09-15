@@ -121,12 +121,13 @@ retrieves over a snapshotted corpus with the cutoff enforced **inside the
 tool** — the agent physically cannot surface post-cutoff work. The pure,
 deterministic, offline core is in
 [`agents/literature.py`](../src/frugalmind/agents/literature.py); the corpus is
-[`lit_rag/data/ooi_corpus.json`](../src/frugalmind_suites/lit_rag/data/ooi_corpus.json).
-
-> **The seed corpus is a placeholder.** Its abstracts are synthetic and its
-> DOIs are non-resolvable (`10.0000/ooi-seed-*`). Replace `documents` with the
-> group's real OOI/COZI papers — schema, ids, tooling, and gold sets stay the
-> same. Point at a different file with `FM_LITRAG_CORPUS=/path/to/corpus.json`.
+[`lit_rag/data/ooi_rca_corpus.json`](../src/frugalmind_suites/lit_rag/data/ooi_rca_corpus.json):
+142 real OOI Regional Cabled Array papers (titles, abstracts, DOIs) frozen
+from the aRCADA project's Zotero collection by
+`scripts/build_ooi_rca_corpus.py`, with the source commit and sha256 recorded
+in the file. Document ids are DOIs, the same keys the deployed aRCADA index
+cites. Rebuild from a newer aRCADA checkout with the script; point at a
+different file with `FM_LITRAG_CORPUS=/path/to/corpus.json`.
 
 Retrieval gets a third, domain-specific harness signal beyond §4:
 `retrieval_leakage(submitted_ids, corpus, cutoff_date)` returns any **fabricated**

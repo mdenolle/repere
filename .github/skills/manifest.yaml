@@ -50,6 +50,7 @@ skills:
   - name: literature-retrieval
     suites:
       - lit_rag.known_item_retrieval
+      - lit_rag.ooi_rca_retrieval
     notes: |
       Document-based family. Teaches the failure mode that dominates known-item
       retrieval: ranking by shared vocabulary instead of shared contribution.

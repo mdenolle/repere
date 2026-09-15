@@ -16,6 +16,44 @@ Phase 3 work begins here. Candidate items: P3.1 submit STA/LTA as an
 P3.3 hidden test split, P3.4 skill-conditioned 3-axis leaderboard,
 P3.5 per-suite `RUBRIC.md` scorer rationale.
 
+### Added
+
+- **Real OOI-RCA literature corpus for `lit_rag`.**
+  `data/ooi_rca_corpus.json` holds 142 real papers (titles, abstracts,
+  DOIs, 2013–2025) frozen from the aRCADA project's Zotero "OOI RCA"
+  collection by `scripts/build_ooi_rca_corpus.py`, with upstream commit
+  and sha256 recorded for pinning. Document ids are DOIs, the keys the
+  deployed aRCADA index cites.
+- **Evaluation dimensions for literature RAG**
+  ([`docs/lit_rag_scorers.md`](docs/lit_rag_scorers.md)): retrieval
+  (MRR / nDCG over hard-distractor shortlists), **attribution**
+  (`attribution` scorer: citation validity, precision, recall, the list
+  of fabricated ids, fact coverage — breakdown carried in
+  `Score.metadata`), **abstention** (`abstention` scorer: a proper
+  scoring rule over unanswerable queries and matched answerable
+  controls, sentinel `NO_RELEVANT_PAPERS`), term preservation, tool use,
+  cost, and repeat-run reliability (`-T epochs=N`, `mean ± stderr`).
+  Citations are parsed as DOIs or bracketed keys.
+- **OOI-RCA truth set** `lit_rag/ooi_rca.yaml`: 20 known-item, 14
+  abstention (8 unanswerable, keyword-audited against the corpus), 9
+  grounded-QA (facts verbatim in the gold abstract, cited by DOI, 2
+  unanswerable) and 2 translation items; per-item `site`, `topic`,
+  `difficulty`, `hazard_relevant`, `answerable` for slicing. Suites
+  `ooi_rca_retrieval`, `ooi_rca_abstention`, `ooi_rca_grounded_qa`,
+  `ooi_rca_translation`; hidden test split merged from
+  `$FM_EVAL_DATA_DIR/lit_rag_ooi_rca_test.yaml` when present.
+- **Agentic tasks** `agent_tasks.py@retrieval_agent`, `@abstention_agent`,
+  `@grounded_qa_agent`, and `@lexical_retrieval_baseline` — the deployed
+  BM25-style retriever alone, no model, on the same axes.
+
+### Removed
+
+- The synthetic OOI/COZI seed corpus (`ooi_corpus.json`, placeholder
+  abstracts and non-resolvable DOIs) and the three synthetic seed tasks
+  in `lit_rag/tasks.yaml`. Nothing synthetic is exported or scored.
+  `citation_support` remains as a legacy scorer name (now an alias over
+  `attribution` with the old weights).
+
 ## [0.4.0] — 2026-05-12 — Phase 2: AstaBench substrate alignment
 
 > The framework now runs on the AstaBench / InspectAI substrate. Five
