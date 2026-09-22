@@ -22,8 +22,8 @@ globalThis.document = {
   addEventListener() {},
 };
 globalThis.window = {
-  innerWidth: Number(process.env.FM_VW) || 1200,
-  innerHeight: Number(process.env.FM_VH) || 900,
+  innerWidth: Number(process.env.REPERE_VW) || 1200,
+  innerHeight: Number(process.env.REPERE_VH) || 900,
   addEventListener() {},
 };
 globalThis.fetch = async (path) => ({

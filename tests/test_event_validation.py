@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from frugalmind_suites.sta_lta.items import _load_events
+from repere_suites.sta_lta.items import _load_events
 
 
 # A complete, well-formed event used as a base; tests delete or mutate fields

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent bootstrap for the FrugalMind roadmap on GitHub Issues.
+# Idempotent bootstrap for the Repère roadmap on GitHub Issues.
 #
 # Creates labels, milestones, and one issue per roadmap item from ROADMAP.md.
 # Re-running is safe: existing labels/milestones are left alone, and existing
@@ -53,7 +53,7 @@ run() {
 
 # ----- Labels --------------------------------------------------------------
 declare -a LABELS=(
-  "astabench-alignment|7e57c2|Roadmap items aligning FrugalMind with AstaBench standards"
+  "astabench-alignment|7e57c2|Roadmap items aligning Repère with AstaBench standards"
   "area:framework|0366d6|Core framework: budget, telemetry, adapters, router"
   "area:skills|fbca04|Skills system, manifest, loader"
   "area:data|0e8a16|Truth set, fixtures, plot goldens"

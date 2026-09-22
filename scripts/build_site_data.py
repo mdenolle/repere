@@ -2,8 +2,8 @@
 
 This script reads:
 
-  - `results/*.json` produced by `frugalmind smoke-eval` and
-    `frugalmind run-ollama-intent` (regular per-row eval results).
+  - `results/*.json` produced by `repere smoke-eval` and
+    `repere run-ollama-intent` (regular per-row eval results).
   - `results/demo_small_models.json` produced by `scripts/demo_small_models.py`
     (skill-lift output: one record per model with both `none` and `full`
     conditions).
@@ -28,14 +28,14 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind.leaderboard import (  # noqa: E402
+from repere.leaderboard import (  # noqa: E402
     DEFAULT_OPENNESS,
     DEFAULT_TOOLSET,
     build_leaderboard,
     build_skill_lift_leaderboard,
     load_eval_results,
 )
-from frugalmind.registry import load_registry_yaml  # noqa: E402
+from repere.registry import load_registry_yaml  # noqa: E402
 
 DEFAULT_MODELS_YAML = REPO / "config" / "models.yaml"
 
@@ -136,7 +136,7 @@ def main() -> int:
     if demo_payload.get("rows"):
         # Re-encode the demo payload as a skill-lift leaderboard so the site
         # has a single canonical schema.
-        from frugalmind.leaderboard import SkillLiftRow
+        from repere.leaderboard import SkillLiftRow
 
         rows = [
             SkillLiftRow(

@@ -1,0 +1,61 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Full-text-backed retrieval item: two candidate papers exist as PDF
+# chunks in the corpus, so the agent can be asked for site-level detail.
+schema_version: rca.golden.v0.1
+id: rca-litreview-hydrophone-ambient-sound-003
+family: litreview
+group: 2_litreview
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: medium
+tags: [hydrophone, ambient-sound, wind, rain, full-text]
+
+prompt: |
+  Which papers in the corpus use OOI Regional Cabled Array hydrophones to
+  study ambient ocean sound driven by wind or rain, and at which cabled
+  sites? Return a JSON array of corpus document ids, most relevant first,
+  followed by one line per paper naming the site(s).
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    aRCADA @14294bc catalog/pdf-chunks.json contains full-text chunks whose
+    filename-derived titles are "Ragland et al. 2022, OOI hydrophone ambient
+    sound" (31 chunks) and "Schwock and Abadi 2021, rain noise" (34 chunks),
+    and papers.json has "Statistical analysis and modeling of underwater wind
+    noise at the northeast pacific continental margin" (Schwock, 2021,
+    10.1121/10.0007463). The reader saw the titles only; relevance and sites
+    are unverified.
+  source_ref: "https://github.com/mhemmett/arcada/blob/14294bca45ce5f65fd6541bea68ab40fbc870659/catalog/pdf-chunks.json"
+  source_kind: arcada_paper_index
+
+holdout:
+  split: validation
+  visibility: public
+  construction: catalog_perturbed
+  leakage_note: >-
+    Titles alone reveal the two obvious candidates; the site question needs
+    the body text. Grade-0 negatives should include hydrophone papers on
+    other topics (whales, bubble plumes) that share vocabulary.
+  canary: null
+
+cutoff_date: "2026-06-04"
+
+corpus_snapshot:
+  corpus_id: arcada-paper-index
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 pdf-chunks.json sha256 0ac1bf6f43d49543da7c3050a5474a690e274641edea7493f497b0714970bd3d"
+
+reference_citations: []
+
+scoring:
+  method: retrieval_metrics
+  metrics: [ndcg_at_k]
+  reference:
+    k: 5
+
+todos:
+  - "Co-author (acoustics): grade the candidates; decide the corpus id form for PDF-only documents (aRCADA ids for the 10 unmatched PDFs have null DOIs)."
+  - "Corpus: confirm the two PDFs are open access before their chunks are redistributed (aRCADA's blog claims OA-only; not verified)."

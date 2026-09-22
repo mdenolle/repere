@@ -1,15 +1,15 @@
-# FrugalMind roadmap
+# Repère roadmap
 
-This document is the canonical plan for FrugalMind. Each item below corresponds
+This document is the canonical plan for Repère. Each item below corresponds
 one-to-one with a GitHub issue under the `astabench-alignment` label; the issue
 links back to the section here. The roadmap is the **planning view**; the
 issues are the **execution view**.
 
 ## Goal
 
-Bring FrugalMind's eval framework into alignment with the standards established
+Bring Repère's eval framework into alignment with the standards established
 by [AstaBench](https://allenai.org/asta/bench) and [InspectAI](https://inspect.aisi.org.uk/),
-without giving up the three things that make FrugalMind distinct:
+without giving up the three things that make Repère distinct:
 
 - a **frugality-first** framing (skill-lift, cost-Pareto, BudgetGuard);
 - a **parametric truth set** (`events.yaml` → 5 derived suites);
@@ -91,13 +91,13 @@ builds on:
 > `visibility: public | private`. Suites emit only the requested subset.
 >
 > **Why** AstaBench ships every benchmark with `validation` and `test` splits
-> (e.g. `astabench/discoverybench_validation`). FrugalMind currently has one
+> (e.g. `astabench/discoverybench_validation`). Repère currently has one
 > bucket, so any model that overfits to `nisqually-2001` looks great forever.
 >
 > **Deliverables**
 > - New required fields on every event in `events.yaml`.
 > - `_load_events(split=…)` in `items.py`; `EVENTS_PATH` honours
->   `FM_STALTA_SPLIT` env var.
+>   `REPERE_STALTA_SPLIT` env var.
 > - Fixture dumper writes `tests/fixtures/sta_lta.<suite>.<split>.json`.
 > - Suite tests parameterised on split.
 >
@@ -163,7 +163,7 @@ builds on:
 > **Goal** Add a scatter chart to the static site that puts cost on one axis,
 > quality on the other, and draws the Pareto front.
 >
-> **Why** This is FrugalMind's whole thesis, but the current leaderboard
+> **Why** This is Repère's whole thesis, but the current leaderboard
 > ranks primarily by score. A Pareto plot shows budget-conscious choices at
 > a glance and matches AstaBench's framing of cost as a first-class axis.
 >
@@ -197,7 +197,7 @@ builds on:
 >
 > **Deliverables**
 > - `make_report_scorer(judge_adapter=None, judge_threshold=0.5)`.
-> - Judge prompt under `src/frugalmind_suites/sta_lta/judge_prompts/`,
+> - Judge prompt under `src/repere_suites/sta_lta/judge_prompts/`,
 >   pinned and tested for shape (not output).
 > - Off by default; CI never calls the judge.
 >
@@ -216,7 +216,7 @@ builds on:
 
 ## P2.1 · Adopt InspectAI as the substrate
 
-> **Tracking** branch `p2-1-inspect-substrate` (off main) · status: implementation complete on branch, 14 new tests, 189 total passing. `python -m inspect_ai list tasks src/frugalmind_suites/sta_lta/inspect_tasks.py` discovers all 5 tasks.
+> **Tracking** branch `p2-1-inspect-substrate` (off main) · status: implementation complete on branch, 14 new tests, 189 total passing. `python -m inspect_ai list tasks src/repere_suites/sta_lta/inspect_tasks.py` discovers all 5 tasks.
 
 
 > **Goal** Convert each STA/LTA suite to an `inspect_ai.task.Task` with
@@ -233,7 +233,7 @@ builds on:
 > all carry over unchanged.
 >
 > **Deliverables**
-> - `src/frugalmind_suites/sta_lta/inspect_tasks.py` exposing five `@task`
+> - `src/repere_suites/sta_lta/inspect_tasks.py` exposing five `@task`
 >   functions.
 > - Scorer wrappers that call our existing `make_*` scorers.
 > - `EvalRunner`, `LeaderboardRunner`, and `BudgetGuard` adapted to use
@@ -241,7 +241,7 @@ builds on:
 > - Optional `inspect_ai` dep behind an `eval` extra in `pyproject.toml`.
 >
 > **Acceptance**
-> - `inspect eval frugalmind/sta_lta_intent_extraction --solver generate
+> - `inspect eval repere/sta_lta_intent_extraction --solver generate
 >   --model openai/gpt-4o-mini --limit 1` runs end-to-end.
 > - `inspect view logs/*.eval` opens a usable log.
 > - Existing 97 tests still pass.
@@ -263,13 +263,13 @@ builds on:
 >
 > **Deliverables**
 > - `docker/sandbox.Dockerfile` with pinned deps.
-> - `src/frugalmind_suites/sta_lta/sandbox.py` learns to dispatch to the
->   image when `FM_USE_DOCKER_SANDBOX=1`.
+> - `src/repere_suites/sta_lta/sandbox.py` learns to dispatch to the
+>   image when `REPERE_USE_DOCKER_SANDBOX=1`.
 > - CI builds and caches the image.
 >
 > **Acceptance**
 > - Plot and code suites pass identically with and without
->   `FM_USE_DOCKER_SANDBOX`.
+>   `REPERE_USE_DOCKER_SANDBOX`.
 > - The image is published as a GHCR artifact on tag.
 >
 > **Effort** M
@@ -279,8 +279,8 @@ builds on:
 > scipy / matplotlib / scikit-image / obspy / PyYAML), `docker/README.md`,
 > `.github/workflows/sandbox-image.yml` (build on PR, push to GHCR on tag
 > + main with buildx GHA cache), `.github/workflows/sandbox-parity.yml`
-> (dual job runs the suite under `FM_USE_DOCKER_SANDBOX=0` and `=1`),
-> a refactored `src/frugalmind_suites/sta_lta/sandbox.py` with a clean
+> (dual job runs the suite under `REPERE_USE_DOCKER_SANDBOX=0` and `=1`),
+> a refactored `src/repere_suites/sta_lta/sandbox.py` with a clean
 > `_run_snippet_host` / `_run_snippet_docker` split dispatched via
 > `_docker_requested()`, `tests/test_docker_sandbox.py` (23 dispatch /
 > command-construction / error-path tests, all green without Docker
@@ -289,7 +289,7 @@ builds on:
 > artefact bits; docker leg auto-skips when the daemon isn't reachable).
 > Full sweep: **199 passing, 1 skipped** (was 189 before P2.4 + 24 new in
 > P2.2). Default behaviour unchanged — host Python path runs identically
-> to pre-P2.2 when `FM_USE_DOCKER_SANDBOX` is unset.
+> to pre-P2.2 when `REPERE_USE_DOCKER_SANDBOX` is unset.
 
 ## P2.3 · Move large goldens to DVC or HuggingFace
 
@@ -302,7 +302,7 @@ builds on:
 > **Deliverables**
 > - DVC config tracking `data/golden/` and the private equivalent.
 > - Public goldens published as a HuggingFace dataset
->   `your-org/frugalmind-stalta` (mirrors AstaBench's pattern).
+>   `your-org/repere-stalta` (mirrors AstaBench's pattern).
 > - `scripts/build_plot_goldens.py` learns `--push` for DVC remote.
 >
 > **Acceptance**
@@ -326,7 +326,7 @@ builds on:
 > our coding scores are real.
 >
 > **Deliverables**
-> - `src/frugalmind/agents/react.py` (or InspectAI-native solver after P2.1).
+> - `src/repere/agents/react.py` (or InspectAI-native solver after P2.1).
 > - Tool wrappers for FDSN fetch and the existing sandbox.
 > - Documented baseline run in `notebooks/03_react_baseline.ipynb`.
 >
@@ -337,9 +337,9 @@ builds on:
 > **Effort** L
 > **Depends on** P2.1, P2.2
 > **Tracking** Branch `p2-4-react-baseline` (stacked on `p2-1-inspect-substrate`).
-> Shipped: `src/frugalmind/agents/tools.py` (three `@tool` wrappers — `fdsn_get_waveforms`,
-> `python_session`, `record_submit`), `src/frugalmind/agents/react.py` (`@solver
-> stalta_react` wrapping Inspect's `basic_agent`), `src/frugalmind/agents/__init__.py`
+> Shipped: `src/repere/agents/tools.py` (three `@tool` wrappers — `fdsn_get_waveforms`,
+> `python_session`, `record_submit`), `src/repere/agents/react.py` (`@solver
+> stalta_react` wrapping Inspect's `basic_agent`), `src/repere/agents/__init__.py`
 > (no-extra-required `stalta_tools_dict()` descriptor), `tests/test_react_agent.py`
 > (13 tests covering descriptor consistency, tool instantiation, end-to-end sandbox
 > round-trip, obspy-missing error path, and solver construction), and
@@ -368,7 +368,7 @@ builds on:
 > **Effort** S
 > **Depends on** P2.1
 > **Tracking** Branch `p2-5-telemetry-inspect-alignment` off main.
-> Shipped: `src/frugalmind/telemetry.py` bumped to **schema v2** with
+> Shipped: `src/repere/telemetry.py` bumped to **schema v2** with
 > `run_id` (UUID4), `id`/`epoch`/`output` per sample (renames from
 > `item_index`/`generation`), and Inspect-style `task` / `task_args` /
 > `solver` / `model` / `created` / `completed` on the run header.
@@ -395,7 +395,7 @@ builds on:
 
 ## P3.1 · Submit STA/LTA as an `inspect_evals` benchmark
 
-> **Goal** Get the FrugalMind STA/LTA suite into the
+> **Goal** Get the Repère STA/LTA suite into the
 > [`UKGovernmentBEIS/inspect_evals`](https://github.com/UKGovernmentBEIS/inspect_evals)
 > registry so it sits next to DiscoveryBench, DS-1000, SUPER, CORE-Bench.
 >
@@ -404,13 +404,13 @@ builds on:
 > larger audience and forces us to conform to a community-reviewed style.
 >
 > **Deliverables**
-> - PR against `inspect_evals` adding `inspect_evals/frugalmind_stalta/`.
+> - PR against `inspect_evals` adding `inspect_evals/repere_stalta/`.
 > - Migration guide from this repo's suites to the upstream layout.
 > - Note in `README.md` that the canonical task definitions live upstream
 >   once accepted.
 >
 > **Acceptance** PR merged. The suite runnable as
-> `inspect eval inspect_evals/frugalmind_stalta_intent_extraction`.
+> `inspect eval inspect_evals/repere_stalta_intent_extraction`.
 >
 > **Effort** L
 > **Depends on** P2.1, P2.2, P2.5
@@ -451,7 +451,7 @@ builds on:
 > on HuggingFace for exactly this reason.
 >
 > **Deliverables**
-> - `your-org/frugalmind-stalta-test` HuggingFace dataset, gated.
+> - `your-org/repere-stalta-test` HuggingFace dataset, gated.
 > - Submission flow that runs the test scorer server-side.
 > - Public leaderboard rows clearly tagged validation vs test.
 >
@@ -467,7 +467,7 @@ builds on:
 > **Goal** Default leaderboard view becomes model × skill × score, with
 > cost overlaid. Single-condition tables become a secondary view.
 >
-> **Why** AstaBench shows score and cost. FrugalMind's actually new axis
+> **Why** AstaBench shows score and cost. Repère's actually new axis
 > is the skill. Featuring it as the default view is what makes us
 > distinguishable rather than "another agent leaderboard."
 >
@@ -495,7 +495,7 @@ builds on:
 > can't tell whether a 0.7 is good or whether the scorer is too lenient.
 >
 > **Deliverables**
-> - One `RUBRIC.md` per suite under `src/frugalmind_suites/sta_lta/`.
+> - One `RUBRIC.md` per suite under `src/repere_suites/sta_lta/`.
 > - Rubric documents the threshold, the scoring formula, and at least
 >   one worked positive and one worked negative example.
 >
@@ -510,7 +510,7 @@ builds on:
 
 # What we're NOT changing
 
-These are FrugalMind's contributions and are explicitly out of scope for
+These are Repère's contributions and are explicitly out of scope for
 the alignment work. They differentiate the project from AstaBench and
 shouldn't be smoothed away in pursuit of standards conformance.
 

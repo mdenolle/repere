@@ -1,4 +1,4 @@
-"""Tests for the standard suite exporter (frugalmind.export)."""
+"""Tests for the standard suite exporter (repere.export)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ import json
 
 import pytest
 
-from frugalmind.export import BenchmarkRow, export_suite, export_suites
-from frugalmind_suites.sta_lta import (
+from repere.export import BenchmarkRow, export_suite, export_suites
+from repere_suites.sta_lta import (
     ALL_SUITES,
     STALTAFetchCodeSuite,
     STALTAIntentExtractionSuite,

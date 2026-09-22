@@ -6,9 +6,9 @@ import json
 
 import pytest
 
-from frugalmind import TaskKind
-from frugalmind_suites.orchestration.scorers import make_scorer_from_spec
-from frugalmind_suites.paper_workflow.items import (
+from repere import TaskKind
+from repere_suites.orchestration.scorers import make_scorer_from_spec
+from repere_suites.paper_workflow.items import (
     PaperWorkflowSuite,
     load_ontology,
     operation_ids,

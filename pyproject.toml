@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "frugalmind"
-version = "0.4.0"
+name = "repere"
+version = "0.5.0"
 description = "Cost-optimized multi-agent evaluation and routing prototype"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "PyYAML>=6.0",
 ]
@@ -20,15 +21,11 @@ test = [
 geo = [
     "obspy>=1.4",
 ]
-dvv = [
-    # Scoring backend: regenerates the hidden synthetic and runs the pipeline.
-    # Pinned to the *commit* behind codameter v0.3.0 (adds the hideable golden
-    # set + renames this suite's dataset_id from dvv_processing to codameter).
-    # A git tag is movable and would silently change scores, so we pin the
-    # immutable SHA and name the release here for humans. Bump both when
-    # codameter cuts a new benchmark.
-    "codameter @ git+https://github.com/Denolle-Lab/codameter.git@9c3259b982ad79b35fb5e85cc8fb0952dc09244a",  # v0.3.0
-]
+# The dv/v scoring backend (codameter) is NOT declared here. It is pinned to an
+# immutable git commit, and PyPI rejects direct-URL dependencies in uploaded
+# metadata (requires_dist), so declaring it would make this project
+# unpublishable. The pin lives in requirements-dvv.txt instead:
+#     pip install -e ".[test]" -r requirements-dvv.txt
 plot = [
     "matplotlib>=3.8",
     "numpy>=1.26",
@@ -38,24 +35,55 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.4",
 ]
+rca = [
+    # RCA suite: JSON-Schema validation of golden records (validate.py) and
+    # the numpy-backed T1 clock oracle. Inspect itself comes from [eval].
+    "jsonschema>=4.20",
+    "numpy>=1.26",
+]
 eval = [
-    # InspectAI is the substrate for `inspect eval frugalmind/...` and the
+    # InspectAI is the substrate for `inspect eval repere/...` and the
     # `inspect view` log inspector. Optional so contributors who don't run
     # benchmarks don't pull it in.
     "inspect_ai>=0.3.50",
 ]
 
 [project.scripts]
-frugalmind = "frugalmind.cli:main"
+repere = "repere.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"frugalmind_suites.sta_lta" = [
+# Every suite reads its task definitions from data files at import time, so a
+# wheel without them installs but cannot enumerate a single item. Keep this in
+# sync when a suite gains a new data directory.
+"repere_suites.sta_lta" = [
     "events.yaml",
     "data/golden/.gitkeep",
+    "data/golden/*.png",
     "judge_prompts/*.md",
+]
+"repere_suites.synthetic_stalta" = [
+    "cases.yaml",
+    "data/*.mseed",
+]
+"repere_suites.lit_rag" = [
+    "queries.yaml",
+    "tasks.yaml",
+    "data/*.json",
+]
+"repere_suites.orchestration" = ["tasks.yaml"]
+"repere_suites.paper_workflow" = ["ontology.yaml", "papers.yaml"]
+"repere_suites.pipeline_regression" = ["pipelines.yaml"]
+"repere_suites.gaia_data_downloader" = ["tasks.yaml", "provenance.yaml", "README.md"]
+"repere_suites.rca" = [
+    "schema/*.json",
+    "pricing/*.yaml",
+    "seeds/*/*.yaml",
+    "seeds/*/_selftest/*/*.md",
+    "data/public/*",
+    "data/public/cassettes/README.md",
 ]
 
 [tool.pytest.ini_options]

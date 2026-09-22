@@ -1,0 +1,106 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. This item exists because the same physical quantity is served by
+# two sources and the agent must pick a working one; the reference values are
+# NOT filled in (they require an OOI M2M credential to establish).
+schema_version: rca.golden.v0.1
+id: rca-coding-download-m2m-prest-001
+family: coding
+group: 1a_download_processing
+tier: T2_execution
+shape: B_tool
+status: template
+difficulty: medium
+tags: [ooi-m2m, earthscope, pressure, prest, source-resolution, hydrate-ridge]
+
+prompt: |
+  Get one day of seafloor pressure from the tidal pressure sensor on the
+  flank of Southern Hydrate Ridge (the one co-located with the HYS14
+  seismometer) for 12 August 2017 UTC. Write a Python script that fetches
+  the records and reports the number of pressure samples, the first and
+  last timestamps you received (ISO-8601 UTC) and the source you used,
+  via record(n_records=..., first_utc=..., last_utc=..., source=...).
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    Two sources for the same sensor were read from the repos and from the
+    FDSN station service on 2026-09-14. (1) OOI M2M: reference designator
+    RS01SUM1-LJ01B-09-PRESTB102 appears in the aRCADA catalog
+    (catalog/instruments.json @14294bc) as "Southern Hydrate Ridge Flank
+    Seafloor Pressure", source ooi_api, but with stream botpt_nano_sample,
+    whereas aRCADA's own data-pulls/ooi_api.py maps PREST to prest_real_time;
+    the coszo-hub/absolute-seafloor-pressure README maps the same designator
+    to OO.HYS14 location 10. (2) EarthScope FDSN: the station service lists
+    OO|HYS14|10|LDO "Tidal Seafloor Pressure (Tsunameter 2,000 psia): PREST
+    Series B", 1 Hz, from 2017-08-11T23:00:00. The M2M base URL and the
+    synchronous request shape (limit <= 20000, JSON) are from the OOI API
+    cheat sheet (ooifb.org, 2023-03).
+  source_ref: >-
+    https://github.com/mhemmett/arcada/blob/14294bca45ce5f65fd6541bea68ab40fbc870659/catalog/instruments.json;
+    https://github.com/coszo-hub/absolute-seafloor-pressure;
+    https://service.earthscope.org/fdsnws/station/1/query?net=OO&sta=HYS14&level=channel&format=text
+  source_kind: ooi_m2m_metadata
+  notes: >-
+    The prompt says neither "PRESTB102" nor "LDO"; resolving the sensor from
+    a description is the task. Both routes are acceptable if the checker's
+    accepted_sources lists them. The M2M route needs an OOI API username and
+    token: in record mode those are injected by the harness proxy, never
+    placed in the sandbox (DESIGN.md §5.3).
+
+holdout:
+  split: validation
+  visibility: public
+  construction: cross_source_join
+  leakage_note: >-
+    The aRCADA catalog holds the designator but a wrong stream name for it;
+    a catalog-copy solver emits a script that fails. Producing n_records
+    requires a working request against either M2M or FDSN.
+  canary: null
+
+cutoff_date: null
+
+tools:
+  allowlist: [python_session, fdsn_get_waveforms, ooi_m2m_get, record_submit]
+  notes: "ooi_m2m_get is a proposed harness tool (not yet in repere.agents.registry); see DESIGN.md §5.2."
+
+inputs:
+  files: []
+
+task:
+  deliverable: script_and_artifact
+  artifact_keys: [n_records, first_utc, last_utc, source]
+  required_calls: ["record("]
+
+sandbox:
+  image: ghcr.io/mdenolle/repere-sandbox:v0.5.0
+  image_digest: TODO
+  network: replay
+  allowlist: [ooinet.oceanobservatories.org, service.earthscope.org, service.iris.edu]
+  cassette: cassettes/prest_hys14_2017-08-12.yaml
+  timeout_s: 300
+
+scoring:
+  method: execution_check
+  metrics: [pass_fail]
+  checker:
+    module: repere_suites.rca.checkers
+    function: artifact_values
+    args:
+      expected:
+        n_records: null
+        first_utc: null
+        last_utc: null
+      tolerances:
+        n_records: {abs: 60}
+    stage_weights: {code: 0.1, runs: 0.2, correct: 0.7}
+  config:
+    accepted_sources: ["ooi_m2m", "earthscope_fdsn"]
+    note: "checker must accept either source; a per-source expected block is needed (TODO: extend artifact_values or add a fdsn_or_m2m checker)."
+
+todos:
+  - "Co-author with an OOI API token: run the synchronous M2M request for RS01SUM1-LJ01B-09-PRESTB102 on 2017-08-12 with the correct method/stream (prest_real_time? botpt_nano_sample? the two aRCADA sources disagree) and record n_records, first/last timestamps; then do the same through FDSN (OO.HYS14.10.LDO) and record both, one expected block per accepted source."
+  - "Co-author: confirm the 1 Hz LDO channel is the right EarthScope twin of the M2M stream (the FDSN listing also has a 15 s UDO channel), or decide that only M2M counts."
+  - "Harness: cassettes for both routes must be recorded in one record-mode run (network=allowlist with --allow-live-network); M2M credentials live in the proxy."
+  - "Harness: add the ooi_m2m_get tool to repere.agents.registry (auth via env in the harness process, never in the sandbox)."

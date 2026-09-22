@@ -1,7 +1,7 @@
 # Orchestration scoring (Family 3: non-linear subagent workflows)
 
 Status: proposed (Phase 4 candidate). Reference implementation:
-`src/frugalmind_suites/orchestration/`.
+`src/repere_suites/orchestration/`.
 
 ## Why this is the hard one
 
@@ -46,7 +46,7 @@ algorithm — a cyclic plan cannot execute).
 ## Frugality is first-class here
 
 Orchestrators are where cost explodes via fan-out, so frugality is a scored
-dimension, not framing — this is the FrugalMind differentiator AstaBench's
+dimension, not framing — this is the Repère differentiator AstaBench's
 orchestration evals lack. Combine with `BudgetGuard`/`FrugalRouter` and the
 cost-vs-quality Pareto chart: the interesting question for Family 3 is not "did
 it succeed" but "did it succeed *cheaply*".

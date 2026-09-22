@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from frugalmind.budget import BudgetExceeded, BudgetGuard
+from repere.budget import BudgetExceeded, BudgetGuard
 
 
 def test_can_afford_respects_per_model_cap():

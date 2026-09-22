@@ -1,0 +1,59 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. "Known issues" item: the sensor agent's knowledge base must include
+# the chronfix documentation for this to be answerable.
+schema_version: rca.golden.v0.1
+id: rca-sensor-known-issue-timing-hys14-005
+family: sensor
+group: 3_sensor
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: medium
+tags: [known-issues, timing, clock-drift, hys14, chronfix]
+
+prompt: |
+  Are there known timing problems with the HYS14 ocean-bottom seismometer
+  on the OOI cabled array? If so, how large were they, over what period,
+  and is a correction available? Cite the source document ids you used.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    coszo-hub/chronfix @486f05b README.md (lines 56, 71, 94, 166 per the
+    reader): HYS14 clock drift reaching about +-50 s, 32 resyncs between
+    2022-08 and 2026-05, corrected by chronfix using chronos-measured
+    hourly delta_t; data span 2022-08-10 to 2026-05-01.
+  source_ref: "https://github.com/coszo-hub/chronfix/blob/486f05bcdaad26a1855ee90c987c41b7d36b835a/README.md"
+  source_kind: chronfix_repo
+
+holdout:
+  split: validation
+  visibility: public
+  construction: cross_source_join
+  leakage_note: >-
+    Not in the aRCADA catalog or paper index at all (the reader found no
+    mention of chronfix or clock drift there); answerable only if the
+    sensor knowledge base ingests the chronfix docs, which is the point.
+  canary: null
+
+cutoff_date: "2026-07-28"
+
+corpus_snapshot:
+  corpus_id: sensor-kb
+  snapshot_ref: "TODO: the sensor knowledge base does not exist yet; DESIGN.md §3.3 proposes its sources (OOI annotations, chronfix docs, COSZO channel table, instrument-class pages)."
+
+reference_output: "HYS14's clock drifted to about +-50 s with 32 resyncs between 2022-08 and 2026-05; chronfix applies hourly clock corrections."
+
+scoring:
+  method: citation_support
+  metrics: [citation_precision, pass_fail]
+  reference:
+    valid_sources: ["chronfix-readme", "chronfix-hys14-method"]
+    required_terms: ["50", "32", "2022", "chronfix"]
+    forbidden_terms: []
+
+todos:
+  - "Design: define the sensor knowledge base corpus (ids, snapshot) and the id form for documents such as the chronfix README; the two ids above are placeholders."
+  - "Co-author (timing): confirm the numbers and phrasing; add OOI annotation ids for HYS14 timing if any exist (M2M /12580/anno/find?refdes=RS01SUM2-MJ01B-...; the seismometer's own reference designator is not in the aRCADA catalog, TODO)."

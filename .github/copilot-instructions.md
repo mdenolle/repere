@@ -1,4 +1,4 @@
-# Copilot review instructions for FrugalMind
+# Copilot review instructions for Repère
 
 These instructions tell GitHub Copilot's PR reviewer what matters in this
 repo and what doesn't. They exist because nine rounds of review feedback
@@ -37,7 +37,7 @@ review priorities below, don't post it.
    `importorskip` in tests. Conversely, **don't** suggest "simplifying"
    lazy imports back to module top — they're deliberate. Check
    `pyproject.toml` for the current extras list before flagging.
-6. **Frugality framing.** FrugalMind's thesis is cost-vs-quality. Don't
+6. **Frugality framing.** Repère's thesis is cost-vs-quality. Don't
    suggest changes that add a model call, a tool call, or a network
    round-trip without justifying it against the cost-Pareto framing.
 

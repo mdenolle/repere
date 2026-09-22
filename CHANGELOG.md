@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **FrugalMind** are recorded here. The format follows
+All notable changes to **Repère** are recorded here. The format follows
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and the
 project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
 
@@ -10,6 +10,66 @@ generated each release lives in [`ROADMAP.md`](ROADMAP.md); each item
 there cross-references the version that delivered it.
 
 ## [Unreleased]
+
+## [0.5.0] — 2026-09-22 — the Repère rename
+
+### Changed
+
+- **Project renamed: FrugalMind → Repère.** Repère is French for a fixed
+  survey benchmark marker — the shared reference every agent, regardless of
+  size or cost, is measured against. Package and import paths changed from
+  `frugalmind` / `frugalmind_suites` to `repere` / `repere_suites`
+  (`src/frugalmind` → `src/repere`, `src/frugalmind_suites` →
+  `src/repere_suites`); the `pyproject.toml` package name and the
+  `frugalmind` CLI entry point renamed to `repere` (now `repere.cli:main`).
+  The sandbox Docker image renamed from `ghcr.io/mdenolle/frugalmind-sandbox`
+  to `ghcr.io/mdenolle/repere-sandbox`. Mechanical rename only — no
+  behavioural change.
+
+- **Environment variables renamed: `FM_*` → `REPERE_*`.** All 31 of them,
+  same order and meaning: `REPERE_USE_DOCKER_SANDBOX`, `REPERE_SANDBOX_IMAGE`,
+  `REPERE_OUT_DIR`, `REPERE_STALTA_GOLDEN_DIR`, `REPERE_STALTA_SPLIT`,
+  `REPERE_EVAL_DATA_DIR`, `REPERE_RCA_PRIVATE_DIR` and the rest. **No
+  back-compatibility shim**: the old names are read nowhere, and because every
+  read site is an `os.environ.get(..., default)` an `FM_*` export left in a
+  shell profile or a CI secret now falls through to the default silently
+  instead of erroring. Re-export anything you had set. Historical entries
+  below keep the `FM_*` spelling that shipped in 0.3.0 and 0.4.0.
+
+- **Publishable on PyPI, which cost the `dvv` extra.** `pip install -e ".[dvv]"`
+  is gone: it declared `codameter` as a direct git URL, and PyPI rejects
+  direct-URL dependencies in uploaded metadata, extras included. The pin —
+  still the immutable commit behind codameter v0.3.0, for the same reason as
+  before — moved to `requirements-dvv.txt`, so the install is now
+  `pip install -e . -r requirements-dvv.txt`. Updated in
+  `.github/workflows/dvv-suite.yml`, `docs/dvv_suite_v0.md` and
+  `docs/golden_data_provisioning.md`.
+- **`[tool.setuptools.package-data]` now covers every suite.** It listed three
+  patterns under `repere_suites.sta_lta` and nothing else, so a wheel built
+  from this project shipped no `cases.yaml`, no RCA seeds, no schema, no
+  pricing map and no corpora: it would import and then enumerate zero items in
+  six of the seven suites. Only ever exercised through editable installs, where
+  the source tree is on the path and the gap is invisible.
+- **The sandbox image builds on every push to `main`.** The `on.push` paths
+  filter also applied to tag pushes, and a release tag points at a version-bump
+  commit that touches no Docker file, so the release image would never have
+  been built. Filter kept on `pull_request`.
+
+### Added
+
+- **Repère-RCA design and skeleton.** `DESIGN.md` (taxonomy, tiers,
+  architecture decision memo), `OPEN_QUESTIONS.md`, `docs/rca/` (inventory,
+  authoring guide, ABC audit, prior-art notes, rubric stubs) and
+  `src/repere_suites/rca/`: JSON-Schema golden-record contract with two
+  shapes and an explicit verification tier, validator with rules R01 to R15,
+  16 template seed records, frozen price map skeleton, cost layer with
+  model-pin and price-verification flags, T2 checkers, T1 chronfix clock
+  oracle, Inspect task and tier-dispatching scorer with a void taxonomy,
+  runner with repeats and bootstrap CI (`rca.result.v0.1`), do-nothing and
+  BM25-only baselines, pinned external-data fetch script, tests.
+- `sandbox.run_snippet(..., input_files=...)` stages input files into the
+  snippet's working directory (additive; default behaviour unchanged).
+- `[rca]` optional extra (`jsonschema`, `numpy`).
 
 Phase 3 work begins here. Candidate items: P3.1 submit STA/LTA as an
 `inspect_evals` benchmark, P3.2 grow the truth set to 30–50 events,
@@ -222,7 +282,9 @@ P3.5 per-suite `RUBRIC.md` scorer rationale.
 - Pixi + conda dev environments, manual `pages.yml` and `evals.yml`
   workflows, README sketch.
 
-[Unreleased]: https://github.com/mdenolle/frugalmind/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/mdenolle/frugalmind/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/mdenolle/frugalmind/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/mdenolle/frugalmind/releases/tag/v0.1.0
+[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/mdenolle/repere/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/mdenolle/repere/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/mdenolle/repere/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/mdenolle/repere/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/mdenolle/repere/releases/tag/v0.1.0

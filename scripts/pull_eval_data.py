@@ -2,7 +2,7 @@
 
 Why this exists
 ---------------
-FrugalMind ships a PUBLIC `validation` split in-repo so anyone can develop
+Repère ships a PUBLIC `validation` split in-repo so anyone can develop
 against the benchmark and reproduce the demo board on a laptop. The `test`
 split — the answers a *ranked* score is computed from — is deliberately NOT in
 git. A benchmark whose answers are public measures memorisation, not capability.
@@ -15,7 +15,7 @@ Usage
     huggingface-cli login          # or export HF_TOKEN=hf_...
     pixi run -e full python scripts/pull_eval_data.py
 
-Files land in ``$FM_EVAL_DATA_DIR`` (default ``data/private/``), which is
+Files land in ``$REPERE_EVAL_DATA_DIR`` (default ``data/private/``), which is
 gitignored. The suites pick them up automatically.
 """
 
@@ -27,10 +27,10 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", REPO / "data" / "private"))
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", REPO / "data" / "private"))
 
 # The gated dataset. Override for a fork / a different lab.
-HF_REPO = os.environ.get("FM_HF_DATASET", "gaia-hazlab/frugalmind-hidden")
+HF_REPO = os.environ.get("REPERE_HF_DATASET", "gaia-hazlab/repere-hidden")
 
 # Files the hidden dataset is expected to provide. Add one line per suite whose
 # test split is hidden.

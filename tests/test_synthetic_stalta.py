@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from frugalmind import TaskKind
-from frugalmind_suites.synthetic_stalta.items import SyntheticSTALTASuite
-from frugalmind_suites.synthetic_stalta.scorers import (
+from repere import TaskKind
+from repere_suites.synthetic_stalta.items import SyntheticSTALTASuite
+from repere_suites.synthetic_stalta.scorers import (
     make_detection_picks_scorer,
     make_scorer_from_spec,
 )
@@ -119,7 +119,7 @@ def test_committed_cases_are_public_validation_only():
     """
     import yaml
 
-    from frugalmind_suites.synthetic_stalta import items as it
+    from repere_suites.synthetic_stalta import items as it
 
     doc = yaml.safe_load(it.CASES_PATH.read_text())
     for c in doc["cases"]:
@@ -134,7 +134,7 @@ def test_committed_cases_are_public_validation_only():
 def test_test_split_requires_the_hidden_data(tmp_path, monkeypatch):
     """Asking for the test split without the pulled data fails loudly, with
     instructions — rather than silently scoring on the public split."""
-    from frugalmind_suites.synthetic_stalta import items as it
+    from repere_suites.synthetic_stalta import items as it
 
     monkeypatch.setattr(it, "HIDDEN_CASES_PATH", tmp_path / "absent.yaml")
     # public split keeps working with no hidden data (the CI / fresh-clone case)

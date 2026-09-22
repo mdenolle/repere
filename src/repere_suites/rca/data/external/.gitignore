@@ -1,0 +1,3 @@
+# gitignored: populated by scripts/rca_fetch_external.py
+*
+!.gitignore

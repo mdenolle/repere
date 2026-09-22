@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 
-from frugalmind import DenolleGroupSuite, ModelCard, ModelRegistry, TaskKind
-from frugalmind.adapters import EchoAdapter
-from frugalmind.budget import BudgetGuard
-from frugalmind.leaderboard import (
+from repere import DenolleGroupSuite, ModelCard, ModelRegistry, TaskKind
+from repere.adapters import EchoAdapter
+from repere.budget import BudgetGuard
+from repere.leaderboard import (
     LeaderboardRunner,
     build_skill_lift_leaderboard,
     export_skill_lift_leaderboard,

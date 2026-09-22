@@ -30,7 +30,7 @@ FutureHouse → Edison Scientific ($70M seed at $250M, Dec 2025) is the closest 
 
 Tool wrapping is not defensible: SPECFEM-MCP shipped in months, and frontier-model coding keeps commoditizing wrappers. The defensible assets are:
 
-- **Eval suites.** Regulators, DOE reviewers, and insurers need demonstrated missed-event rates, location error, magnitude bias against golden catalogs. A published, versioned benchmark harness for seismic agent tasks becomes the standard others must beat. This is FrugalMind's position, and no one else holds it — TRACE's benchmark is internal to one paper, SPECFEM-MCP shipped no evals.
+- **Eval suites.** Regulators, DOE reviewers, and insurers need demonstrated missed-event rates, location error, magnitude bias against golden catalogs. A published, versioned benchmark harness for seismic agent tasks becomes the standard others must beat. This is Repère's position, and no one else holds it — TRACE's benchmark is internal to one paper, SPECFEM-MCP shipped no evals.
 - **Golden datasets + synthetic generators** at controlled difficulty (the contamination-free eval data that classic sequences, memorized by every LLM, cannot provide).
 - **Compliance-artifact templates with provenance/audit trails** (regulator-ready TLP and Class VI reports) — switching costs.
 - **Community credibility**: maintainership, open science, a nonprofit research arm attracting data-sharing agreements philanthropic funders will back (Schmidt AI-in-science, Moore lineage).

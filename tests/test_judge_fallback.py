@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from frugalmind_suites.sta_lta.scorers import (
+from repere_suites.sta_lta.scorers import (
     _format_catalog_facts,
     _load_judge_prompt_template,
     _parse_judge_score,
@@ -187,7 +187,7 @@ def test_template_load_failure_disables_judge_path(monkeypatch):
     """If the prompt file is missing or unreadable at scorer-build time,
     the judge path is disabled and the scorer behaves as if no judge was
     supplied. Eval must not abort."""
-    from frugalmind_suites.sta_lta import scorers as scorers_mod
+    from repere_suites.sta_lta import scorers as scorers_mod
 
     def _broken_loader(*_args, **_kwargs):
         raise FileNotFoundError("simulated missing prompt template")
@@ -210,7 +210,7 @@ def test_judge_handles_template_format_errors():
     """Malformed templates (extra braces, missing placeholders) must not
     propagate. _call_judge has the brace-rendering inside its try/except so
     a broken template returns 0.0 instead of raising."""
-    from frugalmind_suites.sta_lta.scorers import _call_judge
+    from repere_suites.sta_lta.scorers import _call_judge
 
     judge = _MockJudge(response='{"score": 80}')
     # Template with an unknown placeholder — `{not_a_field}` raises KeyError

@@ -11,10 +11,11 @@ on:
       - main
     tags:
       - 'v*'
-    paths:
-      - 'docker/sandbox.Dockerfile'
-      - 'docker/README.md'
-      - '.github/workflows/sandbox-image.yml'
+    # No `paths:` filter here on purpose. A paths filter applies to tag pushes
+    # too, and a release tag usually points at a version-bump commit that
+    # touches none of the Docker files — so the release image would silently
+    # never be built. Building on every push to main is the cheaper mistake;
+    # the GHA layer cache makes a no-op rebuild fast.
   pull_request:
     paths:
       - 'docker/sandbox.Dockerfile'
@@ -30,7 +31,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/frugalmind-sandbox
+  IMAGE_NAME: ${{ github.repository_owner }}/repere-sandbox
 
 jobs:
   build:

@@ -1,4 +1,4 @@
-"""Generator for the FrugalMind quickstart notebook.
+"""Generator for the Repère quickstart notebook.
 
 Run once to (re)generate `01_skill_lift_quickstart.ipynb`.
 This script is checked in so the notebook is reproducible.
@@ -31,7 +31,7 @@ def code(text: str) -> dict:
 CELLS = [
     md(
         """\
-# FrugalMind quickstart — three small models, skill-lift benchmark
+# Repère quickstart — three small models, skill-lift benchmark
 
 This notebook walks through the smallest end-to-end run the framework supports:
 
@@ -62,13 +62,13 @@ from pathlib import Path
 REPO = Path.cwd().parent if Path.cwd().name == "notebooks" else Path.cwd()
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind import ModelCard
-from frugalmind.adapters import EchoAdapter, OpenAICompatAdapter
-from frugalmind.budget import BudgetGuard
-from frugalmind.leaderboard import LeaderboardRunner, build_skill_lift_leaderboard
-from frugalmind.registry import load_registry_yaml
-from frugalmind.skills import SkillLoader, render_with_skill
-from frugalmind_suites.sta_lta import STALTAIntentExtractionSuite
+from repere import ModelCard
+from repere.adapters import EchoAdapter, OpenAICompatAdapter
+from repere.budget import BudgetGuard
+from repere.leaderboard import LeaderboardRunner, build_skill_lift_leaderboard
+from repere.registry import load_registry_yaml
+from repere.skills import SkillLoader, render_with_skill
+from repere_suites.sta_lta import STALTAIntentExtractionSuite
 
 REPO
 """

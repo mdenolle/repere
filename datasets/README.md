@@ -1,7 +1,7 @@
-# FrugalMind curated benchmark datasets
+# Repère curated benchmark datasets
 
 This folder is the canonical home for **frozen `(prompt, gold)` artifacts**
-exported from every FrugalMind suite. Layout:
+exported from every Repère suite. Layout:
 
 ```
 datasets/
@@ -21,7 +21,7 @@ truth. JSONL exports here are immutable snapshots that:
 - can be uploaded to Hugging Face without leaking private repo internals,
 - give external submitters a self-contained schema.
 
-## Row schema (`frugalmind.export.BenchmarkRow`)
+## Row schema (`repere.export.BenchmarkRow`)
 
 ```jsonc
 {
@@ -40,7 +40,7 @@ truth. JSONL exports here are immutable snapshots that:
 ```
 
 - `scorer_spec` is reconstructed at run time by
-  `frugalmind_suites.<family>.scorers.make_scorer_from_spec`. New suites
+  `repere_suites.<family>.scorers.make_scorer_from_spec`. New suites
   must register their scorers there to remain JSONL-portable.
 - `visibility=public` rows may be redistributed; `private` rows should
   stay in `FM_*_GOLDEN_DIR` or a gated HF dataset.

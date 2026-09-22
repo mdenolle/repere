@@ -19,7 +19,7 @@ imread_mod = pytest.importorskip("skimage.io")
 ssim = ssim_mod.structural_similarity
 imread = imread_mod.imread
 
-from frugalmind_suites.sta_lta.recipe import (  # noqa: E402
+from repere_suites.sta_lta.recipe import (  # noqa: E402
     DEFAULT_STALTA,
     render_canonical_plot,
     synthetic_canonical_input,
@@ -27,7 +27,7 @@ from frugalmind_suites.sta_lta.recipe import (  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_GOLDENS = REPO_ROOT / "src" / "frugalmind_suites" / "sta_lta" / "data" / "golden"
+PUBLIC_GOLDENS = REPO_ROOT / "src" / "repere_suites" / "sta_lta" / "data" / "golden"
 
 
 def test_default_stalta_table_has_all_required_categories():

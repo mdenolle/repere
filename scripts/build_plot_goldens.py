@@ -1,4 +1,4 @@
-"""Generate STA/LTA plot goldens for the FrugalMind benchmark.
+"""Generate STA/LTA plot goldens for the Repère benchmark.
 
 For each event in `events.yaml`, fetch waveforms via FDSN, run the canonical
 preprocessing + STA/LTA recipe, and write a reference PNG. SSIM scoring in
@@ -6,9 +6,9 @@ preprocessing + STA/LTA recipe, and write a reference PNG. SSIM scoring in
 
 Two output modes:
 
-  - public  (default)  → src/frugalmind_suites/sta_lta/data/golden/<id>.png
+  - public  (default)  → src/repere_suites/sta_lta/data/golden/<id>.png
                           (committed; suitable for VERIFIED, citable events)
-  - private (--private) → $FM_STALTA_GOLDEN_DIR/<id>.png
+  - private (--private) → $REPERE_STALTA_GOLDEN_DIR/<id>.png
                           (gitignored; for VERIFY events still being validated)
 
 Two data modes:
@@ -24,7 +24,7 @@ Examples:
     python scripts/build_plot_goldens.py --only nisqually-2001 tohoku-2011-teleseism
 
     # Private goldens for the two VERIFY events most plausible to verify:
-    FM_STALTA_GOLDEN_DIR=~/private/fm_goldens \\
+    REPERE_STALTA_GOLDEN_DIR=~/private/fm_goldens \\
         python scripts/build_plot_goldens.py --private \\
         --only pnsn-quiet-day-VERIFY mt-rainier-swarm-2024-VERIFY
 
@@ -44,7 +44,7 @@ sys.path.insert(0, str(REPO / "src"))
 
 import yaml  # noqa: E402
 
-from frugalmind_suites.sta_lta.recipe import (  # noqa: E402
+from repere_suites.sta_lta.recipe import (  # noqa: E402
     DEFAULT_STALTA,
     CanonicalPlotInput,
     render_canonical_plot,
@@ -53,8 +53,8 @@ from frugalmind_suites.sta_lta.recipe import (  # noqa: E402
 )
 
 
-PUBLIC_DIR = REPO / "src" / "frugalmind_suites" / "sta_lta" / "data" / "golden"
-DEFAULT_EVENTS = REPO / "src" / "frugalmind_suites" / "sta_lta" / "events.yaml"
+PUBLIC_DIR = REPO / "src" / "repere_suites" / "sta_lta" / "data" / "golden"
+DEFAULT_EVENTS = REPO / "src" / "repere_suites" / "sta_lta" / "events.yaml"
 
 
 def _load_events(path: Path) -> list[dict]:
@@ -128,10 +128,10 @@ def _resolve_output_dir(args: argparse.Namespace) -> Path:
     if args.output_dir:
         return Path(args.output_dir).expanduser().resolve()
     if args.private:
-        env = os.environ.get("FM_STALTA_GOLDEN_DIR")
+        env = os.environ.get("REPERE_STALTA_GOLDEN_DIR")
         if not env:
             raise SystemExit(
-                "FM_STALTA_GOLDEN_DIR must be set when --private is used "
+                "REPERE_STALTA_GOLDEN_DIR must be set when --private is used "
                 "(or pass --output-dir explicitly)"
             )
         return Path(env).expanduser().resolve()
@@ -146,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-dir", default=None,
                         help="Output directory; overrides --private and the default public dir")
     parser.add_argument("--private", action="store_true",
-                        help="Write to $FM_STALTA_GOLDEN_DIR (gitignored, for VERIFY events)")
+                        help="Write to $REPERE_STALTA_GOLDEN_DIR (gitignored, for VERIFY events)")
     parser.add_argument("--synth", action="store_true",
                         help="Use deterministic synthetic data instead of FDSN (no network needed)")
     parser.add_argument("--force", action="store_true",

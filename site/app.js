@@ -1,4 +1,4 @@
-/* FrugalMind EvalHub — cost-vs-performance chart with skill-lift lines.
+/* Repère EvalHub — cost-vs-performance chart with skill-lift lines.
  *
  * Each model contributes two points per eval: without the domain skill (hollow)
  * and with it (filled), joined by a line. The line IS the skill lift. Up is
@@ -549,7 +549,7 @@ function exportCsv() {
         .join(",")
     );
   }
-  downloadBlob(new Blob([lines.join("\n")], { type: "text/csv" }), "frugalmind-leaderboard.csv");
+  downloadBlob(new Blob([lines.join("\n")], { type: "text/csv" }), "repere-leaderboard.csv");
 }
 
 /* Rasterise the SVG for publication. External CSS does not apply inside an
@@ -594,7 +594,7 @@ function exportPng() {
     const ctx = canvas.getContext("2d");
     ctx.scale(scale, scale);
     ctx.drawImage(img, 0, 0);
-    canvas.toBlob((b) => downloadBlob(b, "frugalmind-cost-vs-performance.png"), "image/png");
+    canvas.toBlob((b) => downloadBlob(b, "repere-cost-vs-performance.png"), "image/png");
   };
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
 }

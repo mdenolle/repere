@@ -21,10 +21,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind_suites.orchestration.scorers import (  # noqa: E402
+from repere_suites.orchestration.scorers import (  # noqa: E402
     make_scorer_from_spec,
 )
-from frugalmind_suites.paper_workflow.items import (  # noqa: E402
+from repere_suites.paper_workflow.items import (  # noqa: E402
     PaperWorkflowSuite,
     load_ontology,
     operation_ids,

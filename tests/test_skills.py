@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from frugalmind.skills import (
+from repere.skills import (
     SkillLoader,
     SkillManifest,
     render_with_skill,
@@ -181,7 +181,7 @@ def test_skill_parts_concatenate_to_the_unsplit_prompt():
     provider can cache the first block. If the two halves did not reassemble
     byte-for-byte, a cost optimisation would silently become a confound on the
     scores — the model would be seeing a different prompt."""
-    from frugalmind.skills import (
+    from repere.skills import (
         SkillLoader,
         render_with_skill,
         render_with_skill_parts,
@@ -202,7 +202,7 @@ def test_skill_parts_concatenate_to_the_unsplit_prompt():
 def test_cacheable_prefix_is_identical_across_items():
     """The whole point: the prefix must not vary per item, or it can never hit
     the cache."""
-    from frugalmind.skills import SkillLoader, render_with_skill_parts
+    from repere.skills import SkillLoader, render_with_skill_parts
 
     skill = SkillLoader(skills_dir=SKILLS_DIR).get("dvv-processing")
     a, _ = render_with_skill_parts("task one", skill, "full")

@@ -39,14 +39,14 @@ import numpy as np
 import yaml
 
 REPO = Path(__file__).resolve().parent.parent
-SUITE_DIR = REPO / "src" / "frugalmind_suites" / "synthetic_stalta"
+SUITE_DIR = REPO / "src" / "repere_suites" / "synthetic_stalta"
 DATA_DIR = SUITE_DIR / "data"
 SEED_MSEED = DATA_DIR / "ridgecrest_seed.mseed"
 CASES_YAML = SUITE_DIR / "cases.yaml"
 
 # Hidden test split lives outside the package and is gitignored. Overridable so
 # CI / a collaborator can point at a pulled copy.
-PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", REPO / "data" / "private"))
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", REPO / "data" / "private"))
 
 # Ridgecrest M7.1 mainshock.
 ORIGIN = "2019-07-06T03:19:53"
@@ -280,7 +280,7 @@ def main() -> int:
     ap.add_argument("--secret-seed", type=int, default=None,
                     help="master seed for the hidden test split. Required with "
                          "--split test. NEVER commit this value; store it with the "
-                         "gated dataset. Falls back to $FM_STALTA_TEST_SEED.")
+                         "gated dataset. Falls back to $REPERE_STALTA_TEST_SEED.")
     args = ap.parse_args()
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -294,10 +294,10 @@ def main() -> int:
     if args.split == "test":
         master = args.secret_seed
         if master is None:
-            env = os.environ.get("FM_STALTA_TEST_SEED")
+            env = os.environ.get("REPERE_STALTA_TEST_SEED")
             master = int(env) if env else None
         if master is None:
-            print("error: --split test needs --secret-seed (or $FM_STALTA_TEST_SEED).\n"
+            print("error: --split test needs --secret-seed (or $REPERE_STALTA_TEST_SEED).\n"
                   "       Without it the hidden answers would be reproducible from "
                   "this repo, which defeats the point.", file=sys.stderr)
             return 2

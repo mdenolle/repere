@@ -1,0 +1,188 @@
+# =============================================================================
+# STA/LTA golden suite — canonical public sample events truth set
+# =============================================================================
+# Each event below seeds five suite items (one per TaskKind in the pipeline:
+# extraction, fetch_code, trigger_code, plot, report). Events span four
+# categories so the suite covers both positive and negative detection cases.
+#
+# Schema (per event)
+#   id                       (required)  catalog id, kebab-case
+#   category                 (required)  regional_earthquake | teleseism |
+#                                        noise_day | quarry_blast | volcanic_lp
+#   label                    (required)  short human-readable label
+#   origin_time              (required)  ISO-8601 UTC, fractional seconds OK
+#   latitude / longitude     (optional)  WGS-84; null for pure-noise windows
+#   depth_km / magnitude     (optional)  null where not applicable
+#   catalog_id               (optional)  authoritative catalog id (e.g. uw10262801)
+#   expected_detection       (required)  bool; positive vs negative case
+#   recommended_stations     (required)  list of {network, station, location, channel}
+#   suggested_window_min     (required)  symmetric window around origin_time
+#   stalta_params            (required)  sta, lta, on_thresh, off_thresh
+#   split                    (required)  validation | test
+#                              validation = open development set; ships in git.
+#                              test       = held-out set; goldens may be private.
+#   visibility               (required)  public | private
+#                              public  = items + goldens may be committed.
+#                              private = goldens live under REPERE_STALTA_GOLDEN_DIR.
+#   cutoff_date              (optional)  YYYY-MM-DD; date past which a
+#                              retrieval-augmented agent must not query
+#                              (catalogs, papers, network status pages).
+#                              When omitted, the loader fills it via the
+#                              default rule:
+#                                positive case  → origin_time + 7 days
+#                                negative case  → origin_time - 1 day
+#                              Anchors validity of the item against future
+#                              world updates so freshness can't be a proxy
+#                              for skill.
+#   notes                    (optional)  free-text rationale and provenance
+#
+# Suites filter by split. `STALTAIntentExtractionSuite(split="validation")`
+# emits only validation events; the REPERE_STALTA_SPLIT env var sets the default.
+# =============================================================================
+
+schema_version: 0.3
+
+events:
+
+  - id: nisqually-2001
+    category: regional_earthquake
+    label: "M6.8 Nisqually deep intraslab earthquake"
+    origin_time: "2001-02-28T18:54:32.8"
+    latitude: 47.149
+    longitude: -122.727
+    depth_km: 51.7
+    magnitude: 6.8
+    catalog_id: uw10262801
+    expected_detection: true
+    split: validation
+    visibility: public
+    cutoff_date: "2001-03-07"
+    recommended_stations:
+      - {network: UW, station: LAWT,  location: "",   channel: ENZ}
+      - {network: UW, station: PCMD,  location: "",   channel: ENZ}
+    suggested_window_min: 15
+    stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
+    notes: |
+      Deep PNW intraslab earthquake, well-recorded across PNSN. Used as the
+      "easy win" — any model that fails on Nisqually is unfit for purpose.
+
+  - id: tohoku-2011-teleseism
+    category: teleseism
+    label: "M9.1 Tōhoku, recorded as teleseism in PNW"
+    origin_time: "2011-03-11T05:46:24.0"
+    latitude: 38.297
+    longitude: 142.373
+    depth_km: 29.0
+    magnitude: 9.1
+    catalog_id: official20110311054624120_30
+    expected_detection: true
+    split: validation
+    visibility: public
+    cutoff_date: "2011-03-18"
+    recommended_stations:
+      - {network: UW, station: LON,  location: "",   channel: BHZ}
+      - {network: UW, station: RATT,  location: "",   channel: BHZ}
+    suggested_window_min: 60
+    stalta_params: {sta: 5.0, lta: 60.0, on_thresh: 3.0, off_thresh: 1.5}
+    notes: |
+      Tests whether the model adapts STA/LTA windows to long-period
+      teleseismic energy. Default "regional" parameters will miss this.
+
+  - id: mt-rainier-swarm-2026
+    category: local_earthquake
+    label: "Mt. Rainier shallow swarm, 2025"
+    origin_time: "2025-07-11T21:23:04+02:00"
+    latitude: 46.8437
+    longitude: -121.763
+    depth_km: -2.4
+    magnitude: 2.4
+    catalog_id: 62139727
+    expected_detection: true
+    split: test
+    visibility: private
+    cutoff_date: "2025-07-18"
+    recommended_stations:
+      - {network: UW, station: STAR, location: "",   channel: EHZ}
+      - {network: CC, station: PARA, location: "",   channel: BHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
+    notes: |
+      Small-magnitude near-station event. Tests whether the model picks
+      sensible STA/LTA windows for high-frequency local sources.
+      DATE/CATALOG_ID NEEDS VERIFICATION before benchmark publication.
+
+  - id: pnsn-quiet-day-VERIFY
+    category: noise_day
+    label: "Quiet day on UW.LON — no events expected"
+    origin_time: "2026-05-09T03:00:00.0"
+    latitude: null
+    longitude: null
+    depth_km: null
+    magnitude: null
+    catalog_id: null
+    expected_detection: false
+    split: test
+    visibility: private
+    cutoff_date: "2026-05-08"
+    recommended_stations:
+      - {network: UW, station: LO2,  location: "",   channel: BHZ}
+    suggested_window_min: 30
+    stalta_params: {sta: 2.0, lta: 10.0, on_thresh: 3.5, off_thresh: 1.5}
+    notes: |
+      NEGATIVE CASE. Model should run STA/LTA, report no triggers above
+      threshold, and explicitly state "no events detected." A model that
+      hallucinates a detection here scores 0 on the report task.
+
+
+# 2003/11/07 11:46:59 PM GMT+1
+# Coordinates
+# 46.7415, -122.7733
+# Depth
+# 0.63 mi
+  - id: cascade-quarry-blast-VERIFY
+    category: quarry_blast
+    label: "Routine quarry blast flagged in PNSN catalog (placeholder)"
+    origin_time: "2003-11-07T23:46:0.0"
+    latitude: 46.7415
+    longitude: -122.7733
+    depth_km: 1.0
+    magnitude: 3.2
+    catalog_id: 10589593
+    expected_detection: true
+    split: test
+    visibility: private
+    cutoff_date: "2003-11-14"
+    recommended_stations:
+      - {network: UW, station: LCW, location: "",   channel: EHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 0.5, lta: 8.0, on_thresh: 4.0, off_thresh: 1.5}
+    notes: |
+      Anthropogenic source. STA/LTA will trigger; the test is whether the
+      report correctly identifies it as a blast rather than a tectonic earthquake.  
+
+  - id: low-lf-volcano-snr
+    category: volcanic_earthquake
+    label: "Low-SNR LF volcanic event near detection threshold at Mt St Helens"
+    origin_time: "2025/09/01 02:27:48"
+    latitude: 46.1708
+    longitude: -122.1343
+    depth_km: 25.0
+    magnitude: 0.4
+    catalog_id: 62171487
+    expected_detection: true
+    split: test
+    visibility: private
+    cutoff_date: "2025-09-08"
+    recommended_stations:
+      - {network: CC, station: SUG,  location: "",   channel: BHZ}
+    suggested_window_min: 5
+    stalta_params: {sta: 1.0, lta: 8.0, on_thresh: 3.0, off_thresh: 1.5}
+    notes: |
+      Calibration probe. With default thresholds this event might or might
+      not trigger. Used to identify models that overfit to "easy" cases.
+
+# v0.2 inventory: 6 events total = 2 validation/public + 4 test/private.
+# Each event seeds 5 suite items; total = 10 validation + 20 test = 30 graded items.
+# Expansion target (P3.2): 30-50 events covering volcano-hosted seismicity,
+# slow-slip events, OBS microseism intervals, and induced seismicity, with
+# additional validation entries authored once verified against catalogs.

@@ -1,6 +1,6 @@
 # Leaderboard Conditions
 
-The FrugalMind leaderboard should compare not only model IDs, but also the agent configuration used to produce each result. A domain skill changes what the agent knows and how it approaches the task, so it must be visible in the leaderboard metadata.
+The Repère leaderboard should compare not only model IDs, but also the agent configuration used to produce each result. A domain skill changes what the agent knows and how it approaches the task, so it must be visible in the leaderboard metadata.
 
 ## Condition fields
 

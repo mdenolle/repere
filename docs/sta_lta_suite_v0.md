@@ -1,6 +1,6 @@
 # STA/LTA Golden Suite
 
-The first concrete `EvalSuite` for FrugalMind. Tests every step of the pipeline a small geophysics team would run on incoming seismic data: intent parsing → FDSN fetch → STA/LTA detection → plotting → reporting. Each step is graded independently against ground truth.
+The first concrete `EvalSuite` for Repère. Tests every step of the pipeline a small geophysics team would run on incoming seismic data: intent parsing → FDSN fetch → STA/LTA detection → plotting → reporting. Each step is graded independently against ground truth.
 
 For the scientific motivation and the planned local/regional-vs-teleseismic source-explanation tests, see `docs/stalta_benchmark_rationale.md`.
 
@@ -29,8 +29,8 @@ These cover the deterministic scorers and the integration with `EvalRunner`. Pas
 
 ### Full benchmark run
 
-    import frugalmind as F
-    from frugalmind_suites.sta_lta import ALL_SUITES
+    import repere as F
+    from repere_suites.sta_lta import ALL_SUITES
 
     F.load_env_keys()
     reg = F.ModelRegistry()
@@ -57,7 +57,7 @@ The suite is deliberately not all-positive. A model that scores 1.0 on Nisqually
 
 ## Generating goldens
 
-`STALTAPlotSuite` needs approved golden PNGs. Public sample goldens may live in `src/frugalmind_suites/sta_lta/data/golden/`. Private full-suite goldens should stay outside git and be passed with `FM_STALTA_GOLDEN_DIR`.
+`STALTAPlotSuite` needs approved golden PNGs. Public sample goldens may live in `src/repere_suites/sta_lta/data/golden/`. Private full-suite goldens should stay outside git and be passed with `REPERE_STALTA_GOLDEN_DIR`.
 
 1. Run `STALTAPlotSuite` once with a trusted reference model and the actual ObsPy environment.
 2. Manually inspect the output PNGs.

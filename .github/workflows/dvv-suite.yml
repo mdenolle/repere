@@ -8,14 +8,14 @@ name: dv/v suite (codameter)
 on:
   pull_request:
     paths:
-      - "src/frugalmind_suites/dvv/**"
+      - "src/repere_suites/dvv/**"
       - "tests/test_dvv_suite.py"
       - "pyproject.toml"
       - ".github/workflows/dvv-suite.yml"
   push:
     branches: [main]
     paths:
-      - "src/frugalmind_suites/dvv/**"
+      - "src/repere_suites/dvv/**"
       - "tests/test_dvv_suite.py"
       - "pyproject.toml"
       - ".github/workflows/dvv-suite.yml"
@@ -36,7 +36,7 @@ jobs:
           cache: true
 
       - name: Install dv/v extra (codameter, pinned)
-        run: pixi run -e full python -m pip install -e ".[dvv]"
+        run: pixi run -e full python -m pip install -e . -r requirements-dvv.txt
 
       - name: Run dv/v suite
         run: pixi run -e full python -m pytest tests/test_dvv_suite.py -v

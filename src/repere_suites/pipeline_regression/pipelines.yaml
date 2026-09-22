@@ -1,0 +1,47 @@
+# Pipeline-regression truth set (Family 2, data-out).
+#
+# Each item asks the model to drive a real scientific pipeline and report a
+# numeric output via record(...). The `gold` is a reference value; the scorer
+# compares against it with a numeric tolerance (see docs/numerical_regression_scorer.md).
+#
+# This is a SEED truth set (2 items) demonstrating the two dominant metric
+# shapes: event-time F1 (seisbench) and waveform-shape correlation (noisepy).
+# Grow it into a parametric set with split/visibility/cutoff_date + negative
+# cases (a window that should yield NO picks) as the suite matures.
+
+pipelines:
+  - id: phasenet-p-picks-nc
+    tool: seisbench
+    task_kind: numerical_regression
+    split: validation
+    visibility: public
+    sandbox_image: ghcr.io/mdenolle/repere-sandbox-seisbench:latest
+    label: >-
+      Run seisbench PhaseNet on a 60 s NCEDC waveform and report P-arrival
+      pick times (seconds relative to the window start).
+    station: {network: NC, station: JBGB, location: "", channel: HHZ}
+    window_start: "2019-07-06T03:19:53Z"
+    window_seconds: 60
+    artifact_key: p_picks
+    metric: pick_f1
+    tolerance: 0.5           # seconds — a pick within 0.5 s counts as matched
+    # Reference P picks (s from window_start), e.g. from an analyst catalog.
+    gold: [12.34, 41.87]
+
+  - id: noisepy-ccf-shape-bk
+    tool: noisepy
+    task_kind: numerical_regression
+    split: validation
+    visibility: public
+    sandbox_image: ghcr.io/mdenolle/repere-sandbox-noisepy:latest
+    label: >-
+      Cross-correlate one hour of ambient noise between BK.BKS and BK.BRK
+      (ZZ), and report the stacked cross-correlation function samples.
+    station_a: {network: BK, station: BKS, channel: BHZ}
+    station_b: {network: BK, station: BRK, channel: BHZ}
+    window_start: "2020-01-01T00:00:00Z"
+    window_seconds: 3600
+    artifact_key: ccf
+    metric: pearson          # shape match; a scaled/normalised CCF still scores high
+    # Reference stacked CCF (downsampled illustrative lags).
+    gold: [0.0, 0.11, 0.42, 0.87, 1.0, 0.83, 0.39, 0.08, -0.05, -0.12]

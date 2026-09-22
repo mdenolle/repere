@@ -1,0 +1,70 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Data-availability question where the agent's catalog and the
+# authoritative metadata DISAGREE; this is the catalog_perturbed construction
+# in its purest form. The canonical answer is a co-author decision.
+schema_version: rca.golden.v0.1
+id: rca-sensor-availability-prest-hys14-002
+family: sensor
+group: 3_sensor
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: medium
+tags: [data-availability, pressure, prest, earthscope, m2m, catalog-drift]
+
+prompt: |
+  Since what date has the tidal seafloor pressure sensor on the flank of
+  Southern Hydrate Ridge (reference designator RS01SUM1-LJ01B-09-PRESTB102)
+  been available through the EarthScope FDSN services, and under what
+  network, station, location and channel codes? Give the date as
+  YYYY-MM-DD.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    EarthScope station service (2026-09-14): OO|HYS14|10|LDO and LK1 start
+    2017-08-11T23:00:00 ("Tidal Seafloor Pressure (Tsunameter 2,000 psia):
+    PREST Series B", 1 Hz); UDO/UK1 (15 s) also listed per the
+    absolute-seafloor-pressure README. aRCADA catalog @14294bc entry
+    RS01SUM1-LJ01B-09-PRESTB102: start_date 2015-04-01, source ooi_api,
+    no FDSN fields. coszo-hub/absolute-seafloor-pressure README.md:7-11 maps
+    the designator to OO.HYS14 loc 10.
+  source_ref: "https://service.earthscope.org/fdsnws/station/1/query?net=OO&sta=HYS14&level=channel&format=text"
+  source_kind: fdsn_station_metadata
+  notes: >-
+    The catalog's 2015-04-01 is the OOI stream start (95 of 120 catalog
+    entries carry that same date, which suggests a default rather than a
+    measured value); the EarthScope mirror starts 2017-08-11. The prompt
+    asks specifically about EarthScope so the catalog value is the wrong
+    answer.
+
+holdout:
+  split: validation
+  visibility: public
+  construction: catalog_perturbed
+  leakage_note: >-
+    A catalog-lookup solver returns 2015-04-01 and no FDSN codes; scores 0.
+    Answering requires station metadata (cross-source join).
+  canary: null
+
+cutoff_date: "2026-09-14"
+
+corpus_snapshot:
+  corpus_id: arcada-instrument-catalog
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 instruments.json sha256 f3a6d7fc53f9fb658cfac40e82199317f17b47abb11432ba1e5027ccec9009e0"
+
+reference_output: "2017-08-11 OO HYS14 10 LDO"
+
+scoring:
+  method: citation_support
+  metrics: [pass_fail]
+  reference:
+    valid_sources: []
+    required_terms: ["2017-08-11", "OO", "HYS14", "10", "LDO"]
+    forbidden_terms: ["2015-04-01"]
+
+todos:
+  - "Co-author (OOI data team): confirm 2017-08-11 is the EarthScope availability start for loc 10 and whether UDO (15 s) or LDO (1 Hz) should be the canonical answer; decide if both are accepted."
+  - "Design: citation_support with empty valid_sources scores only the required/forbidden terms; confirm that is intended for sensor-metadata items or add an 'answer_terms' method."

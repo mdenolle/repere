@@ -1,5 +1,5 @@
 [workspace]
-name = "frugalmind"
+name = "repere"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64"]
 
@@ -10,7 +10,7 @@ pytest = ">=8.0"
 pip = "*"
 
 [pypi-dependencies]
-frugalmind = { path = ".", editable = true }
+repere = { path = ".", editable = true }
 
 [feature.dev.dependencies]
 ruff = ">=0.4"
@@ -29,9 +29,9 @@ full = { features = ["dev", "geo", "plot"], solve-group = "default" }
 
 [tasks]
 test = "pytest"
-smoke-eval = "frugalmind smoke-eval"
-export-leaderboard = "frugalmind export-leaderboard"
-export-suite = "frugalmind export-suite"
-run-ollama-intent = "frugalmind run-ollama-intent"
+smoke-eval = "repere smoke-eval"
+export-leaderboard = "repere export-leaderboard"
+export-suite = "repere export-suite"
+run-ollama-intent = "repere run-ollama-intent"
 lint = "ruff check src tests"
 format = "ruff format src tests"

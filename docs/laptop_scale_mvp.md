@@ -1,13 +1,13 @@
 # Why the MVP demos laptop-scale models
 
-The FrugalMind demo leaderboard is deliberately populated with **small, open,
+The Repère demo leaderboard is deliberately populated with **small, open,
 locally-runnable models** (7–8B, via Ollama) rather than frontier APIs. That is
 a design decision, not a limitation of the harness — which runs frontier models
 just as happily. Here is the reasoning.
 
 ## 1. It is the thesis under test
 
-FrugalMind's claim is that **the interesting winner is not the highest score —
+Repère's claim is that **the interesting winner is not the highest score —
 it is the cheapest system that still clears the quality floor.** You cannot
 demonstrate that claim with a leaderboard of frontier models, because every row
 would clear the floor and the cost axis would be decoration.
@@ -30,7 +30,7 @@ pixi run -e full python scripts/demo_dashboard.py
 
 A benchmark whose results only a funded lab can reproduce is a benchmark that
 gets taken on faith. That is precisely the "evidence, not hype" failure mode
-FrugalMind exists to fight. Local models make the leaderboard *auditable*.
+Repère exists to fight. Local models make the leaderboard *auditable*.
 
 ## 3. Scientific data often cannot leave the building
 
@@ -123,5 +123,5 @@ code. The 7B models import the right ObsPy functions (`classic_sta_lta`,
 Meanwhile claude-haiku writes the canonical detector (scoring exactly the naive
 reference, 0.56) and *acts on* the declustering guidance to reach 0.76.
 
-This is the output FrugalMind exists to produce: not "AI is great" or "small
+This is the output Repère exists to produce: not "AI is great" or "small
 models are enough", but a decision rule a lab can act on, with the cost attached.

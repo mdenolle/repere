@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from frugalmind import (
+from repere import (
     DenolleGroupSuite,
     EvalRunner,
     ModelCard,
     ModelRegistry,
     TaskKind,
 )
-from frugalmind.adapters import EchoAdapter
-from frugalmind.budget import BudgetGuard
-from frugalmind.telemetry import JSONLTelemetry, read_jsonl
+from repere.adapters import EchoAdapter
+from repere.budget import BudgetGuard
+from repere.telemetry import JSONLTelemetry, read_jsonl
 
 
 class _ToySuite(DenolleGroupSuite):

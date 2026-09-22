@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: >-
-  FrugalMind: a cost-aware, rigor-preserving evaluation framework for
+  Repère: a cost-aware, rigor-preserving evaluation framework for
   scientific AI agents
 message: >-
   If you use this framework, or the concepts it introduces (frugality-first
@@ -15,9 +15,9 @@ authors:
     affiliation: >-
       Department of Earth and Space Sciences, University of Washington
     orcid: 'https://orcid.org/0000-0002-1610-2250'
-repository-code: 'https://github.com/mdenolle/frugalmind'
+repository-code: 'https://github.com/mdenolle/repere'
 abstract: >-
-  FrugalMind is an evaluation framework for scientific AI agents built on the
+  Repère is an evaluation framework for scientific AI agents built on the
   premise that the decision a laboratory faces is not "is the model good" but
   "what is the cheapest configuration that clears my scientific quality floor,
   and am I permitted to run it on my data". It treats cost as a first-class
@@ -63,5 +63,5 @@ preferred-citation:
   year: 2026
   status: preprint
   notes: >-
-    Working draft in paper/frugalmind_framework.md. Update this block with the
+    Working draft in paper/repere_framework.md. Update this block with the
     arXiv identifier / DOI on posting.

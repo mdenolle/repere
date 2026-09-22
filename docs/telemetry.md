@@ -1,6 +1,6 @@
-# FrugalMind telemetry — JSONL log schema
+# Repère telemetry — JSONL log schema
 
-FrugalMind writes evaluation telemetry as append-only JSON Lines under
+Repère writes evaluation telemetry as append-only JSON Lines under
 `results/*.jsonl`. The schema is versioned (current: **v2**, shipped in
 P2.5) and the field names align with InspectAI's `EvalSample` /
 `EvalOutput` so the data shape maps cleanly to Inspect's `.eval` log
@@ -19,7 +19,7 @@ keep JSONL because:
   inspection; zipped formats don't.
 
 What P2.5 buys is **field-level alignment**: a future converter can
-turn a FrugalMind JSONL log into an Inspect `.eval` archive with a
+turn a Repère JSONL log into an Inspect `.eval` archive with a
 shallow rename map, because the per-sample fields already match.
 
 ## v2 record shapes
@@ -102,9 +102,9 @@ adapter (typically a `Generation`).
 }
 ```
 
-## Field mapping — FrugalMind ↔ Inspect `EvalSample` / `EvalOutput`
+## Field mapping — Repère ↔ Inspect `EvalSample` / `EvalOutput`
 
-| FrugalMind v2 field        | Inspect equivalent          | Notes |
+| Repère v2 field        | Inspect equivalent          | Notes |
 | -------------------------- | --------------------------- | ----- |
 | `run_id`                   | `EvalLog.run_id`            | UUID4 generated at run start. |
 | `created`, `completed`     | `EvalLog.created`, `.completed` | ISO-8601 UTC. |
@@ -118,25 +118,25 @@ adapter (typically a `Generation`).
 | `output.text`              | `EvalOutput.choices[0].message.content` | Single-choice case. |
 | `output.prompt_tokens`     | `EvalOutput.usage.input_tokens`         | |
 | `output.output_tokens`     | `EvalOutput.usage.output_tokens`        | |
-| `output.cost_usd`          | (no direct field; tracked separately in `EvalLog.stats`) | FrugalMind-native; preserved. |
+| `output.cost_usd`          | (no direct field; tracked separately in `EvalLog.stats`) | Repère-native; preserved. |
 | `score`                    | `EvalSample.score.value`    | Float in [0, 1] for our scorers. |
-| `suite`, `skill_name`, `skill_mode` | (no Inspect analog) | FrugalMind-specific, preserved. |
+| `suite`, `skill_name`, `skill_mode` | (no Inspect analog) | Repère-specific, preserved. |
 
 Fields without an Inspect analog (`suite`, `skill_name`, `skill_mode`,
-`cost_usd`) are kept under their FrugalMind names rather than forced
+`cost_usd`) are kept under their Repère names rather than forced
 into an unrelated Inspect field — the goal is *cleanest mapping*, not
 maximum field reuse.
 
 ## Read path
 
-Use `frugalmind.telemetry.read_jsonl(path)` to load a log into memory.
+Use `repere.telemetry.read_jsonl(path)` to load a log into memory.
 By default v1 records are silently normalised to v2 shape so downstream
 code only ever handles one schema. Pass `normalise=False` to inspect
 raw on-disk bytes (useful for schema-drift detection or wire-format
 assertions).
 
 ```python
-from frugalmind.telemetry import read_jsonl
+from repere.telemetry import read_jsonl
 
 records = read_jsonl("results/run.jsonl")
 samples = [r for r in records if r["type"] == "sample"]
@@ -144,7 +144,7 @@ samples = [r for r in records if r["type"] == "sample"]
 
 ## v1 → v2 read-time normalisation (compat shim)
 
-v1 logs (FrugalMind ≤ 0.3.0) had no `schema_version` field. The shim
+v1 logs (Repère ≤ 0.3.0) had no `schema_version` field. The shim
 applies these rewrites in memory; **no on-disk migration is performed**:
 
 | v1                            | v2                          |

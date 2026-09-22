@@ -1,6 +1,6 @@
 # Notebooks
 
-Interactive walkthroughs of the FrugalMind framework. Each notebook is
+Interactive walkthroughs of the Repère framework. Each notebook is
 self-contained and re-runs cleanly from a fresh kernel.
 
 | File | What it shows |

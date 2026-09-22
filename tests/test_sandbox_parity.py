@@ -4,7 +4,7 @@ This module exercises ``run_snippet`` end-to-end under both backends and
 asserts that a deterministic snippet produces the same artefacts on the
 host Python and inside the pinned Docker image. The CI workflow
 ``.github/workflows/sandbox-parity.yml`` runs the file twice — once
-with ``FM_USE_DOCKER_SANDBOX=0`` and once with ``=1`` — but the parity
+with ``REPERE_USE_DOCKER_SANDBOX=0`` and once with ``=1`` — but the parity
 assertions themselves switch backends inside a single process so we
 also catch drift on a developer's laptop.
 
@@ -27,7 +27,7 @@ import pytest
 # the whole module on the [plot] extra rather than each test separately.
 np = pytest.importorskip("numpy")
 
-from frugalmind_suites.sta_lta.sandbox import (  # noqa: E402
+from repere_suites.sta_lta.sandbox import (  # noqa: E402
     ENV_SANDBOX_IMAGE,
     ENV_USE_DOCKER,
     run_snippet,
@@ -85,13 +85,13 @@ def _run_under(backend: str) -> dict:
         elif backend == "docker":
             os.environ[ENV_USE_DOCKER] = "1"
             # Prefer the caller-provided sandbox image (the sandbox-parity
-            # CI job sets FM_SANDBOX_IMAGE=frugalmind-sandbox:ci pointing
+            # CI job sets REPERE_SANDBOX_IMAGE=repere-sandbox:ci pointing
             # at the locally-built tag); otherwise fall back to the same
             # CI-style local tag rather than the registry default, which
             # isn't pullable from a PR's restricted GITHUB_TOKEN. This
             # also keeps developer-machine runs honest: they get the
             # local tag they just built, not a random :latest from GHCR.
-            os.environ[ENV_SANDBOX_IMAGE] = original_image or "frugalmind-sandbox:ci"
+            os.environ[ENV_SANDBOX_IMAGE] = original_image or "repere-sandbox:ci"
         else:
             raise ValueError(backend)
 

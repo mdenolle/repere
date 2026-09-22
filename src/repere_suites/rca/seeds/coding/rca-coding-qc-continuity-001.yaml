@@ -1,0 +1,89 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. This is the CONTROL item for group 1b (a window with no gaps); the
+# positive items (windows that do contain gaps or overlaps) must be authored
+# from OOI annotations or from a known outage. See docs/rca/AUTHORING.md.
+schema_version: rca.golden.v0.1
+id: rca-coding-qc-continuity-001
+family: coding
+group: 1b_qc
+tier: T2_execution
+shape: B_tool
+status: template
+difficulty: easy
+tags: [qc, continuity, gaps, negative-case, control]
+
+prompt: |
+  The MiniSEED file OO.HYS14..BHZ.2017-08-12.mseed in your working directory
+  was requested for the window 2017-08-12T00:00:00 to 2017-08-12T00:02:00 UTC.
+  Write Python that checks the record for gaps and overlaps and computes the
+  fraction of the requested window that is covered by data. Report
+  record(n_gaps=..., n_overlaps=..., coverage_fraction=...). If the record is
+  clean, say so; do not invent problems.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    Fixture downloaded from the EarthScope FDSN dataselect service on
+    2026-09-14 and read with ObsPy 1.5.0: a single contiguous trace, 4801
+    samples at 40 Hz spanning exactly the requested window.
+  source_ref: >-
+    https://service.earthscope.org/fdsnws/dataselect/1/query?net=OO&sta=HYS14&loc=--&cha=BHZ&start=2017-08-12T00:00:00&end=2017-08-12T00:02:00
+  source_kind: fdsn_station_metadata
+  notes: >-
+    Negative-case discipline (repere convention): a clean window is a
+    first-class item. An agent that reports a gap here scores 0 on the
+    correctness stage.
+
+holdout:
+  split: validation
+  visibility: public
+  construction: none
+  leakage_note: "Not derived from any agent corpus; the input is a data file."
+  canary: null
+
+cutoff_date: null
+
+tools:
+  allowlist: [python_session, record_submit]
+
+inputs:
+  files:
+    - path: OO.HYS14..BHZ.2017-08-12.mseed
+      sha256: 14656a9cf1de1428d3b03ed399edac42a59543c0aeb662437f155a38324dedfc
+      kind: mseed
+      description: "2 min of OO.HYS14..BHZ starting 2017-08-12T00:00:00Z, 40 Hz, 4801 samples, one trace."
+      license: "OOI data policy: freely available; TODO(co-author) cite the exact OOI data-use statement and EarthScope terms."
+
+task:
+  deliverable: artifact
+  artifact_keys: [n_gaps, n_overlaps, coverage_fraction]
+  required_calls: ["record("]
+
+sandbox:
+  image: ghcr.io/mdenolle/repere-sandbox:v0.5.0
+  image_digest: TODO
+  network: none
+  timeout_s: 60
+
+scoring:
+  method: execution_check
+  metrics: [pass_fail]
+  checker:
+    module: repere_suites.rca.checkers
+    function: artifact_values
+    args:
+      expected:
+        n_gaps: 0
+        n_overlaps: 0
+        coverage_fraction: 1.0
+      tolerances:
+        coverage_fraction: {abs: 0.001}
+      all_or_nothing: true   # negative-case control: any invented gap scores 0 on correctness
+    stage_weights: {code: 0.1, runs: 0.2, correct: 0.7}
+
+todos:
+  - "Co-author: author the paired POSITIVE items for 1b from OOI annotations (a documented HYS14 or HYS12 outage or timing gap); this file is only the control."
+  - "Co-author: state the OOI and EarthScope data-use text in inputs.files[0].license."
+  - "Harness: replace the placeholder sha256 in inputs.files[0] with the real one (validate.py R13 reports it when the file is present)."

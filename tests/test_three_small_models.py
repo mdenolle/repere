@@ -13,13 +13,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from frugalmind import ModelCard, ModelRegistry
-from frugalmind.adapters import EchoAdapter
-from frugalmind.budget import BudgetGuard
-from frugalmind.leaderboard import LeaderboardRunner, build_skill_lift_leaderboard
-from frugalmind.registry import cards_in_tier, load_registry_yaml
-from frugalmind.skills import SkillLoader, render_with_skill
-from frugalmind_suites.sta_lta import STALTAIntentExtractionSuite
+from repere import ModelCard, ModelRegistry
+from repere.adapters import EchoAdapter
+from repere.budget import BudgetGuard
+from repere.leaderboard import LeaderboardRunner, build_skill_lift_leaderboard
+from repere.registry import cards_in_tier, load_registry_yaml
+from repere.skills import SkillLoader, render_with_skill
+from repere_suites.sta_lta import STALTAIntentExtractionSuite
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

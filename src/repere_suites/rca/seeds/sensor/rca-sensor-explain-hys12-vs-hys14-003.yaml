@@ -1,0 +1,62 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. T4 (judgment-dependent) explanation item. No judge score may be
+# reported for it until the rubric exists, two raters have rated the
+# calibration set, and the judge's agreement with them is published.
+schema_version: rca.golden.v0.1
+id: rca-sensor-explain-hys12-vs-hys14-003
+family: sensor
+group: 3_sensor
+tier: T4_judgment
+shape: A_text
+status: template
+difficulty: medium
+tags: [explanation, instrument, obs, hys12, hys14, rubric]
+
+prompt: |
+  Explain, for a graduate student new to seafloor seismology, what the
+  OOI cabled stations HYS12 and HYS14 at Southern Hydrate Ridge are, what
+  sensors each carries, and when you would choose one over the other.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    EarthScope station service (2026-09-14): HYS12 = CMG-6TF (1 s-100 Hz)
+    with EH? 200 Hz, SH? 40 Hz, MH? 8 Hz, LH? 1 Hz, site "RSN Hydrate Summit
+    1-2", 788 m; HYS14 = CMG-1T (360 s) broadband BH?/HH?/MH?/LH? plus CMG-5T
+    accelerometer HN? plus HT1-90-U hydrophone HDH/LDH, plus loc 10 PREST
+    pressure and (per sea-water-velocity README) loc 20 VEL3D current meter,
+    site "RSN Hydrate Summit 1-4", 773-775 m. chronfix documents HYS14 clock
+    drift to +-50 s with 32 resyncs (2022-08 to 2026-05). These facts are
+    inputs to the rubric, not the reference text.
+  source_ref: "https://service.earthscope.org/fdsnws/station/1/query?net=OO&sta=HYS14,HYS12&level=channel&format=text"
+  source_kind: fdsn_station_metadata
+
+holdout:
+  split: validation
+  visibility: public
+  construction: cross_source_join
+  leakage_note: "The catalog describes HYS14 as a seismometer only; the multi-sensor picture and the timing caveat require other sources."
+  canary: null
+
+cutoff_date: "2026-09-14"
+
+reference_output: "TODO(co-author): expert reference paragraph (used by raters as an anchor, not as a string match)."
+
+scoring:
+  method: rubric_judge
+  metrics: [rubric_mean]
+  judge:
+    rubric_ref: docs/rca/rubrics/sensor_explanation_v0.md
+    min_raters: 2
+    agreement_stat: cohen_kappa
+    agreement_threshold: 0.6
+    human_ratings_ref: null
+    judge_model_pin: null
+    calibration_set_ref: null
+
+todos:
+  - "Co-author (RCA engineer + PI): write docs/rca/rubrics/sensor_explanation_v0.md with 5-8 binary criteria (e.g. names the broadband vs short-period distinction; mentions the co-located pressure sensor; warns about HYS14 timing; does not invent sensors)."
+  - "Two raters: rate a calibration set of >= 10 model answers independently; run the kappa script (gaia-eval runners/iaa.py can be lifted); record human_ratings_ref."
+  - "Judge calibration: pin judge_model_pin, run it on the same calibration set, publish agreement; only then may the harness report a judge score (inspect_tasks._score_t4 refuses otherwise)."

@@ -6,9 +6,9 @@ Single source of truth:
     refs.bib        bibliography (Nature superscript style via csl/nature.csl)
 
 Produces:
-    build/frugalmind_nmi.pdf    double-spaced, line-numbered  (submission PDF)
-    build/frugalmind_nmi.docx   for co-author review / Word-based submission
-    build/frugalmind_nmi.tex    if you ever need to hand it to a LaTeX template
+    build/repere_nmi.pdf    double-spaced, line-numbered  (submission PDF)
+    build/repere_nmi.docx   for co-author review / Word-based submission
+    build/repere_nmi.tex    if you ever need to hand it to a LaTeX template
 
 Nature Portfolio does NOT require its own template at initial submission — it
 asks for a readable, double-spaced, line-numbered manuscript. That is exactly
@@ -145,13 +145,13 @@ def main() -> int:
     n_words = len((HERE / "manuscript.md").read_text().split())
 
     if do_pdf:
-        out = BUILD / "frugalmind_nmi.pdf"
+        out = BUILD / "repere_nmi.pdf"
         run([*common, "--pdf-engine=xelatex", "-o", str(out)])
         print(f"wrote {out}")
-        run([*common, "-s", "-o", str(BUILD / "frugalmind_nmi.tex")])
+        run([*common, "-s", "-o", str(BUILD / "repere_nmi.tex")])
 
     if do_docx:
-        out = BUILD / "frugalmind_nmi.docx"
+        out = BUILD / "repere_nmi.docx"
         run([*common, "-o", str(out)])
         print(f"wrote {out}")
 

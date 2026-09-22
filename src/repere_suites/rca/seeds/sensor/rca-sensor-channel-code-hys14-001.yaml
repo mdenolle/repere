@@ -1,0 +1,64 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Representative "which channel" question. The reference here was
+# read from the authoritative FDSN station service on 2026-09-14 and is
+# reproduced with its query; a named person must still confirm it.
+schema_version: rca.golden.v0.1
+id: rca-sensor-channel-code-hys14-001
+family: sensor
+group: 3_sensor
+tier: T3_reference
+shape: A_text
+status: template
+difficulty: easy
+tags: [channel-code, seed, sampling-rate, hys14, fdsn]
+
+prompt: |
+  I want the vertical broadband seismometer channel at the OOI cabled
+  station HYS14. Which SEED channel code should I request for the 40 Hz
+  stream, and what is the channel code of the same sensor's 200 Hz stream?
+  Answer with the two codes only, in that order.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    EarthScope FDSN station service, level=channel, queried 2026-09-14:
+    OO|HYS14||BHZ ... CMG-1T, 360 s ... 40.0 Hz; OO|HYS14||HHZ ... 200.0 Hz
+    (same sensor description); also MHZ 8 Hz, LHZ 1 Hz. Snapshot stored at
+    data/public/OO.HYS14-HYS12.channels.txt (sha256
+    34009ec7c4b913d4a03a5a6504cc0545a6c19da340f16e6486ea70ee5e472d77).
+    The aRCADA catalog entry EARTHSCOPE-OO-HYS14 lists channels BHZ/BHN/BHE
+    at 40 Hz only (pattern seen on the AXCC1 entry; HYS14 entry not read in
+    full by the reader).
+  source_ref: "https://service.earthscope.org/fdsnws/station/1/query?net=OO&sta=HYS14,HYS12&level=channel&format=text"
+  source_kind: fdsn_station_metadata
+
+holdout:
+  split: validation
+  visibility: public
+  construction: cross_source_join
+  leakage_note: >-
+    The 200 Hz code is not in the aRCADA catalog (which lists only the 40 Hz
+    BH? channels), so a catalog-lookup solver cannot answer the second half;
+    the agent must consult station metadata (fdsn_get_stations tool) or
+    know SEED band codes.
+  canary: null
+
+cutoff_date: "2026-09-14"
+
+corpus_snapshot:
+  corpus_id: arcada-instrument-catalog
+  snapshot_ref: "14294bca45ce5f65fd6541bea68ab40fbc870659 instruments.json sha256 f3a6d7fc53f9fb658cfac40e82199317f17b47abb11432ba1e5027ccec9009e0"
+
+reference_output: ["BHZ HHZ", "BHZ, HHZ", "BHZ and HHZ"]
+
+scoring:
+  method: exact_match
+  metrics: [pass_fail]
+  config:
+    normalize: "case-insensitive substring of the normalised completion; any of the accepted forms"
+
+todos:
+  - "Co-author (RCA engineer): confirm BHZ/HHZ are the intended answer and that the HHZ stream is continuously archived at EarthScope for HYS14 (the station service lists it; availability service was down when checked)."
+  - "Design: decide whether the sensor agent's tool surface includes fdsn_get_stations (proposed) so this item is answerable without parametric knowledge."

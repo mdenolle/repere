@@ -12,7 +12,7 @@ import importlib.util
 
 import pytest
 
-from frugalmind.agents import metrics, registry
+from repere.agents import metrics, registry
 
 _HAS_INSPECT = importlib.util.find_spec("inspect_ai") is not None
 
@@ -50,7 +50,7 @@ def test_duplicate_registration_raises():
         registry.register(
             registry.ToolSpec(
                 "record_submit",
-                registry._lazy_factory("frugalmind.agents.tools", "record_submit"),
+                registry._lazy_factory("repere.agents.tools", "record_submit"),
                 "dup",
             )
         )
@@ -85,7 +85,7 @@ def test_resolve_tools_builds_distinct_bundle():
 
 @pytest.mark.skipif(not _HAS_INSPECT, reason="requires the [eval] extra")
 def test_frugal_react_accepts_custom_tool_list():
-    from frugalmind.agents.solver import frugal_react
+    from repere.agents.solver import frugal_react
 
     solver = frugal_react(
         tool_names=["python_session", "record_submit"],
@@ -96,7 +96,7 @@ def test_frugal_react_accepts_custom_tool_list():
 
 @pytest.mark.skipif(not _HAS_INSPECT, reason="requires the [eval] extra")
 def test_lit_rag_react_constructs():
-    from frugalmind.agents.solver import lit_rag_react
+    from repere.agents.solver import lit_rag_react
 
     assert callable(lit_rag_react())
 

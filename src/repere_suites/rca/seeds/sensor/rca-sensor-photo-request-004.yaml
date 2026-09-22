@@ -1,0 +1,64 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. Photo request item. Exists to exercise the licensing and
+# attribution pipeline: no image is stored here and none was scraped.
+schema_version: rca.golden.v0.1
+id: rca-sensor-photo-request-004
+family: sensor
+group: 3_sensor
+tier: T4_judgment
+shape: A_text
+status: template
+difficulty: easy
+tags: [photo, imagery, licensing, attribution, hys14]
+
+prompt: |
+  Show me a photo of the HYS14 seismometer installation on the seafloor at
+  Southern Hydrate Ridge and tell me what I am looking at. Include the
+  image credit.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    No image source has been identified. The aRCADA repo contains no
+    photographs of OOI/RCA hardware (docs/rca/prior_art/arcada.md §8);
+    coszo.org and oceanobservatories.org host imagery under terms the
+    reader did not check.
+  source_kind: expert_authored
+  notes: >-
+    The rubric must reward (a) an image that actually shows the HYS14
+    package, (b) a correct credit and licence statement, (c) refusal to
+    show an image whose terms do not permit it, and penalise any fabricated
+    credit.
+
+holdout:
+  split: validation
+  visibility: public
+  construction: none
+  leakage_note: "No corpus involvement until the photo knowledge base exists."
+  canary: null
+
+cutoff_date: null
+
+reference_output: "TODO(co-author): description of what the reference image shows."
+
+photos:
+  - source_url: "TODO: OOI/RCA gallery URL for the HYS14 installation"
+    license: "TODO"
+    attribution: "TODO: e.g. 'Credit: NSF Ocean Observatories Initiative / University of Washington' verbatim as required by the gallery terms"
+    permission_status: unknown
+    local_path: null
+
+scoring:
+  method: rubric_judge
+  metrics: [rubric_mean]
+  judge:
+    rubric_ref: docs/rca/rubrics/photo_response_v0.md
+    min_raters: 2
+    agreement_stat: cohen_kappa
+    agreement_threshold: 0.6
+
+todos:
+  - "Co-author (RCA): identify the image, its licence and the required credit line; record permission_status; the harness never scrapes."
+  - "Design: decide how the sensor agent serves images (URL only vs stored copy); a stored copy needs permission_status=granted or a licence that permits redistribution."

@@ -45,21 +45,21 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind import load_env_keys  # noqa: E402
-from frugalmind.adapters import AnthropicAdapter, adapter_from_env  # noqa: E402
-from frugalmind.leaderboard import (  # noqa: E402
+from repere import load_env_keys  # noqa: E402
+from repere.adapters import AnthropicAdapter, adapter_from_env  # noqa: E402
+from repere.leaderboard import (  # noqa: E402
     SkillLiftRow,
     build_leaderboard,
     build_skill_lift_leaderboard,
 )
-from frugalmind.registry import load_registry_yaml  # noqa: E402
-from frugalmind.skills import (  # noqa: E402
+from repere.registry import load_registry_yaml  # noqa: E402
+from repere.skills import (  # noqa: E402
     SkillLoader,
     render_with_skill,
     render_with_skill_parts,
 )
-from frugalmind_suites.synthetic_stalta.items import SyntheticSTALTASuite  # noqa: E402
-from frugalmind_suites.synthetic_stalta.scorers import (  # noqa: E402
+from repere_suites.synthetic_stalta.items import SyntheticSTALTASuite  # noqa: E402
+from repere_suites.synthetic_stalta.scorers import (  # noqa: E402
     make_scorer_from_spec as stalta_scorer_from_spec,
 )
 
@@ -135,8 +135,8 @@ def _stalta_items():
 
 def _lit_rag_items():
     """Document-based family: known-item retrieval over REAL arXiv papers."""
-    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
-    from frugalmind_suites.lit_rag.scorers import (
+    from repere_suites.lit_rag.items import LitRagKnownItemSuite
+    from repere_suites.lit_rag.scorers import (
         make_scorer_from_spec as lit_scorer_from_spec,
     )
 
@@ -153,7 +153,7 @@ def _lit_rag_items():
 def _dvv_items():
     # codameter#15 makes an installed copy resolve/regenerate its golden data
     # (per-user cache), so no manifest workaround is needed here.
-    from codameter import frugalmind as cfm
+    from codameter import repere as cfm
 
     rows = cfm.build_rows("param_recommendation", split="validation")
     bad_config = json.dumps({"freqmin": 9.5, "freqmax": 10.0})

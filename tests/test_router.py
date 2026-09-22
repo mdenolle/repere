@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from frugalmind import ModelCard, ModelRegistry, TaskKind
-from frugalmind.adapters import EchoAdapter
-from frugalmind.budget import BudgetGuard
-from frugalmind.router import FrugalRouter, NoEligibleModelError
+from repere import ModelCard, ModelRegistry, TaskKind
+from repere.adapters import EchoAdapter
+from repere.budget import BudgetGuard
+from repere.router import FrugalRouter, NoEligibleModelError
 
 
 def _registry() -> ModelRegistry:

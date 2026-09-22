@@ -1,5 +1,5 @@
 name: Roadmap item
-description: New work that aligns with the FrugalMind ROADMAP.md structure.
+description: New work that aligns with the Repère ROADMAP.md structure.
 title: "[Px.y] <short title>"
 labels: ["astabench-alignment"]
 body:

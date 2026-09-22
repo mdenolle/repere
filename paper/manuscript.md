@@ -6,7 +6,7 @@ decision a laboratory actually faces is not whether a model is impressive, but
 which is the cheapest configuration that clears its scientific quality floor —
 and whether that configuration may lawfully touch its data. We argue that
 evaluation for science must therefore be cost-aware and scaffolding-aware, and
-present FrugalMind, a framework built on four commitments: cost as a first-class
+present Repère, a framework built on four commitments: cost as a first-class
 axis against explicit quality floors; a scorability spectrum that pushes every
 task toward deterministic verification and admits a model judge only as a last
 resort; negative-case discipline, so that confident fabrication is penalised
@@ -43,7 +43,7 @@ Inspect[@inspectai] for the same reason. **We therefore do not claim that cost
 has been ignored.** Our claim is narrower and, we think, more consequential:
 cost-aware benchmarks still treat *scaffolding* as a confound to be controlled,
 whereas for a laboratory the scaffolding is the very thing it can choose. Three
-observations follow, and they are what FrugalMind is built from.
+observations follow, and they are what Repère is built from.
 
 First, **cost is not a footnote; it is half the decision**. A group that cannot
 spend a frontier-model call on every step of a workflow needs to know where a
@@ -70,7 +70,7 @@ a large class of real work, closed application-programming-interface (API) model
 are the ones a group is *not permitted* to use. A benchmark that measures only
 API models is silent about the tools a laboratory may actually run.
 
-We present FrugalMind, an evaluation framework constructed from these three
+We present Repère, an evaluation framework constructed from these three
 observations, and instantiate it on geoscience tasks. The framework's commitments
 are stated in Methods; its consequences are the subject of this paper. Running it
 live — with real prompts, real domain skills, model-generated code executed in a
@@ -89,7 +89,7 @@ ill-posed.
 
 ### A framework organised around the adoption decision
 
-FrugalMind evaluates *(model, scaffolding)* configurations against a **quality
+Repère evaluates *(model, scaffolding)* configurations against a **quality
 floor** — the score below which an output is not scientifically usable — and
 reports, jointly, the score and the realised cost. The recommended system is the
 cheapest configuration clearing the floor, not the highest scorer. Locally
@@ -211,7 +211,7 @@ should not be trusted, including by its authors.**
 
 ## Discussion
 
-The three observations that motivate FrugalMind — that cost is half the adoption
+The three observations that motivate Repère — that cost is half the adoption
 decision, that laboratories deploy scaffolded systems rather than models, and
 that much scientific data may not leave the institution — are not specific to the
 geosciences, and neither, we expect, is the decision rule they produce. The

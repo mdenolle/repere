@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind.cli import main
+from repere.cli import main
 
 
 def test_smoke_eval_writes_json(tmp_path):

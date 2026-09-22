@@ -34,11 +34,11 @@ stress test.
 ## Install and run
 
 ```bash
-pip install -e ".[dvv]"      # pulls codameter (the scoring backend)
+pip install -e . -r requirements-dvv.txt   # pulls codameter (the scoring backend)
 
 python - <<'PY'
-import frugalmind as F
-from frugalmind_suites.dvv import ALL_SUITES
+import repere as F
+from repere_suites.dvv import ALL_SUITES
 reg = F.ModelRegistry()
 runner = F.EvalRunner(registry=reg, suites=ALL_SUITES,
                       per_model_budget_usd=0.50, total_budget_usd=5.00)
@@ -46,12 +46,12 @@ PY
 ```
 
 Export the frozen JSONL with the standard exporter (the dv/v suites are
-registered in `frugalmind.cli._all_registered_suites()` whenever `codameter` is
+registered in `repere.cli._all_registered_suites()` whenever `codameter` is
 importable):
 
 ```bash
-frugalmind export-suite --suite codameter.param_recommendation --out datasets/
-# or, from codameter: pixi run frugalmind-export
+repere export-suite --suite codameter.param_recommendation --out datasets/
+# or, from codameter: pixi run frugalmind-export   (codameter's own task name)
 ```
 
 ## Scoring philosophy

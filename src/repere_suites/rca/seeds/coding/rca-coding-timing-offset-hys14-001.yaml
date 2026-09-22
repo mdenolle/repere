@@ -1,0 +1,117 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. T1 item: the reference is produced at scoring time by the oracle
+# (chronfix's delivered hourly delta_t), never stored in this file.
+schema_version: rca.golden.v0.1
+id: rca-coding-timing-offset-hys14-001
+family: coding
+group: 1c_calibration_timing
+tier: T1_physics
+shape: B_tool
+status: template
+difficulty: hard
+tags: [clock-drift, timing, cross-correlation, obs, hydrate-ridge, chronfix]
+
+prompt: |
+  Two MiniSEED files are in your working directory: one UTC day
+  (2023-03-15) of the 8 Hz vertical channel MHZ for the OOI cabled
+  ocean-bottom stations HYS14 and HYS12 at Southern Hydrate Ridge, about
+  600 m apart. HYS12's clock is believed to be correct. HYS14's clock is
+  known to drift by tens of seconds. Using ambient-noise cross-correlation
+  between the two stations, estimate the clock offset of HYS14 at
+  2023-03-15T12:00 UTC in seconds, with the convention that a positive
+  value means HYS14's clock is LATE (a sample it stamps t was recorded at
+  t minus the offset). Write Python that computes it and calls
+  record(clock_offset_s=<float>). State your frequency band and window
+  length in a comment.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    Reference: coszo-hub/chronfix @486f05b, examples/HYS14/{hour_times.npy,
+    delta_t_hourly_clean.npy, trigger_periods.csv}; hourly delta_t for
+    OO.HYS14 from 2022-08-10 to 2026-05-01 measured by the chronos pipeline
+    (not public) as the ballistic peak lag of HYS12-HYS14 ZZ
+    cross-correlations, MHZ 8 Hz, phase-whitened 0.5-3.8 Hz, 30-min windows,
+    hourly median, then Hampel-filtered and segment-modelled (chronfix
+    "HYS14 - Correction Method.md" sections 3-6). Authors' stated precision:
+    sigma_total ~0.08 s typical, 0.11 s p90, 0.17 s worst; picker quantum
+    0.125 s. Sign convention from chronfix clock_model.py. The chosen hour
+    lies inside the 126-day curved segment (2023-01-24 to 2023-05-29) where
+    delta_t runs from +7 s to -49.7 s (chronfix README.md:167-168); it is not
+    inside any trigger interval per trigger_periods.csv. Input day files
+    fetched from EarthScope on 2026-09-14 (one contiguous trace each, 691201
+    samples at 8 Hz; sha256 pinned in scripts/rca_fetch_external.py).
+  source_ref: "https://github.com/coszo-hub/chronfix/tree/486f05bcdaad26a1855ee90c987c41b7d36b835a/examples/HYS14"
+  source_kind: chronfix_repo
+  notes: >-
+    Honesty note for the paper (DESIGN.md §3.1c): this reference is a
+    software estimate validated closed-loop against the same station pair;
+    "physics-verified" holds only to the extent that (a) the ballistic lag
+    between two fixed stations cannot drift, and (b) HYS12's clock is good,
+    which the chronfix repo asserts and does not demonstrate.
+
+holdout:
+  split: validation
+  visibility: public
+  construction: none
+  leakage_note: >-
+    The chronfix example files are public, so a solver that fetched and
+    looked up delta_t_hourly_clean.npy would score 1.0 without doing physics.
+    Mitigations: sandbox network=none; the input files carry no chronfix
+    data; the hidden split must use hours from days NOT covered by the
+    public chronfix example (post-2026-05-01, or another station), see
+    OPEN_QUESTIONS.md Q7.
+  canary: null
+
+cutoff_date: null
+
+tools:
+  allowlist: [python_session, record_submit]
+
+inputs:
+  files:
+    - path: mhz/OO.HYS14..MHZ.2023-03-15.mseed
+      sha256: 19603b8ba18338d83b1caee4b5169be80c09c8485d59382d909527e6e1d72261
+      kind: mseed
+      description: "OO.HYS14..MHZ 2023-03-15, 8 Hz, 691201 samples, one trace (external; fetched by scripts/rca_fetch_external.py mhz)."
+      license: "OOI data policy: freely available; TODO(co-author) cite the exact statement."
+    - path: mhz/OO.HYS12..MHZ.2023-03-15.mseed
+      sha256: 2aeb401fe99c93cd9a1904fd59e4d3580fdb708145d942c114705d1169ce3cab
+      kind: mseed
+      description: "OO.HYS12..MHZ 2023-03-15, 8 Hz, 691201 samples, one trace (external)."
+      license: "as above"
+
+task:
+  deliverable: artifact
+  artifact_keys: [clock_offset_s]
+  required_calls: ["record("]
+
+sandbox:
+  image: ghcr.io/mdenolle/repere-sandbox:v0.5.0
+  image_digest: TODO
+  network: none
+  timeout_s: 600
+  memory_mb: 2048
+
+scoring:
+  method: oracle_compare
+  metrics: [abs_error, within_tolerance]
+  oracle:
+    solver: "repere_suites.rca.oracles.clock:chronfix_offset"
+    solver_ref: "coszo-hub/chronfix@486f05b"
+    args:
+      at_utc: "2023-03-15T12:00:00Z"
+    independent_measurement: >-
+      chronfix examples/HYS14 hourly delta_t (HYS12-HYS14 cross-correlation
+      peak lag, see provenance). NOT independent of the cross-correlation
+      method itself; see notes.
+    tolerance: {abs: 0.5, units: s}
+
+todos:
+  - "Co-author (timing): set the tolerance. 0.5 s is a placeholder = 4x the authors' typical sigma; the picker quantum is 0.125 s and worst-case sigma 0.17 s. Decide whether an hourly value at one hour is fair or whether the task should ask for the mean offset over the day."
+  - "Co-author (timing): confirm HYS12 is an acceptable timing reference for this day, or add the HYSB1 cross-check the chronfix doc describes (0.1-0.3 Hz)."
+  - "Co-author: decide whether the prompt may reveal 'tens of seconds' and the sign convention (it does now) or whether discovering the sign is part of the task."
+  - "Harness: the sandbox image (python 3.10, obspy 1.4.1, numpy 1.26) must have enough memory for a day of 8 Hz data x2 plus FFTs; verify with the self-test solution before freezing."
+  - "Harness: write the self-test solution (a reimplementation of the documented recipe) under seeds/coding/_selftest/good/ and record its residual against the oracle; if it does not land within tolerance, the tolerance or the task is wrong, not the agent."

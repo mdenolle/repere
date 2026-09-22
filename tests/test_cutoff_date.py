@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from frugalmind_suites.sta_lta.items import (
+from repere_suites.sta_lta.items import (
     DEFAULT_NEGATIVE_CUTOFF_DAYS,
     DEFAULT_POSITIVE_CUTOFF_DAYS,
     _load_events,

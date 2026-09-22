@@ -39,11 +39,11 @@ def code(text: str) -> dict:
 CELLS = [
     md(
         """\
-# FrugalMind — ReAct multi-step agent baseline (P2.4)
+# Repère — ReAct multi-step agent baseline (P2.4)
 
 This notebook walks through the **ReAct baseline solver** that lets a model
 choose between calling tools and submitting an answer on the STA/LTA suites.
-It is the FrugalMind counterpart to AstaBench's reference baseline and the
+It is the Repère counterpart to AstaBench's reference baseline and the
 direct comparison point for `generate` (single-shot) runs on the cost-Pareto chart.
 
 What you'll see:
@@ -79,14 +79,14 @@ print("inspect_ai version:", inspect_ai.__version__)
         """\
 ## 1. The three tools the agent can call
 
-`frugalmind.agents.tools` wraps three callables as `@tool` decorators. Each is
+`repere.agents.tools` wraps three callables as `@tool` decorators. Each is
 **stateless**, **provider-agnostic**, and never raises — every failure mode is
 returned as JSON so the agent can read it and decide what to do next.
 """
     ),
     code(
         """\
-from frugalmind.agents import stalta_tools_dict
+from repere.agents import stalta_tools_dict
 
 # Static descriptor — does not import inspect_ai's runtime types.
 for name, desc in stalta_tools_dict().items():
@@ -96,7 +96,7 @@ for name, desc in stalta_tools_dict().items():
     code(
         """\
 # Inspect-side instantiations. Each factory returns an inspect_ai.tool.Tool.
-from frugalmind.agents.tools import all_tools
+from repere.agents.tools import all_tools
 
 tools = all_tools()
 for t in tools:
@@ -114,7 +114,7 @@ code paths and scoring code paths exercise the same runtime.
     code(
         """\
 import asyncio, json
-from frugalmind.agents.tools import python_session
+from repere.agents.tools import python_session
 
 sess = python_session()
 raw = asyncio.run(sess(code="record(answer=2+2)\\nprint('hello from sandbox')", timeout_s=20.0))
@@ -134,12 +134,12 @@ Default knobs:
   - `max_attempts=1` — AstaBench's convention; raise for noisier models.
   - `message_limit=24` — proxy for cost; catches a runaway tool loop.
   - `system_prompt=None` — use the built-in STA/LTA prompt. Pass a string to override
-    (e.g., to prepend a FrugalMind skill).
+    (e.g., to prepend a Repère skill).
 """
     ),
     code(
         """\
-from frugalmind.agents.react import stalta_react
+from repere.agents.react import stalta_react
 
 solver = stalta_react()
 print("solver type:", type(solver).__name__)
@@ -161,7 +161,7 @@ For a *real* end-to-end behavioural test you'd swap to a live provider — see �
         """\
 # A one-sample Inspect task built directly from a `fetch_code` item.
 from inspect_ai import eval as inspect_eval
-from frugalmind_suites.sta_lta.inspect_tasks import fetch_code
+from repere_suites.sta_lta.inspect_tasks import fetch_code
 
 task = fetch_code(split="validation")
 print("dataset size:", len(list(task.dataset)))
@@ -210,8 +210,8 @@ the matching credential env var is set (e.g. `ANTHROPIC_API_KEY`).
 For CLI use, the same solver is addressable as:
 
 ```bash
-inspect eval src/frugalmind_suites/sta_lta/inspect_tasks.py@fetch_code \\
-  --solver src/frugalmind/agents/react.py@stalta_react \\
+inspect eval src/repere_suites/sta_lta/inspect_tasks.py@fetch_code \\
+  --solver src/repere/agents/react.py@stalta_react \\
   --model anthropic/claude-haiku-4-5-20251001
 ```
 

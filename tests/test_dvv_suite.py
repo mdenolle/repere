@@ -5,10 +5,10 @@ import json
 
 import pytest
 
-pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install frugalmind[dvv])")
+pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install -r requirements-dvv.txt)")
 
-import frugalmind as F
-from frugalmind_suites import dvv
+import repere as F
+from repere_suites import dvv
 
 
 def test_two_suites_with_expected_identity():
@@ -34,7 +34,7 @@ def test_param_scorer_rewards_a_sound_config():
     from codameter import golden
     from codameter import use_cases as uc
 
-    # split="all" so a stray FM_DVV_SPLIT can't filter the target case out and
+    # split="all" so a stray REPERE_DVV_SPLIT can't filter the target case out and
     # make this fail spuriously.
     suite = dvv.DVVParamRecommendationSuite(split="all")
     # volcano is guaranteed present: as of codameter's hideable golden set
@@ -74,7 +74,7 @@ def test_unknown_scorer_name_raises():
 def test_dvv_suites_are_registered_in_cli():
     # With codameter importable, the export-suite CLI must discover the dv/v
     # suites so `--suite codameter.*` resolves.
-    from frugalmind.cli import _all_registered_suites, _resolve_suites
+    from repere.cli import _all_registered_suites, _resolve_suites
 
     keys = {f"{s.dataset_id}.{s.suite_id}" for s in _all_registered_suites()}
     assert "codameter.param_recommendation" in keys
@@ -84,10 +84,10 @@ def test_dvv_suites_are_registered_in_cli():
 
 
 def test_export_suite_writes_jsonl(tmp_path):
-    from frugalmind.export import export_suites
+    from repere.export import export_suites
 
     # split="all" pins the full corpus: without it the suite would honour
-    # FM_DVV_SPLIT from the environment and the row count would no longer be
+    # REPERE_DVV_SPLIT from the environment and the row count would no longer be
     # comparable to golden.CASES.
     suite = dvv.DVVParamRecommendationSuite(split="all")
     manifest = export_suites([suite], out_dir=tmp_path, version=dvv.VERSION)
