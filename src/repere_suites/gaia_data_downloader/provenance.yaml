@@ -34,3 +34,7 @@ contamination_policy:
   - Tasks tagged `contamination_risk: high` default to `visibility: private`.
   - Private partition lives under REPERE_GAIA_GOLDEN_DIR (gitignored), distributed
     via UW-internal share, never echoed back into LLM prompts.
+  - The five test-split task rows themselves live in
+    $REPERE_EVAL_DATA_DIR/gaia_data_downloader_test.yaml, not in this package:
+    they were committed here through v0.5.1 and shipped in that wheel, which is
+    why they are treated as compromised and due to be re-cut.

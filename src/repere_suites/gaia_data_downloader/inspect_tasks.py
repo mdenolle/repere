@@ -35,7 +35,7 @@ from typing import Any
 
 import yaml
 
-from . import TASKS_PATH
+from . import HIDDEN_TASKS_PATH, TASKS_PATH
 
 
 VALID_SPLITS = ("validation", "test")
@@ -60,7 +60,29 @@ def _load_tasks(difficulty: str | None = None, split: str | None = None) -> list
         )
     data = yaml.safe_load(TASKS_PATH.read_text())
     tasks = data["tasks"]
+
+    # Merge the held-out partition when present; an id in both files is an
+    # authoring mistake rather than an override.
+    if HIDDEN_TASKS_PATH.is_file():
+        hidden = yaml.safe_load(HIDDEN_TASKS_PATH.read_text()) or {}
+        hidden_tasks = hidden.get("tasks", [])
+        clash = {t["id"] for t in tasks} & {t["id"] for t in hidden_tasks}
+        if clash:
+            raise ValueError(
+                f"task id(s) {sorted(clash)} appear in both {TASKS_PATH} and "
+                f"{HIDDEN_TASKS_PATH}; an id belongs to exactly one partition"
+            )
+        tasks = tasks + hidden_tasks
+
     split = _resolve_split(split)
+    if split == "test" and not any(t["split"] == "test" for t in tasks):
+        raise FileNotFoundError(
+            "the hidden test split is not available locally.\n"
+            f"  expected: {HIDDEN_TASKS_PATH}\n"
+            "  pull it:  pixi run -e full python scripts/pull_eval_data.py\n"
+            "  Ranked scores are computed on the hidden split only; the public "
+            "`validation` partition is for development."
+        )
     if split is not None:
         tasks = [t for t in tasks if t["split"] == split]
     if difficulty is not None:
