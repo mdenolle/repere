@@ -283,6 +283,11 @@ carries the gold, so `build_suite_fixtures.py --splits test` writes into
 `$REPERE_EVAL_DATA_DIR/fixtures/` instead, and
 `tests/test_no_holdout_in_repo.py` fails if one is ever committed.
 
+Adding a golden set of your own? [`docs/holdout_policy.md`](docs/holdout_policy.md)
+is the procedure and the checklist: where held-out rows live, the five
+properties a suite loader must implement, and the four guards that keep a
+held-out row out of the repository and out of the published wheel.
+
 ### 2. Build the plot PNG goldens
 
 The fifth suite (plot) compares model output to a reference PNG via SSIM.
