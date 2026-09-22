@@ -4,7 +4,7 @@ Repère is an open evaluation framework for scientific AI agents in the geoscien
 
 The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide.
 
-> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/repere-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+> **v0.5.0 — renamed from FrugalMind to Repère** (September 2026). Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 The current repository contains:
 
@@ -101,6 +101,21 @@ pixi run export-leaderboard  # builds site/data/leaderboard.json
 
 `pixi run test` does not need ObsPy, network access, model-provider
 credentials, or private goldens.
+
+## Install from PyPI
+
+```bash
+pip install repere                     # core framework + CLI
+pip install "repere[eval,rca,plot]"    # InspectAI substrate, RCA validator, plot scorer
+pip install "repere[geo]"              # ObsPy, for the waveform-fetching suites
+```
+
+The dv/v suite's scoring backend is pinned to an immutable git commit, which
+PyPI will not accept as a declared dependency, so it installs separately:
+
+```bash
+pip install -r requirements-dvv.txt
+```
 
 The CLI also exposes:
 

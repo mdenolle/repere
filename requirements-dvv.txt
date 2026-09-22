@@ -1,0 +1,11 @@
+# dv/v scoring backend for the `dvv` suite (src/repere_suites/dvv/).
+#
+# Kept out of pyproject.toml's optional-dependencies because PyPI rejects
+# direct-URL dependencies in uploaded metadata, and dropping the pin is not an
+# option: a git tag is movable and would silently change scores, so we pin the
+# immutable SHA and name the release here for humans. Bump both when codameter
+# cuts a new benchmark.
+#
+#     pip install -r requirements-dvv.txt
+#
+codameter @ git+https://github.com/Denolle-Lab/codameter.git@9c3259b982ad79b35fb5e85cc8fb0952dc09244a  # v0.3.0

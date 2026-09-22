@@ -26,7 +26,12 @@ REPERE_USE_DOCKER_SANDBOX=1 REPERE_SANDBOX_IMAGE=repere-sandbox:dev pytest
 ```
 
 `REPERE_SANDBOX_IMAGE` defaults to `ghcr.io/mdenolle/repere-sandbox:latest`
-once the CI workflow has pushed an image.
+once the CI workflow has pushed an image. Pin a release instead of `latest`
+for anything whose numbers you intend to publish: the current pin is
+`ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and that is what the RCA seed
+records under `src/repere_suites/rca/seeds/` name. Images published before
+the Repère rename carry the old `frugalmind-sandbox` name and are kept so
+v0.4.0 results stay reproducible.
 
 ## Pinned versions
 

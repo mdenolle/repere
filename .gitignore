@@ -53,3 +53,7 @@ data/private/
 *.private.yaml
 .hf_token
 paper/build/
+
+# Build artifacts
+dist/
+build/

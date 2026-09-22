@@ -11,6 +11,8 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-09-22 — the Repère rename
+
 ### Changed
 
 - **Project renamed: FrugalMind → Repère.** Repère is French for a fixed
@@ -34,7 +36,26 @@ there cross-references the version that delivered it.
   instead of erroring. Re-export anything you had set. Historical entries
   below keep the `FM_*` spelling that shipped in 0.3.0 and 0.4.0.
 
-### Added (branch `design/rca-harness`)
+- **Publishable on PyPI, which cost the `dvv` extra.** `pip install -e ".[dvv]"`
+  is gone: it declared `codameter` as a direct git URL, and PyPI rejects
+  direct-URL dependencies in uploaded metadata, extras included. The pin —
+  still the immutable commit behind codameter v0.3.0, for the same reason as
+  before — moved to `requirements-dvv.txt`, so the install is now
+  `pip install -e . -r requirements-dvv.txt`. Updated in
+  `.github/workflows/dvv-suite.yml`, `docs/dvv_suite_v0.md` and
+  `docs/golden_data_provisioning.md`.
+- **`[tool.setuptools.package-data]` now covers every suite.** It listed three
+  patterns under `repere_suites.sta_lta` and nothing else, so a wheel built
+  from this project shipped no `cases.yaml`, no RCA seeds, no schema, no
+  pricing map and no corpora: it would import and then enumerate zero items in
+  six of the seven suites. Only ever exercised through editable installs, where
+  the source tree is on the path and the gap is invisible.
+- **The sandbox image builds on every push to `main`.** The `on.push` paths
+  filter also applied to tag pushes, and a release tag points at a version-bump
+  commit that touches no Docker file, so the release image would never have
+  been built. Filter kept on `pull_request`.
+
+### Added
 
 - **Repère-RCA design and skeleton.** `DESIGN.md` (taxonomy, tiers,
   architecture decision memo), `OPEN_QUESTIONS.md`, `docs/rca/` (inventory,
@@ -261,7 +282,9 @@ P3.5 per-suite `RUBRIC.md` scorer rationale.
 - Pixi + conda dev environments, manual `pages.yml` and `evals.yml`
   workflows, README sketch.
 
-[Unreleased]: https://github.com/mdenolle/repere/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/mdenolle/repere/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/mdenolle/repere/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mdenolle/repere/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mdenolle/repere/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mdenolle/repere/releases/tag/v0.1.0

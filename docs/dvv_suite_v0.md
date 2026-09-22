@@ -34,7 +34,7 @@ stress test.
 ## Install and run
 
 ```bash
-pip install -e ".[dvv]"      # pulls codameter (the scoring backend)
+pip install -e . -r requirements-dvv.txt   # pulls codameter (the scoring backend)
 
 python - <<'PY'
 import repere as F

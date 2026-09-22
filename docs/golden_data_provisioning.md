@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pip install -e ".[test,dvv]"
+      - run: pip install -e ".[test]" -r requirements-dvv.txt
 
       - name: Materialize the hidden golden set
         env:

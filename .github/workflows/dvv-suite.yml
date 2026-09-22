@@ -36,7 +36,7 @@ jobs:
           cache: true
 
       - name: Install dv/v extra (codameter, pinned)
-        run: pixi run -e full python -m pip install -e ".[dvv]"
+        run: pixi run -e full python -m pip install -e . -r requirements-dvv.txt
 
       - name: Run dv/v suite
         run: pixi run -e full python -m pytest tests/test_dvv_suite.py -v
