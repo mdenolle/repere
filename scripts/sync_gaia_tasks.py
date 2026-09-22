@@ -2,7 +2,7 @@
 
 Source of truth: GitHub issues labeled ``golden-task`` in
 ``uw-ssec/gaia-agentic-ai`` (see ``provenance.yaml`` in the suite directory).
-Output:          ``src/frugalmind_suites/gaia_data_downloader/tasks.yaml``
+Output:          ``src/repere_suites/gaia_data_downloader/tasks.yaml``
                  (and the private partition under ``$FM_GAIA_GOLDEN_DIR``).
 
 Modes
@@ -16,7 +16,7 @@ Modes
 
 Cross-repo flow
 ---------------
-This script lives in ``frugalmind`` but reads from ``uw-ssec/gaia-agentic-ai``.
+This script lives in ``repere`` but reads from ``uw-ssec/gaia-agentic-ai``.
 Both repos use the ``gh`` CLI, so the script needs ``gh auth status`` to
 report a token with ``repo`` scope on both repos.
 
@@ -44,7 +44,7 @@ import yaml
 
 UPSTREAM_REPO = "uw-ssec/gaia-agentic-ai"
 SCHEMA_VERSION = "0.1"
-SUITE_DIR = Path(__file__).resolve().parents[1] / "src" / "frugalmind_suites" / "gaia_data_downloader"
+SUITE_DIR = Path(__file__).resolve().parents[1] / "src" / "repere_suites" / "gaia_data_downloader"
 PUBLIC_TASKS_PATH = SUITE_DIR / "tasks.yaml"
 
 

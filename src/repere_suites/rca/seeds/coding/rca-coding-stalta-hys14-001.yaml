@@ -1,0 +1,86 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. The reference trigger count is deliberately NOT filled in: it must
+# be produced by running the pinned recipe (see todos), not typed from memory.
+schema_version: rca.golden.v0.1
+id: rca-coding-stalta-hys14-001
+family: coding
+group: 1d_coding_tools
+tier: T2_execution
+shape: B_tool
+status: template
+difficulty: medium
+tags: [stalta, detection, obs, tool-use]
+
+prompt: |
+  Using the MiniSEED file OO.HYS14..BHZ.2022-10-01.mseed in your working
+  directory, run a classic STA/LTA detector on the vertical channel with a
+  short window of 1 s, a long window of 10 s, an on-threshold of 3.5 and an
+  off-threshold of 1.5, after removing the mean and applying a 2-8 Hz
+  band-pass. Report the number of distinct trigger onsets and the onset
+  times (UTC ISO-8601) with record(n_triggers=..., onsets_utc=[...]). If
+  nothing triggers, report n_triggers=0.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    Fixture downloaded from the EarthScope FDSN dataselect service on
+    2026-09-14 (OO.HYS14..BHZ, 2022-10-01T00:00:00Z to 00:02:00Z, 40 Hz,
+    4801 samples). Detector parameters follow the sta_lta suite conventions
+    (events.yaml stalta_params) but were chosen here without looking at the
+    data; they are NOT tuned and the window may well contain no event.
+  source_ref: >-
+    https://service.earthscope.org/fdsnws/dataselect/1/query?net=OO&sta=HYS14&loc=--&cha=BHZ&start=2022-10-01T00:00:00&end=2022-10-01T00:02:00
+  source_kind: fdsn_station_metadata
+  notes: >-
+    This item tests tool use (python_session with ObsPy) rather than
+    seismological judgement: the parameters are given. A companion item
+    should withhold the parameters and score the choice (T4 or a recipe-
+    derived T2, see DESIGN.md §3.1d).
+
+holdout:
+  split: validation
+  visibility: public
+  construction: none
+  leakage_note: "Input is a data file; no corpus involved."
+  canary: null
+
+cutoff_date: null
+
+tools:
+  allowlist: [python_session, record_submit]
+
+inputs:
+  files:
+    - path: OO.HYS14..BHZ.2022-10-01.mseed
+      sha256: 7874e9fa5f11bdf632736b958561f3cca41bb5a60b49f694885556f1f1d63d84
+      kind: mseed
+      description: "2 min of OO.HYS14..BHZ starting 2022-10-01T00:00:00Z, 40 Hz, 4801 samples, one trace."
+      license: "OOI data policy: freely available; TODO(co-author) cite the exact statement."
+
+task:
+  deliverable: artifact
+  artifact_keys: [n_triggers, onsets_utc]
+  required_calls: ["record(", "classic_sta_lta"]
+
+sandbox:
+  image: ghcr.io/mdenolle/repere-sandbox:v0.4.0
+  image_digest: TODO
+  network: none
+  timeout_s: 60
+
+scoring:
+  method: execution_check
+  metrics: [pass_fail]
+  checker:
+    module: repere_suites.rca.checkers
+    function: trigger_count
+    args:
+      expected_n_triggers: null
+    stage_weights: {code: 0.1, runs: 0.2, correct: 0.7}
+
+todos:
+  - "Co-author: produce expected_n_triggers by running the pinned recipe on the fixture: `python -c \"from repere_suites.sta_lta.recipe import ...\"` with sta=1.0, lta=10.0, on=3.5, off=1.5, band 2-8 Hz, declustered; record the exact command and recipe commit in provenance.verification.method."
+  - "Co-author: if the window contains no event (likely for an arbitrary 2-minute window), keep it as a NEGATIVE item (expected_n_triggers: 0) and author a positive companion from a catalogued event recorded at HYS14 (which one? source: a PNSN or ANSS catalog entry with the id)."
+  - "Design: decide whether onsets_utc is scored (tolerance in seconds) or only reported; the checker currently scores n_triggers only."

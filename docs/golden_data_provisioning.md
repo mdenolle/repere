@@ -124,7 +124,7 @@ server-side so gold never leaves. Three requirements beyond "make it private":
 benchmark can move under you and last month's scores stop meaning anything.
 
 ```bash
-huggingface-cli download frugalmind/<dataset>-test \
+huggingface-cli download repere/<dataset>-test \
     --repo-type dataset --revision <commit-sha> --local-dir "$RUNNER_TEMP/gold"
 ```
 
@@ -134,7 +134,7 @@ sha256 (§5a). "Which gold was this scored against" must be answerable later.
 **2. Scope the token to one repo, read-only.** Use a **fine-grained** token
 (HF's `read`/`write` role tokens grant everything you can see):
 
-- select **only** `frugalmind/<dataset>-test`
+- select **only** `repere/<dataset>-test`
 - grant **read access to contents** of that repo — nothing else: no other repos,
   no org-wide read, no inference.
 

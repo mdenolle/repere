@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind.skills import SkillLoader, SkillManifest
+from repere.skills import SkillLoader, SkillManifest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

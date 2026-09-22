@@ -1,5 +1,5 @@
 # =============================================================================
-# FrugalMind skills manifest
+# Repère skills manifest
 # =============================================================================
 # Binds skill directories (each containing a SKILL.md) to one or more suite IDs.
 # Used by SkillLoader/LeaderboardRunner to pick the right skill automatically.

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 
-import frugalmind as F
-from frugalmind_suites import sta_lta as S
-from frugalmind_suites.sta_lta import scorers
+import repere as F
+from repere_suites import sta_lta as S
+from repere_suites.sta_lta import scorers
 
 
 def test_events_load_with_required_categories():

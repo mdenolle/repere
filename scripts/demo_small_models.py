@@ -34,16 +34,16 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind import ModelCard  # noqa: E402
-from frugalmind.adapters import EchoAdapter, OpenAICompatAdapter  # noqa: E402
-from frugalmind.budget import BudgetGuard  # noqa: E402
-from frugalmind.leaderboard import (  # noqa: E402
+from repere import ModelCard  # noqa: E402
+from repere.adapters import EchoAdapter, OpenAICompatAdapter  # noqa: E402
+from repere.budget import BudgetGuard  # noqa: E402
+from repere.leaderboard import (  # noqa: E402
     LeaderboardRunner,
     build_skill_lift_leaderboard,
 )
-from frugalmind.registry import load_registry_yaml  # noqa: E402
-from frugalmind.skills import SkillLoader, render_with_skill  # noqa: E402
-from frugalmind_suites.sta_lta import STALTAIntentExtractionSuite  # noqa: E402
+from repere.registry import load_registry_yaml  # noqa: E402
+from repere.skills import SkillLoader, render_with_skill  # noqa: E402
+from repere_suites.sta_lta import STALTAIntentExtractionSuite  # noqa: E402
 
 
 SKILLS_DIR = REPO / ".github" / "skills"
@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     rows = runner.run(cards)
 
-    print(f"\nFrugalMind skill-lift demo  ({'LIVE Ollama' if args.live else 'offline stub'})")
+    print(f"\nRepère skill-lift demo  ({'LIVE Ollama' if args.live else 'offline stub'})")
     print(f"Suite : sta_lta.intent_extraction")
     print(f"Skill : {skill.name} {skill.version}")
     print(f"Models: {', '.join(c.id for c in cards)}\n")

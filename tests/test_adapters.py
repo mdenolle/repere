@@ -6,8 +6,8 @@ from contextlib import contextmanager
 
 import pytest
 
-from frugalmind import ModelCard
-from frugalmind.adapters import (
+from repere import ModelCard
+from repere.adapters import (
     AnthropicAdapter,
     EchoAdapter,
     OpenAICompatAdapter,

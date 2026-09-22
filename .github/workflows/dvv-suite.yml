@@ -8,14 +8,14 @@ name: dv/v suite (codameter)
 on:
   pull_request:
     paths:
-      - "src/frugalmind_suites/dvv/**"
+      - "src/repere_suites/dvv/**"
       - "tests/test_dvv_suite.py"
       - "pyproject.toml"
       - ".github/workflows/dvv-suite.yml"
   push:
     branches: [main]
     paths:
-      - "src/frugalmind_suites/dvv/**"
+      - "src/repere_suites/dvv/**"
       - "tests/test_dvv_suite.py"
       - "pyproject.toml"
       - ".github/workflows/dvv-suite.yml"

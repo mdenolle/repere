@@ -30,7 +30,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/frugalmind-sandbox
+  IMAGE_NAME: ${{ github.repository_owner }}/repere-sandbox
 
 jobs:
   build:

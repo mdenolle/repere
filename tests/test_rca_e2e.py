@@ -10,9 +10,9 @@ import pytest
 
 inspect_ai = pytest.importorskip("inspect_ai")
 
-from frugalmind_suites.rca import SEEDS_DIR  # noqa: E402
-from frugalmind_suites.rca.inspect_tasks import public_view, rca  # noqa: E402
-from frugalmind_suites.rca.solvers import do_nothing, scripted  # noqa: E402
+from repere_suites.rca import SEEDS_DIR  # noqa: E402
+from repere_suites.rca.inspect_tasks import public_view, rca  # noqa: E402
+from repere_suites.rca.solvers import do_nothing, scripted  # noqa: E402
 
 QC = "rca-coding-qc-continuity-001"
 SELFTEST = SEEDS_DIR / "coding" / "_selftest"
@@ -37,7 +37,7 @@ def _run(solver, epochs=1, log_dir: str | None = None):
 
 
 def test_public_view_strips_gold():
-    from frugalmind_suites.rca import load_records
+    from repere_suites.rca import load_records
 
     rec = load_records(ids=[QC])[0]
     v = public_view(rec)
@@ -76,7 +76,7 @@ def test_known_good_scores_one_and_known_bad_scores_stages_only():
 
 def test_runner_writes_result_files(tmp_path: Path):
     pytest.importorskip("obspy")
-    from frugalmind_suites.rca.run import main
+    from repere_suites.rca.run import main
 
     rc = main(
         [

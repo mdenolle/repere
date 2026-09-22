@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind_suites.rca import SCHEMA_PATH, SEEDS_DIR, load_records
-from frugalmind_suites.rca.checkers import CheckOutcome, artifact_values, fdsn_records, staged_score
-from frugalmind_suites.rca.cost import load_price_map, price_usage
-from frugalmind_suites.rca.validate import load_record, rule_errors, validate_paths
+from repere_suites.rca import SCHEMA_PATH, SEEDS_DIR, load_records
+from repere_suites.rca.checkers import CheckOutcome, artifact_values, fdsn_records, staged_score
+from repere_suites.rca.cost import load_price_map, price_usage
+from repere_suites.rca.validate import load_record, rule_errors, validate_paths
 
 # ---------------------------------------------------------------------------
 # Seeds

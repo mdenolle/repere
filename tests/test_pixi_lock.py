@@ -12,14 +12,14 @@ PYPROJECT = ROOT / "pyproject.toml"
 PIXI_LOCK = ROOT / "pixi.lock"
 
 
-def _frugalmind_lock_block() -> str:
+def _repere_lock_block() -> str:
     text = PIXI_LOCK.read_text(encoding="utf-8")
     match = re.search(
-        r"^- pypi: \./\n  name: frugalmind\n(?P<body>.*?)(?=^- |\Z)",
+        r"^- pypi: \./\n  name: repere\n(?P<body>.*?)(?=^- |\Z)",
         text,
         flags=re.MULTILINE | re.DOTALL,
     )
-    assert match is not None, "pixi.lock must contain the editable frugalmind package entry"
+    assert match is not None, "pixi.lock must contain the editable repere package entry"
     return match.group("body")
 
 
@@ -46,7 +46,7 @@ def _requirement_name(requirement: str) -> str:
 def test_pixi_lock_matches_pyproject_metadata():
     pyproject = tomllib.loads(PYPROJECT.read_text(encoding="utf-8"))
     project = pyproject["project"]
-    lock_body = _frugalmind_lock_block()
+    lock_body = _repere_lock_block()
     requires_dist = _lock_requires_dist(lock_body)
 
     # Lock format v6 recorded the editable package's version; v7 (pixi >= 0.7x)

@@ -1,7 +1,7 @@
 """Dispatch contracts for the Docker sandbox backend (ROADMAP P2.2).
 
 These tests don't require Docker to be installed. They verify the
-*dispatch logic* in :mod:`frugalmind_suites.sta_lta.sandbox` — which
+*dispatch logic* in :mod:`repere_suites.sta_lta.sandbox` — which
 backend is chosen, how env vars are parsed, and what happens when the
 ``docker`` binary is missing. The host-Python backend itself is already
 covered by ``tests/test_sta_lta_suite.py``; the actual docker round-trip
@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind_suites.sta_lta import sandbox
-from frugalmind_suites.sta_lta.sandbox import (
+from repere_suites.sta_lta import sandbox
+from repere_suites.sta_lta.sandbox import (
     DEFAULT_SANDBOX_IMAGE,
     ENV_SANDBOX_IMAGE,
     ENV_USE_DOCKER,
@@ -110,7 +110,7 @@ def test_run_snippet_dispatches_to_docker_when_env_set(monkeypatch):
 
 def test_run_snippet_honours_custom_image_tag(monkeypatch):
     monkeypatch.setenv(ENV_USE_DOCKER, "1")
-    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "frugalmind-sandbox:dev")
+    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "repere-sandbox:dev")
     seen: dict[str, str] = {}
 
     def fake_docker(code, *, timeout_s, extra_env, image):
@@ -119,7 +119,7 @@ def test_run_snippet_honours_custom_image_tag(monkeypatch):
 
     monkeypatch.setattr(sandbox, "_run_snippet_docker", fake_docker)
     run_snippet("print('hi')", timeout_s=1.0)
-    assert seen["image"] == "frugalmind-sandbox:dev"
+    assert seen["image"] == "repere-sandbox:dev"
 
 
 def test_empty_code_short_circuits_before_dispatch(monkeypatch):
@@ -196,7 +196,7 @@ def test_docker_command_includes_image_and_volume_and_env(monkeypatch):
     before the in-container `python /work/snippet.py`. Any drift here
     breaks the artefact-capture contract with the preamble."""
     monkeypatch.setenv(ENV_USE_DOCKER, "1")
-    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "frugalmind-sandbox:probe")
+    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "repere-sandbox:probe")
     monkeypatch.setattr(sandbox.shutil, "which", lambda name: "/usr/bin/docker")
     captured = _capture_subprocess_run(monkeypatch)
 
@@ -213,7 +213,7 @@ def test_docker_command_includes_image_and_volume_and_env(monkeypatch):
     env_idx = cmd.index("-e")
     assert "FM_OUT_DIR=/work" in [cmd[env_idx + 1], *cmd[env_idx + 3 :: 2]]
     # Image then in-container python invocation.
-    assert cmd[-3] == "frugalmind-sandbox:probe"
+    assert cmd[-3] == "repere-sandbox:probe"
     assert cmd[-2:] == ["python", "/work/snippet.py"]
 
 
@@ -350,7 +350,7 @@ def test_docker_command_includes_user_uid_gid_when_available(monkeypatch):
     pairs the container with the host's UID:GID — and on Windows (no
     os.geteuid), we don't pass --user at all."""
     monkeypatch.setenv(ENV_USE_DOCKER, "1")
-    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "frugalmind-sandbox:probe")
+    monkeypatch.setenv(ENV_SANDBOX_IMAGE, "repere-sandbox:probe")
     monkeypatch.setattr(sandbox.shutil, "which", lambda name: "/usr/bin/docker")
     # Fake geteuid/getegid to known values so the assertion is deterministic.
     monkeypatch.setattr(sandbox.os, "geteuid", lambda: 1729)

@@ -1,6 +1,6 @@
 # Why the First Benchmark Is STA/LTA Event Detection
 
-The first FrugalMind benchmark is intentionally built around STA/LTA event detection because it is the most basic end-to-end earthquake seismology coding workflow: identify whether waveform data contain an event, fetch the relevant data, run a standard detector, and explain the likely source using seismological constraints.
+The first Repère benchmark is intentionally built around STA/LTA event detection because it is the most basic end-to-end earthquake seismology coding workflow: identify whether waveform data contain an event, fetch the relevant data, run a standard detector, and explain the likely source using seismological constraints.
 
 This benchmark asks a practical question: **can a coding agent write correct seismology code for the simplest earthquake detection pipeline without overfitting to generic Python patterns?**
 

@@ -12,9 +12,9 @@ import math
 
 import pytest
 
-from frugalmind import TaskKind
-from frugalmind_suites.pipeline_regression.items import PipelineRegressionSuite
-from frugalmind_suites.pipeline_regression.scorers import (
+from repere import TaskKind
+from repere_suites.pipeline_regression.items import PipelineRegressionSuite
+from repere_suites.pipeline_regression.scorers import (
     make_numerical_regression_scorer,
     make_scorer_from_spec,
     metric_allclose,
@@ -156,7 +156,7 @@ def test_sandbox_image_threads_but_host_backend_ignores_it():
             "metric": "pick_f1",
             "required_calls": ["record(p_picks"],
             "tolerance": 0.5,
-            "sandbox_image": "ghcr.io/example/frugalmind-sandbox-seisbench:latest",
+            "sandbox_image": "ghcr.io/example/repere-sandbox-seisbench:latest",
         },
     }
     scorer = make_scorer_from_spec(spec)
@@ -165,7 +165,7 @@ def test_sandbox_image_threads_but_host_backend_ignores_it():
 
 
 def test_run_snippet_accepts_image_on_host_backend():
-    from frugalmind_suites.sta_lta.sandbox import run_snippet
+    from repere_suites.sta_lta.sandbox import run_snippet
 
     # image is accepted and ignored by the host backend (no docker requested).
     result = run_snippet(
@@ -178,7 +178,7 @@ def test_run_snippet_accepts_image_on_host_backend():
 def test_load_pipelines_validates_required_keys(tmp_path, monkeypatch):
     # A row missing `tool` (used unconditionally by _compose) must raise an
     # actionable schema error at load time, not a late KeyError.
-    import frugalmind_suites.pipeline_regression.items as it
+    import repere_suites.pipeline_regression.items as it
 
     bad = tmp_path / "pipelines.yaml"
     bad.write_text(

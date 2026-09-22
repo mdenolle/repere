@@ -1,21 +1,21 @@
-# FrugalMind
+# Repère
 
-FrugalMind is an open evaluation framework for scientific AI agents in the geosciences. It measures whether a model or multi-agent system meets a task-specific **quality floor**, and what it **costs** to get there — so labs can adopt AI on measured evidence, not demos and anecdotes. Rigor is preserved by scoring against reference truth wherever possible; frugality is first-class because the interesting winner is the cheapest system that still clears the floor.
+Repère is an open evaluation framework for scientific AI agents in the geosciences. It measures whether a model or multi-agent system meets a task-specific **quality floor**, and what it **costs** to get there — so labs can adopt AI on measured evidence, not demos and anecdotes. Rigor is preserved by scoring against reference truth wherever possible; frugality is first-class because the interesting winner is the cheapest system that still clears the floor.
 
-The narrative overview lives on the [landing page](https://mdenolle.github.io/frugalmind/) (served from [`site/`](site/)); this README is the developer guide.
+The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide.
 
-> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/frugalmind-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+> **v0.4.0 — Phase 2 AstaBench substrate alignment** (May 2026). The framework runs on InspectAI: a `@task` / `@solver` / `@scorer` integration, a pinned Docker sandbox image (`ghcr.io/mdenolle/repere-sandbox:v0.4.0`), a multi-step ReAct agent baseline with three Inspect tools, and a telemetry schema aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 The current repository contains:
 
-- A minimal core evaluation framework in `src/frugalmind`.
-- Benchmark suites across **three task families** (see below) in `src/frugalmind_suites/`.
+- A minimal core evaluation framework in `src/repere`.
+- Benchmark suites across **three task families** (see below) in `src/repere_suites/`.
 - Public sample fixtures for local development, plus a private-golden-data policy for hidden evaluation sets
   (how to hold hidden gold: [`docs/golden_data_provisioning.md`](docs/golden_data_provisioning.md)).
 - A static landing page + leaderboard in `site/` for GitHub Pages.
 - Manual CI scaffolding for smoke tests and future scheduled evals.
 
-## FrugalMind-RCA (design branch)
+## Repère-RCA (design branch)
 
 A suite for agents serving the NSF Ocean Observatories Initiative Regional
 Cabled Array is being designed on `design/rca-harness`: three agent families
@@ -42,7 +42,7 @@ The demo leaderboard is deliberately populated with **laptop-scale open models**
 
 ## Why this exists
 
-Multi-agent systems often use expensive frontier models for every step, even when a smaller model is good enough for extraction, plotting, code generation, or reporting. FrugalMind aims to learn and enforce task-specific quality floors from hidden/private golden datasets, then route subagent work by cost subject to rigor constraints.
+Multi-agent systems often use expensive frontier models for every step, even when a smaller model is good enough for extraction, plotting, code generation, or reporting. Repère aims to learn and enforce task-specific quality floors from hidden/private golden datasets, then route subagent work by cost subject to rigor constraints.
 
 Initial focus:
 
@@ -55,9 +55,9 @@ Initial focus:
 ## Repository layout
 
 ```text
-frugalmind/
+repere/
 ├── src/
-│   ├── frugalmind/                  # Core eval primitives and CLI
+│   ├── repere/                  # Core eval primitives and CLI
 │   │   ├── adapters.py              # AnthropicAdapter, OpenAICompatAdapter, EchoAdapter
 │   │   ├── budget.py                # BudgetGuard
 │   │   ├── leaderboard.py           # LeaderboardRunner + skill-lift export
@@ -65,7 +65,7 @@ frugalmind/
 │   │   ├── router.py                # FrugalRouter
 │   │   ├── skills.py                # SkillLoader, SkillManifest, render modes
 │   │   └── telemetry.py             # JSONLTelemetry
-│   └── frugalmind_suites/           # Benchmark suites across 3 task families
+│   └── repere_suites/           # Benchmark suites across 3 task families
 │       ├── sta_lta/                 # Family 2 — STA/LTA seismic pipeline (reference suite)
 │       ├── pipeline_regression/     # Family 2 — prompt→data numerical regression
 │       ├── dvv/                     # Family 2 — dv/v processing (codameter-backed)
@@ -105,10 +105,10 @@ credentials, or private goldens.
 The CLI also exposes:
 
 ```bash
-pixi run frugalmind list-models             # print the loaded model registry
-pixi run frugalmind list-skills             # print skills + their suite bindings
-pixi run frugalmind run-skill-lift          # offline skill-lift demo
-pixi run frugalmind run-ollama-intent --model mistral:7b --skill stalta-detection
+pixi run repere list-models             # print the loaded model registry
+pixi run repere list-skills             # print skills + their suite bindings
+pixi run repere run-skill-lift          # offline skill-lift demo
+pixi run repere run-ollama-intent --model mistral:7b --skill stalta-detection
 ```
 
 ## Running local evals and viewing the dashboard
@@ -124,20 +124,20 @@ curl -s http://localhost:11434/api/tags | python -m json.tool
 # 2. Run the STA/LTA intent-extraction suite under two conditions
 #    (generic vs skill-conditioned). Each writes one JSON result file
 #    under results/.
-pixi run -e full frugalmind run-ollama-intent \
+pixi run -e full repere run-ollama-intent \
     --model mistral:latest --condition generic
-pixi run -e full frugalmind run-ollama-intent \
+pixi run -e full repere run-ollama-intent \
     --model mistral:latest --skill stalta-detection --skill-mode instructions
 
 # 3. Optional baselines: a deterministic stub eval and the offline
 #    skill-lift benchmark, also written to results/.
-pixi run -e full frugalmind smoke-eval
-pixi run -e full frugalmind run-skill-lift \
+pixi run -e full repere smoke-eval
+pixi run -e full repere run-skill-lift \
     --skill stalta-detection --output results/skill_lift_stalta.json
 
 # 4. Aggregate every JSON file under results/ into the static dashboard
 #    payload that the GitHub Pages app consumes.
-pixi run -e full frugalmind export-leaderboard \
+pixi run -e full repere export-leaderboard \
     --results-dir results --output site/data/leaderboard.json
 
 # 5. Serve the dashboard locally and open it in a browser.
@@ -155,11 +155,11 @@ If Pixi is unavailable:
 
 ```bash
 conda env create -f environment.yml
-conda activate frugalmind
+conda activate repere
 python -m pip install -e .
 python -m pytest
-python -m frugalmind.cli smoke-eval
-python -m frugalmind.cli export-leaderboard
+python -m repere.cli smoke-eval
+python -m repere.cli export-leaderboard
 ```
 
 ## Notebooks
@@ -213,7 +213,7 @@ fails when the artifact and its source diverge.
 | Artifact | Where it lives | How to (re)build | Drift test |
 |---|---|---|---|
 | `(prompt, gold)` fixtures for intent / fetch_code / trigger_code / report | [`tests/fixtures/sta_lta.<suite>.json`](tests/fixtures/) | `python scripts/build_suite_fixtures.py` | [`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py) |
-| Plot PNG goldens (public) | [`src/frugalmind_suites/sta_lta/data/golden/<id>.png`](src/frugalmind_suites/sta_lta/data/golden/) | `python scripts/build_plot_goldens.py` | [`tests/test_canonical_recipe.py`](tests/test_canonical_recipe.py) |
+| Plot PNG goldens (public) | [`src/repere_suites/sta_lta/data/golden/<id>.png`](src/repere_suites/sta_lta/data/golden/) | `python scripts/build_plot_goldens.py` | [`tests/test_canonical_recipe.py`](tests/test_canonical_recipe.py) |
 | Plot PNG goldens (private) | `$FM_STALTA_GOLDEN_DIR/<id>.png` (gitignored) | `python scripts/build_plot_goldens.py --private` | none — private; reviewed manually |
 | Static leaderboard data | [`site/data/leaderboard.json`](site/data/leaderboard.json), [`site/data/skill_lift.json`](site/data/skill_lift.json) | `python scripts/build_site_data.py` | [`tests/test_site_data.py`](tests/test_site_data.py) |
 
@@ -286,7 +286,7 @@ python scripts/build_plot_goldens.py --synth --only nisqually-2001 tohoku-2011-t
 ```
 
 The recipe — preprocessing, STA/LTA, and the matplotlib layout — is pinned
-in [`src/frugalmind_suites/sta_lta/recipe.py`](src/frugalmind_suites/sta_lta/recipe.py) and
+in [`src/repere_suites/sta_lta/recipe.py`](src/repere_suites/sta_lta/recipe.py) and
 shared by both data modes. The two-panel layout (waveform + STA/LTA, red
 dashed vertical lines at trigger onsets, station/event title) matches what
 the [`seismic-plotting`](.github/skills/seismic-plotting) skill instructs
@@ -377,9 +377,9 @@ Leaderboard rows include an `agent_condition` field so a raw `generic-coding-age
 ## Roadmap
 
 The current plan is in [`ROADMAP.md`](ROADMAP.md) — three phases of work
-aligning FrugalMind with [AstaBench](https://allenai.org/asta/bench) and
+aligning Repère with [AstaBench](https://allenai.org/asta/bench) and
 [InspectAI](https://inspect.aisi.org.uk/) standards while keeping
-FrugalMind's distinct identity (skills system, frugality-first framing,
+Repère's distinct identity (skills system, frugality-first framing,
 parametric truth set, negative-case discipline). Each item is a candidate
 GitHub issue under the `astabench-alignment` label; bootstrap them with:
 

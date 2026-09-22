@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from frugalmind.registry import (
+from repere.registry import (
     VALID_TIERS,
     cards_by_backend,
     cards_in_tier,

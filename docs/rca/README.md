@@ -1,4 +1,4 @@
-# FrugalMind-RCA documentation index
+# Repère-RCA documentation index
 
 | Document | What it is |
 |---|---|

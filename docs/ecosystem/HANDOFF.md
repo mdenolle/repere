@@ -1,10 +1,10 @@
 # Handoff: agentic seismology project — context for Claude Code
 
-Self-contained context dump (2026-07-09) so this work can continue in Claude Code inside the `frugalmind` repo without re-deriving anything. Read this first; details live in the sibling documents.
+Self-contained context dump (2026-07-09) so this work can continue in Claude Code inside the `repere` repo without re-deriving anything. Read this first; details live in the sibling documents.
 
 ## What this project is
 
-Build agents around the open-source seismology stack (observational + wavefield modeling), and grade them with multi-difficulty synthetic evaluations inside FrugalMind. Strategic frame: the agents are the demo, the eval suites are the moat. Full analysis in `docs/ecosystem/01–05` + `pitch_deck.html` (16 slides, self-contained HTML).
+Build agents around the open-source seismology stack (observational + wavefield modeling), and grade them with multi-difficulty synthetic evaluations inside Repère. Strategic frame: the agents are the demo, the eval suites are the moat. Full analysis in `docs/ecosystem/01–05` + `pitch_deck.html` (16 slides, self-contained HTML).
 
 ## File map
 
@@ -15,7 +15,7 @@ Build agents around the open-source seismology stack (observational + wavefield 
 - `05_eval_design.md` — 8 suites × L0–L4 ladder, 6 difficulty knobs, generator inventory, contamination policy.
 - `pitch_deck.html` — colleague-facing pitch with all market numbers.
 
-## FrugalMind state (as found)
+## Repère state (as found)
 
 v0.4.0, InspectAI substrate, pinned Docker sandbox, ReAct baseline with 3 tools. Three task families: (1) lit/multimodal RAG, (2) coding agents with numerical-regression scoring, (3) orchestration scored by call-DAG. Existing suites: `sta_lta` (reference; parametric `events.yaml`, negative-case discipline), `pipeline_regression`, `dvv` (codameter-backed), `gaia_data_downloader`, `lit_rag`, `orchestration`. Skills in `.github/skills/`: obspy-fdsn-fetch, seismic-plotting, seismic-report, seismo-data-agent, stalta-detection. Roadmap: P1 (splits/cutoff_date/openness metadata) partially on branches; P2.2 sandbox pinning next; P3 scales truth set to ~50 events. Non-negotiables: frugality-first (skill-lift, cost-Pareto, BudgetGuard), parametric truth set, negative-case discipline.
 
@@ -55,7 +55,7 @@ Signal (SNR, magnitude, noise realism) · scene complexity (single → overlappi
 
 ## Immediate next actions in Claude Code
 
-1. Draft `scenarios.yaml` schema + generator module skeleton under `src/frugalmind_suites/pick_associate_locate/`.
+1. Draft `scenarios.yaml` schema + generator module skeleton under `src/repere_suites/pick_associate_locate/`.
 2. Implement PickTable (pydantic/pandera) with QuakeML round-trip tests.
 3. Wrap fomosto scene generation (pin a Greens Mill store; laptop-runnable; cache in `tests/fixtures/`).
 4. Scorers: association P/R vs known membership; hypocenter error; calibration (posterior coverage).

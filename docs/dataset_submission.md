@@ -1,4 +1,4 @@
-# Submitting a dataset to FrugalMind
+# Submitting a dataset to Repère
 
 This is the contributor guide for adding an evaluation dataset. It covers the
 **strict row schema**, the **public/hidden split policy** that keeps scores
@@ -34,7 +34,7 @@ future knowledge is cheating even when it is correct.
 ## 2. The strict row schema
 
 Datasets serialise to one JSON object per line (JSONL), one object per
-`(prompt, gold)` pair. The schema is [`frugalmind.export.BenchmarkRow`](../src/frugalmind/export.py)
+`(prompt, gold)` pair. The schema is [`repere.export.BenchmarkRow`](../src/repere/export.py)
 — treat it as the contract:
 
 ```json
@@ -58,7 +58,7 @@ Datasets serialise to one JSON object per line (JSONL), one object per
 Rules that make a row **valid** (enforced by tests + the exporter):
 
 1. **`id` is globally unique** and of the form `dataset_id/suite_id/item_id`.
-2. **`task_kind`** is one of the [`TaskKind`](../src/frugalmind/__init__.py) enum
+2. **`task_kind`** is one of the [`TaskKind`](../src/repere/__init__.py) enum
    values (`extraction`, `code_generation`, `plotting`, `report_drafting`,
    `numerical_regression`, `retrieval`, `translation`, `grounded_qa`,
    `orchestration`). Add a member if you truly need a new one.
@@ -75,7 +75,7 @@ Rules that make a row **valid** (enforced by tests + the exporter):
 
 ### Why the spec-travels-in-the-row design
 
-FrugalMind never ships a scorer as an opaque callable in the dataset. It ships a
+Repère never ships a scorer as an opaque callable in the dataset. It ships a
 **declarative spec** and reconstructs the callable at score time. That is what
 makes a row portable to Hugging Face, to `inspect_evals`, and to a server-side
 scorer — and what makes the hidden-split design below possible.
@@ -141,11 +141,11 @@ We want three things at once: (a) easy `pull` of public data for development,
 (b) large golden artifacts out of git, and (c) hidden test gold that is *never
 distributed*. A two-repo layout on Hugging Face does all three.
 
-### 5a. Public dataset repo — `frugalmind/<dataset>` (open)
+### 5a. Public dataset repo — `repere/<dataset>` (open)
 
 - Contains **only** `validation` / `public` rows and any large public artifacts
   (plot goldens, corpora) that are painful in git.
-- Pulled with `datasets.load_dataset("frugalmind/<dataset>", split="validation")`
+- Pulled with `datasets.load_dataset("repere/<dataset>", split="validation")`
   or a `pixi run pull-dataset <name>` helper backed by the HF CLI / DVC remote.
 - Carries the `manifest.json` sha256 set so a pulled copy is verifiably the
   version a leaderboard row was scored against.
@@ -153,7 +153,7 @@ distributed*. A two-repo layout on Hugging Face does all three.
   redacted twin (prompt only) so tooling can *see* a hidden item exists without
   its answer.
 
-### 5b. Hidden test repo — `frugalmind/<dataset>-test` (gated)
+### 5b. Hidden test repo — `repere/<dataset>-test` (gated)
 
 - **Gated** (HF access request / org membership). Access is granted to the
   scoring service, not to model developers.
@@ -181,7 +181,7 @@ pixi run -e full python scripts/pull_eval_data.py
 
 This is live for `synthetic_stalta` and is the pattern to copy.
 
-- **Public validation split** (`src/frugalmind_suites/synthetic_stalta/cases.yaml`)
+- **Public validation split** (`src/repere_suites/synthetic_stalta/cases.yaml`)
   is committed on purpose: it is the development set, and it keeps the demo board
   reproducible by anyone.
 - **Hidden test split** is *not* in git. Crucially, it is also **not

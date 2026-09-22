@@ -39,7 +39,7 @@ import numpy as np
 import yaml
 
 REPO = Path(__file__).resolve().parent.parent
-SUITE_DIR = REPO / "src" / "frugalmind_suites" / "synthetic_stalta"
+SUITE_DIR = REPO / "src" / "repere_suites" / "synthetic_stalta"
 DATA_DIR = SUITE_DIR / "data"
 SEED_MSEED = DATA_DIR / "ridgecrest_seed.mseed"
 CASES_YAML = SUITE_DIR / "cases.yaml"

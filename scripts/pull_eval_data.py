@@ -2,7 +2,7 @@
 
 Why this exists
 ---------------
-FrugalMind ships a PUBLIC `validation` split in-repo so anyone can develop
+Repère ships a PUBLIC `validation` split in-repo so anyone can develop
 against the benchmark and reproduce the demo board on a laptop. The `test`
 split — the answers a *ranked* score is computed from — is deliberately NOT in
 git. A benchmark whose answers are public measures memorisation, not capability.
@@ -30,7 +30,7 @@ REPO = Path(__file__).resolve().parent.parent
 PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", REPO / "data" / "private"))
 
 # The gated dataset. Override for a fork / a different lab.
-HF_REPO = os.environ.get("FM_HF_DATASET", "gaia-hazlab/frugalmind-hidden")
+HF_REPO = os.environ.get("FM_HF_DATASET", "gaia-hazlab/repere-hidden")
 
 # Files the hidden dataset is expected to provide. Add one line per suite whose
 # test split is hidden.

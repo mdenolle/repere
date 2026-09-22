@@ -30,7 +30,7 @@ from inspect_ai import Task  # noqa: E402
 from inspect_ai.dataset import Sample  # noqa: E402
 from inspect_ai.scorer import Target  # noqa: E402
 
-from frugalmind_suites.sta_lta.inspect_tasks import (  # noqa: E402
+from repere_suites.sta_lta.inspect_tasks import (  # noqa: E402
     ALL_TASKS,
     fetch_code,
     intent_extraction,

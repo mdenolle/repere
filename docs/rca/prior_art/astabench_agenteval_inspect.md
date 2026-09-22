@@ -1,4 +1,4 @@
-# Prior art for FrugalMind: AstaBench, agent-eval, Inspect AI
+# Prior art for Repère: AstaBench, agent-eval, Inspect AI
 
 Report date: 2026-09-14. Everything below was read from cloned source at the commits listed, from the arXiv PDF text, or from the live Inspect docs. Items I could not confirm are tagged NOT VERIFIED. The caller asked for this as a file at `<scratch>/report_prior_asta_agenteval_inspect.md`; the agent harness blocked the write, so save this message there if the file is needed.
 
@@ -135,20 +135,20 @@ Bundle contents:
 
 Score-time warnings: more than one (solver, solver_args, model, model_args) spec in one directory; more than one (revision, packages); any task args passed by the user ("For fair comparison, do not override the task arg defaults"); missing tasks.
 
-### Design constraints implied for FrugalMind (from AstaBench)
+### Design constraints implied for Repère (from AstaBench)
 
 1. Keep the price map outside the harness that runs the agent, key it by the exact model string the provider returns in the log, and store the map's content hash and source URL/commit in every scored output (`cost_map_url` pattern). Rescore all historical logs whenever the map changes rather than mixing maps.
-2. Give the price map a date dimension. AstaBench has none and had to hand-patch the DeepSeek preview price with a commit link; FrugalMind runs over months on live APIs, so store `(model_id, valid_from, valid_to, input, output, cache_read, cache_write)` and pick the row by run date, with the frozen-snapshot policy applied per leaderboard version.
+2. Give the price map a date dimension. AstaBench has none and had to hand-patch the DeepSeek preview price with a commit link; Repère runs over months on live APIs, so store `(model_id, valid_from, valid_to, input, output, cache_read, cache_write)` and pick the row by run date, with the frozen-snapshot policy applied per leaderboard version.
 3. Treat an unknown model as a hard scoring failure with a named cause, but do not silently null the whole task the way `compute_model_cost` does; emit per-sample `cost=None` plus a `cost_missing_reason` so the Pareto plot can show the point as "no cost" instead of dropping it.
-4. Exclude judge-model tokens from agent cost by span, not by model name (the `ScoreEvent`-span rule), because FrugalMind's RAG judges may share a model with the agent.
+4. Exclude judge-model tokens from agent cost by span, not by model name (the `ScoreEvent`-span rule), because Repère's RAG judges may share a model with the agent.
 5. Enforce the corpus cutoff in three layers like `asta_tools.py`: force and hide the date argument, filter nested results post hoc, and error on direct id fetches past the cutoff. For OOI/EarthScope live data the analogue is a request-time filter on `start`/`end` and on metadata ingestion timestamps, plus a scorer-side re-check of every returned record's date (the `check_verified` pattern).
 6. Put the cutoff in `sample.metadata["insertion_date"]` (or `corpus_snapshot`) so agents running in a sandbox without the harness's tool wrappers can read it; AstaBench added this after the fact for CLI coding agents.
 7. Expect provider-native search to be unrestrictable (only Perplexity accepts a date filter); either ban native search in the "Standard" tooling class or classify it as "Fully custom".
 8. Use two coordinates for every submission, openness and tooling, with the exact four plus three canonical strings above if you want cross-leaderboard comparability, and record "(unpinned)" for any model id without a date stamp.
 9. Separate solve from score with an independently pinned scorer environment, so judge-model retirement or a new price map can be replayed over old `.eval` files without re-running agents.
-10. AstaBench's CI is across samples within one run; FrugalMind's stated goal (variance across repeats) is not covered by this prior art and must be added via Inspect epochs (Section 3).
+10. AstaBench's CI is across samples within one run; Repère's stated goal (variance across repeats) is not covered by this prior art and must be added via Inspect epochs (Section 3).
 
-### What FrugalMind could adopt directly vs must build (AstaBench)
+### What Repère could adopt directly vs must build (AstaBench)
 
 Adopt directly: the suite YAML shape (`name`, `version`, `splits[].tasks[]{name, path, primary_metric, tags}`, `macro_average_weight_adjustments`); the `{scorer}/{metric}` primary-metric convention with a sibling `{scorer}/stderr`; `merge_tools_with_state` (prefer task tools on name clash); `set_insertion_date`; the tool-wrapping trio in `asta_tools.py` as a template for any MCP-served tool; `record_model_usage_with_inspect` for agents that bypass Inspect's model API; the openness/tooling vocabulary; the git-clean check.
 
@@ -168,18 +168,18 @@ Aggregate statistics (`summary.py`): task score = primary metric value from the 
 
 Leaderboard/HF integration: two HF dataset repos (submissions: raw logs + config; results: one JSON per submission under `{config}/{split}/*.json`), the results README carrying a `configs:` block with `features` from `dataset_features.yml` and `data_files` per split, validated at publish time (`Readme.download_and_parse`, `schema_generator.load_dataset_features`; publish exits if the schema or config/split is missing). `lb view --repo-id --config --split [--tag] [--save-dir]` loads via `datasets.load_dataset`, builds display names `agent (model1, model2)` ordered by token share, handles duplicate names (`--dedup index|latest`), appends `(reasoning_effort=...)` when `model_args` says so, derives a `source_url` of the form `origin/tree/commit` from `EvalRevision`, and drops known agents with incomplete usage info (Elicit, SciSpace, You.com).
 
-### Design constraints implied for FrugalMind (from agent-eval)
+### Design constraints implied for Repère (from agent-eval)
 
 1. Keep the harness's scoring package inspect-free at the base level and pin Inspect only in the scorer extra; AstaBench needed this so solvers and scorer could run different Inspect versions.
 2. Write cost per sample as an explicit list next to per-sample usage, never only an aggregate; that is what makes rescoring and per-sample Pareto points possible.
 3. Store per-sample usage per model (`model_usages[sample][model]`) and compress only at publish time; keep the raw form in the submission tree.
 4. Reuse the four-file bundle layout but add `repeats` (or `epochs`) to `EvalConfig` and a `run_index` to each `TaskResult`, since agent-eval assumes one log per task.
 5. Adopt the suffix-tolerant task-name resolution and the "already read" error; both catch mis-assembled bundles early.
-6. Add a stderr source policy: agent-eval assumes each scorer emits a `stderr` metric and warns otherwise; FrugalMind should compute it centrally from per-sample scores read from the log rather than trusting the task author.
+6. Add a stderr source policy: agent-eval assumes each scorer emits a `stderr` metric and warns otherwise; Repère should compute it centrally from per-sample scores read from the log rather than trusting the task author.
 7. Add cost CI at tag and overall level (agent-eval leaves them `None`).
 8. Expect HF `datasets` schema rigidity: dict-valued fields must be JSON strings (`_EVALSPEC_JSON_FIELDS`), and every config version must share one Arrow schema.
 
-### What FrugalMind could adopt directly vs must build (agent-eval)
+### What Repère could adopt directly vs must build (agent-eval)
 
 Adopt directly (pip-installable): `SuiteConfig`/`Split`/`Task` pydantic models; `collect_model_usage` (judge-span exclusion); the token-convention detection in `compute_model_cost`; `process_eval_logs`; `compute_summary_statistics` with tag weights; `_get_frontier_indices`; the HF upload/README-schema tooling if you want an HF-hosted leaderboard.
 
@@ -207,7 +207,7 @@ Scorers return `Score(value, answer, explanation, metadata)`; built-ins `include
 
 Formats: `.eval` (default since v0.3.46; a zip whose members are `header.json`, per-sample JSON entries, `summaries.json`, `reductions.json` and a `_journal/` for in-progress writes, per `log/_recorders/eval.py` lines 111-120) and `.json`. Select with `--log-format eval|json` or `INSPECT_LOG_FORMAT`; `--log-dir` / `INSPECT_LOG_DIR`. API: `read_eval_log(path, header_only=)`, `read_eval_log_samples()` (generator), `read_eval_log_sample()`, `read_eval_log_sample_summaries()`, `list_eval_logs()`, `write_eval_log()`; CLI `inspect log list|dump|convert|export-config|schema`.
 
-Fields that matter for FrugalMind (from `prior/inspect_ai/src/inspect_ai/log/_log.py`):
+Fields that matter for Repère (from `prior/inspect_ai/src/inspect_ai/log/_log.py`):
 
 | Object | Fields |
 |---|---|
@@ -257,9 +257,9 @@ Inspect now has native cost support (present by 0.3.180, 20 Feb 2026, when a `co
 
 `inspect eval-set --log-dir D tasks...`: retries failed tasks (`--retry-attempts` default 10, `--retry-immediate`/`--retry-wait` 30 s exponential, `--retry-connections` 1.0, `--no-retry-cleanup`), reuses completed samples across retries keyed by explicit `Sample.id` (auto ids break under shuffle), is idempotent on re-invocation, and can publish a static viewer with `--bundle-dir`/`--bundle-overwrite`; `eval_set()` returns `(success: bool, logs)`. `inspect view --log-dir --port --host --trusted-origin --unsafe-allow-unauthenticated` shows transcripts, scores, metadata, git revision and "model token usage"; `inspect view bundle --log-dir logs --output-dir logs-www` (supports `hf/` prefix for HF Spaces).
 
-### Design constraints implied for FrugalMind (from Inspect)
+### Design constraints implied for Repère (from Inspect)
 
-1. Use Inspect's native `ModelCost` path for the live per-sample `total_cost` and `cost_limit`, but still recompute cost offline from token counts with FrugalMind's own dated map; the two must agree to the cent, and the offline one is what gets published (Inspect's number depends on whatever map was loaded at run time).
+1. Use Inspect's native `ModelCost` path for the live per-sample `total_cost` and `cost_limit`, but still recompute cost offline from token counts with Repère's own dated map; the two must agree to the cent, and the offline one is what gets published (Inspect's number depends on whatever map was loaded at run time).
 2. Register every model you intend to run with `set_model_info` plus `set_model_cost` before `eval()`, and fail the run if any model lacks a price; `cost_limit` already enforces this.
 3. Record three ids per run: the requested `provider/model` string (`EvalSpec.model`, usage-dict keys), the response-side id from each `ModelEvent.output.model` (differs by provider, see table), and the snapshot date from `get_model_info().snapshot`; refuse "unpinned" ids on the test split.
 4. Use `Epochs(k, ["mean", "collect"])` for repeats so the log carries both the reduced score and the raw per-epoch values; compute between-epoch SD from `EvalLog.reductions` or `scores="unreduced"` metrics. Keep k >= 3 and report `stderr` across samples separately from SD across epochs.
@@ -267,9 +267,9 @@ Inspect now has native cost support (present by 0.3.180, 20 Feb 2026, when a `co
 6. For the OOI/EarthScope coding tasks, do not rely on `network_mode: none`; allow egress but pin it with an `internal: true` network plus an explicit proxy/allow-list container, since the model-provider calls come from the host process anyway. Log every outbound host from the proxy so the harness can prove which endpoints were touched and when.
 7. Put the corpus snapshot id and date cutoff into `Task.metadata` and each `Sample.metadata` (they land in `EvalSpec.metadata` and `EvalSample.metadata`), and stamp `Task.version` whenever the corpus or rubric changes; `EvalSpec.task_version`, `revision.commit`, `revision.dirty` and `packages` are then sufficient provenance.
 8. Store logs as `.eval`, read headers with `header_only=True` for aggregation, stream samples with `read_eval_log_samples()`; asta-bench reports 30-minute scoring passes over multi-GB directories.
-9. Keep FrugalMind's scorer environment pinned to one Inspect version and record it in `packages`; the Inspect API surface (limits, cost, reducers) has moved every release in 2026.
+9. Keep Repère's scorer environment pinned to one Inspect version and record it in `packages`; the Inspect API surface (limits, cost, reducers) has moved every release in 2026.
 
-### What FrugalMind could adopt directly vs must build (Inspect)
+### What Repère could adopt directly vs must build (Inspect)
 
 Adopt directly: Task/Sample/Solver/Scorer/Metric/Reducer framework; `.eval` logging with `EvalSpec.revision` and `packages`; docker sandboxes with compose; `Epochs` with `collect`; `stderr(cluster=)` and `bootstrap_stderr`; `cost_limit` and `--model-cost-config`; `eval-set` retry and bundle; `bridge()` for third-party agent frameworks; `inspect view bundle` for shareable logs.
 
@@ -277,7 +277,7 @@ Must build: the dated price map and its offline recomputation; the response-mode
 
 ## 4. Cross-cutting summary
 
-| FrugalMind requirement | AstaBench/agent-eval | Inspect | Gap for FrugalMind |
+| Repère requirement | AstaBench/agent-eval | Inspect | Gap for Repère |
 |---|---|---|---|
 | Frozen price map | litellm map pinned by commit, undated, keyed by log model string, hash printed, URL stored | `ModelCost` per model, $/M tokens, loaded at run time, no bundled prices | Dated map, offline recompute, response-id keying |
 | Accuracy jointly with cost | per-sample cost lists, task mean cost, Pareto sweep | `total_cost` per event/sample | Aggregate-level CI on cost |

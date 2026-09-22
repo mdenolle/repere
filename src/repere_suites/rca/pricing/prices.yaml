@@ -1,0 +1,190 @@
+# =============================================================================
+# Repère RCA frozen price map
+# =============================================================================
+# Purpose: dollar figures on the leaderboard must stay comparable as provider
+# list prices move. Every run records `price_map_version`; a re-run months
+# later is priced with the SAME map, not the current price. (Pattern from
+# AstaBench's time-invariant cost accounting; see DESIGN.md §6.)
+#
+# Rules
+#   - Rates are USD per 1,000,000 tokens (input, output). Cache-read and
+#     cache-write rates are optional; when absent, cache tokens are priced as
+#     input tokens (conservative).
+#   - `verified: true` requires `source_url`, `source_date`, and a person in
+#     `verified_by`. Entries with `verified: false` are placeholders: the
+#     cost layer refuses to price a run against them unless
+#     `--allow-unverified-prices` is passed, and the leaderboard row is then
+#     flagged `cost_unverified`.
+#   - `pinned_ids` lists the exact model ids the provider accepts for this
+#     card. A run whose model id is not in any card's `pinned_ids` is flagged
+#     `model_unpinned` (see rca/cost.py).
+#   - Local (Ollama / vLLM) models are priced at 0.0 USD by default, as in
+#     config/models.yaml. Alternative cost axes (energy, VRAM floor, tokens,
+#     tool calls) are tracked in repere issues #39-#44 and are NOT in
+#     this file.
+#   - Never edit a rate in place. Bump `version`, add a new dated entry, and
+#     keep the old one; old runs reference the old version.
+#
+# Status of this file: SKELETON. Anthropic rates below come from two written
+# sources that DISAGREE on Opus 4.6 (see that entry). Every non-Anthropic
+# provider is a TODO. Nothing here has been verified by a person.
+# =============================================================================
+
+schema_version: rca.prices.v0.1
+version: 2026-09-14-draft
+currency: USD
+unit: per_million_tokens
+
+providers:
+
+  anthropic:
+    - card_id: claude-fable-5-1
+      pinned_ids: [claude-fable-5-1]
+      input: 10.00
+      output: 50.00
+      cache_read: 0.25
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "Anthropic price table as cached in the claude-api skill on 2026-06-24. TODO(person): confirm on the pricing page and set verified: true."
+      verified_by: null
+      openness: closed-source-api
+
+    - card_id: claude-opus-5
+      pinned_ids: [claude-opus-5]
+      input: 5.00
+      output: 25.00
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "As above."
+      verified_by: null
+      openness: closed-source-api
+
+    - card_id: claude-sonnet-5
+      pinned_ids: [claude-sonnet-5]
+      input: 2.00
+      output: 10.00
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "As above."
+      verified_by: null
+      openness: closed-source-api
+
+    - card_id: claude-sonnet-4-6
+      pinned_ids: [claude-sonnet-4-6]
+      input: 3.00
+      output: 15.00
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "Agrees with config/models.yaml (list_price_date 2026-05-08: 0.003/0.015 per 1k)."
+      verified_by: null
+      openness: closed-source-api
+
+    - card_id: claude-opus-4-6
+      pinned_ids: [claude-opus-4-6]
+      input: 5.00
+      output: 25.00
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "DISCREPANCY: config/models.yaml (2026-05-08) records 0.015/0.075 per 1k = 15/75 per M. The 2026-06-24 table says 5/25. TODO(person): resolve; a 3x error here would move every Opus point on the Pareto plot."
+      verified_by: null
+      openness: closed-source-api
+
+    - card_id: claude-haiku-4-5
+      pinned_ids: [claude-haiku-4-5, claude-haiku-4-5-20251001]
+      input: 1.00
+      output: 5.00
+      verified: false
+      source_url: "https://docs.anthropic.com/en/docs/about-claude/pricing"
+      source_date: "2026-06-24"
+      source_note: "Agrees with config/models.yaml (2026-05-08). The dated id claude-haiku-4-5-20251001 is the pinned snapshot; prefer it in run configs."
+      verified_by: null
+      openness: closed-source-api
+
+  openai:
+    - card_id: TODO-openai-frontier
+      pinned_ids: []
+      input: null
+      output: null
+      verified: false
+      source_url: "https://openai.com/api/pricing/"
+      source_date: null
+      source_note: "TODO(person): pick the exact dated snapshot id(s) to sweep (the board says 'OpenAI'); record input/output/cached rates and the date."
+      verified_by: null
+      openness: closed-source-api
+
+  google:
+    - card_id: TODO-gemini
+      pinned_ids: []
+      input: null
+      output: null
+      verified: false
+      source_url: "https://ai.google.dev/pricing"
+      source_date: null
+      source_note: "TODO(person): aRCADA already calls a Gemini model behind its Cloudflare Worker; use that exact model id as the first pinned id (see docs/rca/prior_art/arcada.md for the id read from code)."
+      verified_by: null
+      openness: closed-source-api
+
+  allenai:
+    - card_id: TODO-olmo
+      pinned_ids: []
+      input: 0.0
+      output: 0.0
+      verified: false
+      source_url: null
+      source_date: null
+      source_note: "TODO(person): decide whether OLMo runs locally (0 USD, record hardware) or via a hosted endpoint (record rates). config/models.yaml has olmo2:7b via Ollama at 0 USD."
+      verified_by: null
+      openness: open-source-open-weight
+
+  alibaba:
+    - card_id: TODO-qwen
+      pinned_ids: []
+      input: null
+      output: null
+      verified: false
+      source_url: null
+      source_date: null
+      source_note: "TODO(person): local (Ollama qwen2.5:7b / qwen2.5:14b already in config/models.yaml at 0 USD) or hosted; if hosted, record the endpoint and rates."
+      verified_by: null
+      openness: open-source-open-weight
+
+  moonshot:
+    - card_id: TODO-kimi
+      pinned_ids: []
+      input: null
+      output: null
+      verified: false
+      source_url: null
+      source_date: null
+      source_note: "TODO(person): Kimi is on the board's model row; no entry exists anywhere in repere. Choose endpoint (Moonshot API vs an OpenAI-compatible host) and record rates."
+      verified_by: null
+      openness: open-source-open-weight
+
+  mistral:
+    - card_id: TODO-mistral
+      pinned_ids: []
+      input: null
+      output: null
+      verified: false
+      source_url: "https://mistral.ai/pricing"
+      source_date: null
+      source_note: "TODO(person): local mistral:7b (0 USD, in config/models.yaml) or the hosted API; record rates."
+      verified_by: null
+      openness: open-source-open-weight
+
+  local:
+    - card_id: ollama-any
+      pinned_ids: []
+      input: 0.0
+      output: 0.0
+      verified: true
+      source_url: null
+      source_date: "2026-09-14"
+      source_note: "Marginal USD cost of a local call is zero by the convention in config/models.yaml. Runs must still record the model tag AND the Ollama digest (see cost.py: local models are 'pinned' only when a digest is recorded)."
+      verified_by: "convention (config/models.yaml header)"
+      openness: open-source-open-weight

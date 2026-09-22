@@ -1,7 +1,7 @@
 # Annotating a paper for the research-workflow eval ("agentify the paper")
 
 This is the guide for adding one of your papers to the Family-3 evaluation. It
-takes about **20 minutes per paper** and it is the one eval in FrugalMind that
+takes about **20 minutes per paper** and it is the one eval in Repère that
 **only a working research group can build** — because the ground truth is *what
 you actually did*, and nobody else knows it.
 
@@ -16,7 +16,7 @@ right (edge F1), and refrain from inventing methodology the paper never performe
 ## Why the vocabulary is closed
 
 You annotate using the fixed operation list in
-[`ontology.yaml`](../src/frugalmind_suites/paper_workflow/ontology.yaml).
+[`ontology.yaml`](../src/repere_suites/paper_workflow/ontology.yaml).
 
 A free-text plan cannot be scored: *"compute the correlations"* and
 *"cross-correlate the noise"* are the same step written two ways, and no metric

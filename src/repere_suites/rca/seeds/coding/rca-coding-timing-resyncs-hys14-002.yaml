@@ -1,0 +1,95 @@
+# TEMPLATE. Authored by an assistant as a skeleton for co-authors to verify or
+# replace. T1 item on resync (trigger) detection. The reference intervals are
+# read at scoring time from chronfix's trigger_periods.csv; the scorer for
+# interval matching is NOT implemented yet (see todos).
+schema_version: rca.golden.v0.1
+id: rca-coding-timing-resyncs-hys14-002
+family: coding
+group: 1c_calibration_timing
+tier: T1_physics
+shape: B_tool
+status: template
+difficulty: hard
+tags: [clock-drift, resync, timing, event-detection, chronfix]
+
+prompt: |
+  Between 2022-08-10 and 2022-12-31 UTC the clock of the OOI cabled
+  ocean-bottom station HYS14 (network OO) was reset several times. Using
+  the fdsn_get_waveforms tool to obtain the 8 Hz MHZ channel for HYS14
+  and for the reference station HYS12, find the UTC times at which the
+  HYS14 clock jumped by more than 1 s between consecutive hours. Report
+  them, to the hour, as a JSON list via record(reset_times_utc=[...]).
+  If you find none, report an empty list.
+
+provenance:
+  author: assistant-template
+  author_role: skeleton
+  created: 2026-09-14
+  source: >-
+    coszo-hub/chronfix @486f05b examples/HYS14/trigger_periods.csv: 32
+    trigger intervals for 2022-08-10 to 2026-05-01, defined as consecutive
+    retained hourly delta_t samples differing by more than 1.0 s, merged when
+    touching, with start_index/end_index into hour_times.npy (chronfix
+    "Correction Method" section 5, trigger detection). The first five
+    intervals fall on 2022-08-20, 2022-10-24 to 11-08, 2022-11-09 to 11-10,
+    2022-11-16, 2022-11-29 to 12-02 (indices mapped by the reader on
+    2026-09-14). Trigger timing resolution is stated as ~1 hour.
+  source_ref: "https://github.com/coszo-hub/chronfix/blob/486f05bcdaad26a1855ee90c987c41b7d36b835a/examples/HYS14/trigger_periods.csv"
+  source_kind: chronfix_repo
+  notes: >-
+    The prompt's 1 s threshold matches chronfix's own trigger definition on
+    purpose so that the reference is well-defined. Data volume: ~145 days x
+    2 stations of 8 Hz MHZ (about 1.2-1.6 MB per station-day as MiniSEED,
+    ~400 MB total); this is a long-running item and needs the replay
+    cassette or a pre-fetched private bundle.
+
+holdout:
+  split: test
+  visibility: private
+  construction: none
+  leakage_note: >-
+    As for the offset item, the public chronfix example would give the
+    answer by lookup; this item is therefore on the private test split and
+    its cassette is held privately. A public validation twin should use a
+    window after 2026-05-01 or another station once a reference exists.
+  canary: null
+
+cutoff_date: null
+
+tools:
+  allowlist: [python_session, fdsn_get_waveforms, record_submit]
+
+inputs:
+  files: []
+
+task:
+  deliverable: artifact
+  artifact_keys: [reset_times_utc]
+  required_calls: ["record("]
+
+sandbox:
+  image: ghcr.io/mdenolle/repere-sandbox:v0.4.0
+  image_digest: TODO
+  network: replay
+  allowlist: [service.earthscope.org, service.iris.edu]
+  cassette: private/cassettes/fdsn_OO.HYS12-HYS14_MHZ_2022-08-10_2022-12-31.yaml
+  timeout_s: 3600
+  memory_mb: 4096
+
+scoring:
+  method: oracle_compare
+  metrics: [f1]
+  oracle:
+    solver: "repere_suites.rca.oracles.clock:chronfix_triggers"
+    solver_ref: "coszo-hub/chronfix@486f05b"
+    args: {}
+    independent_measurement: "chronfix trigger_periods.csv (see provenance); same caveat as the offset item."
+    tolerance: {abs: 2.0, units: hours}
+  config:
+    match_rule: "a predicted time matches an interval if it falls within [start - tol, end + tol]; F1 over intervals in the window"
+
+todos:
+  - "Harness: implement interval-F1 in the T1 scorer (currently only per-key numeric comparison exists) and filter the oracle's intervals to the prompt's window."
+  - "Co-author (timing): confirm 2 hours is the right matching tolerance given chronfix's ~1 hour trigger resolution and its habit of merging touching intervals."
+  - "Co-author: decide whether the 14-day interval 2022-10-24 to 11-08 (max jump 32.9 s, two merged steps) counts as one reset or two for scoring."
+  - "Harness: record the private cassette (both stations, 2022-08-10 to 2022-12-31, MHZ) and decide where it is hosted (Mode B, docs/golden_data_provisioning.md)."

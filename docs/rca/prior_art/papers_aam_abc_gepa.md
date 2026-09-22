@@ -1,4 +1,4 @@
-# Design constraints for FrugalMind from three sources: AI Agents That Matter, the Agentic Benchmark Checklist, and GEPA
+# Design constraints for Repère from three sources: AI Agents That Matter, the Agentic Benchmark Checklist, and GEPA
 
 Prepared 2026-09-14. Everything below was read from the arXiv PDFs (downloaded today, text extracted with `pdftotext`) and from a shallow clone of `gepa-ai/gepa` at commit `15ee314` (2026-09-11). Nothing was rerun; no experiment in any paper was reproduced. Page numbers refer to the arXiv PDF of the version stated. Items I could not confirm in the raw text are marked NOT VERIFIED.
 
@@ -94,13 +94,13 @@ STeP case (5.1, p.9): top WebArena agent at 35.8% hardcodes per-task policies (a
 
 Recommendation: an agent-evaluation framework analogous to HELM / LM Evaluation Harness (p.11).
 
-### 1.8 Design constraints implied for FrugalMind (from AAM)
+### 1.8 Design constraints implied for Repère (from AAM)
 
-- Every scored run records per task: dollars, input tokens, output tokens, model calls, wall time, and the price table used, so cost can be recomputed later (Section 4). FrugalMind is a downstream evaluation, so dollars are the construct; store proxies too.
+- Every scored run records per task: dollars, input tokens, output tokens, model calls, wall time, and the price table used, so cost can be recomputed later (Section 4). Repère is a downstream evaluation, so dollars are the construct; store proxies too.
 - Report accuracy-cost Pareto frontiers per tier; report optimization (fixed) cost separately from inference (variable) cost, and state the breakeven task count for any GEPA-optimized prompt (Section 3).
 - Ship the trivial baselines as harness entries and require comparison to them: zero-shot single call; retry-until-checker-passes (T2's deterministic checker makes this exploit directly available, so retries must be counted in cost); warming; escalation across a model ladder; plus do-nothing and empty-answer agents (also needed for ABC R.13).
 - Declare intended generality per task family and build the holdout accordingly: OOI coding agent is task-specific with drift as the main shift, so hold out OOD samples (other instruments, sites, time windows, changed endpoint versions); literature-RAG is closer to domain-general, so hold out whole task types and keep the set secret; metadata-RAG is task-specific, hold out OOD samples (new sensor families, vocabulary).
-- Run each configuration at least five times with different seeds and report min/max or bootstrap CIs; FrugalMind is small enough to afford it.
+- Run each configuration at least five times with different seeds and report min/max or bootstrap CIs; Repère is small enough to afford it.
 - Provide the evaluation script yourself, agent-agnostic, no task removal, pinned dependencies; log every action and model call so misgraded tasks can be audited.
 - Live-network tasks need explicit rate-limit budgets, randomized task order, and an order-invariance check.
 
@@ -117,9 +117,9 @@ Built from 17 benchmarks used by major labs (Table 3), prior pitfall papers, and
 
 ### 2.2 The full checklist (43 items: 10 T + 20 O + 13 R)
 
-Requirement text is the paper's wording, lightly shortened; ids are the paper's. The evidence column is mine, for the FrugalMind audit table.
+Requirement text is the paper's wording, lightly shortened; ids are the paper's. The evidence column is mine, for the Repère audit table.
 
-| id | group | requirement (paraphrase) | what evidence would satisfy it for FrugalMind |
+| id | group | requirement (paraphrase) | what evidence would satisfy it for Repère |
 |---|---|---|---|
 | T.1 | Task validity / Tool | Versions of all tools (e.g., Python) are clearly specified. | Lockfile plus container digest per tier; versions stated in the task prompt where the agent installs/imports packages. |
 | T.2 | Task validity / Tool | Required API tools are consistently accessible during evaluation. | Pre-flight health check of every OOI endpoint; rate-limit budget per run; HTTP status log per call. |
@@ -156,7 +156,7 @@ Requirement text is the paper's wording, lightly shortened; ids are the paper's.
 | R.3 | Reporting / transparency | Measures against data contamination at release, such as a private held-out test set. | Secret test split; date-bounded corpus; canary strings. |
 | R.4 | Reporting / transparency | Measures or plans to update challenges over time to avoid overfitting. | Written refresh schedule (new windows, instruments, rolling corpus date). |
 | R.5 | Reporting / transparency | States the relationship between capabilities evaluated and constructs/outcomes measured. | One paragraph per tier: capability -> construct -> metric. |
-| R.6 | Reporting / transparency | States the evaluation subject (a model or an agent framework). | Statement that FrugalMind evaluates agent systems (model + scaffold + prompt) at a stated cost. |
+| R.6 | Reporting / transparency | States the evaluation subject (a model or an agent framework). | Statement that Repère evaluates agent systems (model + scaffold + prompt) at a stated cost. |
 | R.7 | Reporting / flaw mitigation | Describes steps to prevent, identify, correct flaws. | Section listing the ABC audit and fixes. |
 | R.8 | Reporting / flaw mitigation | Qualitative discussion of unavoidable flaws. | Known-limitations section (judge noise, endpoint drift). |
 | R.9 | Reporting / flaw mitigation | Quantitative analysis of unavoidable flaws (e.g., ground-truth noise). | Judge-noise bound from the pilot; drift rate from fixture refreshes; annotator disagreement rate. |
@@ -190,7 +190,7 @@ Label notes: Figure 3 prints the last item "O.I.1"; the text (p.7) calls it O.i.
 
 Overall: evaluation issues cause "under- or overestimation of agents' performance by up to 100% in relative terms" (abstract).
 
-### 2.5 Issues most relevant to FrugalMind
+### 2.5 Issues most relevant to Repère
 
 (a) Live network calls. Section 4.1 (p.4-5): manage availability and rate limits (T.2); detect API interruptions and terminate "to keep benchmark users informed" (T.3); environment "fully reproducible and frozen at the time of benchmark release" (T.6); "Relying on dynamic resources, such as continually updated external websites, is not recommended." Evidence: OSWorld drift broke 13/46 tasks and underestimated the best agent by 28 points; WebArena rate limits caused spurious failures. Also T.4 (no cross-task residual state such as a shared HTTP cache), O.f.2, R.4, R.9.
 
@@ -198,7 +198,7 @@ Overall: evaluation issues cause "under- or overestimation of agents' performanc
 
 (c) Oracle / reference solution. T.7, T.8, T.9, T.5, T.10. The CVE-Bench case shows the oracle's second use: running it repeatedly through the harness surfaced a bug because "agents consistently passed the evaluation for this attack" (p.9). Cybench has an oracle for all tasks; SWE-Lancer/SWE-bench count gold patches as oracles; BIRD lacks one. For reference tests: O.d.1, O.d.2.
 
-### 2.6 Design constraints implied for FrugalMind (from ABC)
+### 2.6 Design constraints implied for Repère (from ABC)
 
 - Treat T.6 as the central tension: the coding agent's live OOI fetches violate T.6 by construction. Two tracks: a frozen track replaying recorded, checksummed, dated HTTP responses as the scored default; a live track, explicitly labeled, with T.2 pre-flight checks, T.3 abort-on-failure, and re-validation against the frozen manifest so drift is measured (R.9), not silently scored.
 - Run the T1/T2 oracle through the full harness in CI before every release and after every fixture refresh; require 100% (T.8, T.9). Run a deliberately cheating agent (reads reference paths, overwrites checker, returns everything) and require 0% (T.5, T.10).
@@ -279,10 +279,10 @@ Split D_train into D_feedback and D_pareto. Pool starts with the seed. Each iter
 - Code (`gepa_utils.select_program_candidate_from_pareto_front`, `strategies/candidate_selector.py`): same procedure; `frontier_type` "instance" (default), "objective", "hybrid", "cartesian". Alternatives: `current_best`, `epsilon_greedy` (0.1), `top_k_pareto` (k=5).
 - Consequence: frontier diversity equals valset diversity; stratify the valset across task families.
 
-### 3.9 Design constraints implied for FrugalMind (from GEPA)
+### 3.9 Design constraints implied for Repère (from GEPA)
 
 - Every task returns a per-example float in [0,1] plus a feedback string. Per tier: T1, signed residual vs oracle drift in physical units, tolerance, units/sign check; T2, checker diff, stdout/stderr, exception text, HTTP statuses; T3, gold references retrieved, missed, date-bound violations; T4, failed rubric items with judge rationale, flagged noisy. Prefer graded scores (fraction of assertions, fraction of references) over pass/fail so 3-example minibatches discriminate.
-- Three splits: GEPA-train (reflection), GEPA-val (Pareto and selection, FAQ-sized, stratified), and a FrugalMind test tier the optimizer never sees. Report val-test gap per optimized prompt. Test tasks must differ in the answers themselves (instruments, sites, time windows, corpus questions) because gold answers flow into the reflection LM.
+- Three splits: GEPA-train (reflection), GEPA-val (Pareto and selection, FAQ-sized, stratified), and a Repère test tier the optimizer never sees. Report val-test gap per optimized prompt. Test tasks must differ in the answers themselves (instruments, sites, time windows, corpus questions) because gold answers flow into the reflection LM.
 - Audit optimized prompts before scoring: grep for gold values, instrument ids, endpoint strings, citation ids from train/val; any hit is an AAM shortcut and an ABC T.5 leak.
 - Keep GEPA loops off the live network: optimize only on the frozen replay track (T.6, O.f.2); live nondeterminism breaks strict-improvement acceptance on 3-example minibatches.
 - Budget: `max_metric_calls` ~15-30 x |val|; track task-LM calls and dollars inside the adapter; set `max_reflection_cost`; report `num_metric_calls` honestly when caching. Treat optimization spend as AAM fixed cost and the longer optimized prompt as added variable cost.
@@ -292,7 +292,7 @@ Split D_train into D_feedback and D_pareto. Pool starts with the seed. Each iter
 
 ---
 
-## 4. Cross-cutting constraints by FrugalMind tier
+## 4. Cross-cutting constraints by Repère tier
 
 | Tier | Primary ABC items | AAM items | GEPA score / feedback |
 |---|---|---|---|

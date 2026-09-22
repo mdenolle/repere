@@ -31,15 +31,15 @@ pytest.importorskip("inspect_ai")
 
 from inspect_ai.tool import Tool  # noqa: E402
 
-from frugalmind.agents import stalta_tools_dict  # noqa: E402
-from frugalmind.agents.react import stalta_react  # noqa: E402
-from frugalmind.agents.tools import (  # noqa: E402
+from repere.agents import stalta_tools_dict  # noqa: E402
+from repere.agents.react import stalta_react  # noqa: E402
+from repere.agents.tools import (  # noqa: E402
     all_tools,
     fdsn_get_waveforms,
     python_session,
     record_submit,
 )
-from frugalmind.agents.tools import stalta_tools_dict as runtime_tools_dict  # noqa: E402
+from repere.agents.tools import stalta_tools_dict as runtime_tools_dict  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # 1. Descriptor consistency: static (__init__) and runtime (tools.py) agree
@@ -162,7 +162,7 @@ def test_fdsn_get_waveforms_returns_structured_error_when_obspy_missing(monkeypa
 
 def test_stalta_react_returns_an_inspect_solver():
     """The factory must produce a real Inspect Solver — that's what
-    `inspect eval --solver src/frugalmind/agents/react.py@stalta_react` expects."""
+    `inspect eval --solver src/repere/agents/react.py@stalta_react` expects."""
     solver = stalta_react()
     # Like Tool, Solver in inspect_ai is typically a Protocol/callable alias.
     # We assert the weakest contract that matters at the CLI boundary:

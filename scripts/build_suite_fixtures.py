@@ -29,13 +29,13 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
-from frugalmind_suites.sta_lta import (  # noqa: E402
+from repere_suites.sta_lta import (  # noqa: E402
     STALTAFetchCodeSuite,
     STALTAIntentExtractionSuite,
     STALTAReportSuite,
     STALTATriggerCodeSuite,
 )
-from frugalmind_suites.sta_lta.items import VALID_SPLITS, _load_events  # noqa: E402
+from repere_suites.sta_lta.items import VALID_SPLITS, _load_events  # noqa: E402
 
 
 SUITE_FACTORIES: dict[str, type] = {

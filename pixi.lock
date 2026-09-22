@@ -5543,7 +5543,7 @@ packages:
   size: 433413
   timestamp: 1764777166076
 - pypi: ./
-  name: frugalmind
+  name: repere
   requires_dist:
   - pyyaml>=6.0
   - pytest>=8.0 ; extra == 'test'

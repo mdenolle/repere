@@ -50,7 +50,7 @@ These are links between tools or subfields that the literature has not spelled o
 
 11. **Exploration and earthquake FWI dialects never meet.** Devito/JUDI (SEG-Y, regular grids, AD gradients) and SeisFlows/SPECFEM (miniSEED, meshes, file-based adjoints) solve the same math with disjoint communities, formats, and vocabularies. A translation layer — or evals that pose the same inversion in both dialects — would expose which differences are physics and which are sociology.
 
-12. **Agent prior art splits along exactly this fault line.** TRACE (Shanghai AI Lab + collaborators, 2026) is observational: raw waveforms → catalog → mechanistic interpretation, with an internal multi-level benchmark. SPECFEM-MCP (Harbin/PKU, Dec 2025) is modeling: SPECFEM as MCP tools, no evals. No system bridges observation and simulation — the loop in item 1 is also the open competitive frontier, and it maps directly onto FrugalMind's orchestration family.
+12. **Agent prior art splits along exactly this fault line.** TRACE (Shanghai AI Lab + collaborators, 2026) is observational: raw waveforms → catalog → mechanistic interpretation, with an internal multi-level benchmark. SPECFEM-MCP (Harbin/PKU, Dec 2025) is modeling: SPECFEM as MCP tools, no evals. No system bridges observation and simulation — the loop in item 1 is also the open competitive frontier, and it maps directly onto Repère's orchestration family.
 
 ## Gap summary (ranked by value ÷ effort)
 

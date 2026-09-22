@@ -1,7 +1,7 @@
 # Literature / RAG / multimodal scoring (Family 1)
 
 Status: proposed (Phase 4 candidate). Reference implementation:
-`src/frugalmind_suites/lit_rag/`.
+`src/repere_suites/lit_rag/`.
 
 ## Why
 

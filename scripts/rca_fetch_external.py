@@ -36,7 +36,7 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEST = ROOT / "src" / "frugalmind_suites" / "rca" / "data" / "external"
+DEST = ROOT / "src" / "repere_suites" / "rca" / "data" / "external"
 
 GIT_GROUPS = {
     "chronfix": {

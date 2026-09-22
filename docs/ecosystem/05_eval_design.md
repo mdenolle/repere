@@ -1,6 +1,6 @@
 # Multi-difficulty synthetic evaluations for seismology agents
 
-Part 5 of the ecosystem analysis. This extends FrugalMind's existing design (parametric truth set, negative-case discipline, scorability spectrum T0→T4, private goldens) from the STA/LTA reference suite to the full ecosystem. The organizing idea: **the modeling stack is the eval generator for the observational stack.** Simulators produce waveforms with exact ground truth (origin, mechanism, arrivals, structure); the observational chain must recover it; scoring is deterministic (T0) almost everywhere.
+Part 5 of the ecosystem analysis. This extends Repère's existing design (parametric truth set, negative-case discipline, scorability spectrum T0→T4, private goldens) from the STA/LTA reference suite to the full ecosystem. The organizing idea: **the modeling stack is the eval generator for the observational stack.** Simulators produce waveforms with exact ground truth (origin, mechanism, arrivals, structure); the observational chain must recover it; scoring is deterministic (T0) almost everywhere.
 
 ## Why synthetic, why parametric
 

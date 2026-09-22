@@ -1,4 +1,4 @@
-# Agentic Benchmark Checklist audit of FrugalMind-RCA
+# Agentic Benchmark Checklist audit of Repère-RCA
 
 Checklist: Zhu et al., "Establishing best practices for building rigorous
 agentic benchmarks", arXiv:2507.02825 v5 (43 items: 10 task validity, 20
@@ -20,13 +20,13 @@ live run. Status vocabulary: **pass** (in place and exercised today),
 | T.1 | tool versions specified | partial | sandbox image pins python 3.10, numpy 1.26.4, obspy 1.4.1 (`docker/sandbox.Dockerfile`); `sandbox.image_digest` is TODO on every record; host backend is unpinned |
 | T.2 | required APIs consistently accessible | fail | no pre-flight health check of EarthScope, OOI M2M or PI portals; availability service returned "Service Unavailable" during this session, which shows why one is needed |
 | T.3 | evaluation terminates or handles API outages | partial | void taxonomy implemented in `inspect_tasks.py` (voids excluded from aggregates, counted); network-related voids exist for policy reasons, not yet for live outages |
-| T.4 | residual state cleared between runs | partial | frugalmind sandbox creates a fresh tmpdir per snippet; input files are staged per run; no shared HTTP cache; not yet tested for cross-sample leakage with the Docker backend |
+| T.4 | residual state cleared between runs | partial | repere sandbox creates a fresh tmpdir per snippet; input files are staged per run; no shared HTTP cache; not yet tested for cross-sample leakage with the Docker backend |
 | T.5 | agent isolated from ground truth | partial | `public_view` strips reference outputs, citations, checker `expected` and oracle args from sample metadata (tested); T1 public reference (chronfix file) is downloadable in principle, mitigated by `network: none` and by keeping test items on uncovered windows (Q7) |
 | T.6 | setup does not change over time | partial | design chooses replay as the scored default (DESIGN.md §5.3) and voids `replay` records until the proxy exists; fixtures and corpora are hash-pinned; live track labelled |
 | T.7 | ground truth verified for correctness | fail | every record is a template; `status: verified` requires a second person and `provenance.verification` (R10) but none exists yet |
 | T.8 | each task verified solvable | partial | the QC control has a known-good self-test that scores 1.0 (verified today); T1 offset item's self-test solution is a TODO; 14 other records unverified |
 | T.9 | oracle solver included | partial | T1 oracle (`oracles/clock.py`) implemented and checked (offset at 2023-03-15T12 = -2.27 s, 32 triggers); T2 self-test answers for one record; none for T3/T4 |
-| T.10 | no exploitable shortcuts | partial | checker modules restricted to `frugalmind_suites.rca`; BM25-only baseline designed as the leakage detector (not yet run); no cheating-agent CI run yet |
+| T.10 | no exploitable shortcuts | partial | checker modules restricted to `repere_suites.rca`; BM25-only baseline designed as the leakage detector (not yet run); no cheating-agent CI run yet |
 
 Part score: 0 pass of 10 applicable (all partial or fail).
 
@@ -61,7 +61,7 @@ Part score: 3 pass of 17 applicable.
 
 | id | requirement | status | evidence / what is missing |
 |---|---|---|---|
-| R.1 | open-sourced | partial | frugalmind is a private repository; the design plans a public release with the validation split |
+| R.1 | open-sourced | partial | repere is a private repository; the design plans a public release with the validation split |
 | R.2 | open evaluation harness | partial | one-command run exists (`run.py`); private today |
 | R.3 | contamination measures | partial | test split private (R08), canary field, cutoff dates, corpus snapshots; no canary values assigned yet |
 | R.4 | plan to update challenges | partial | DESIGN.md §5.4 binds a leaderboard to a suite version and names re-recording; no written refresh schedule |

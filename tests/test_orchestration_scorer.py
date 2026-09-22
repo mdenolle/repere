@@ -6,9 +6,9 @@ import json
 
 import pytest
 
-from frugalmind import TaskKind
-from frugalmind_suites.orchestration.items import OrchestrationSuite
-from frugalmind_suites.orchestration.scorers import (
+from repere import TaskKind
+from repere_suites.orchestration.items import OrchestrationSuite
+from repere_suites.orchestration.scorers import (
     make_scorer_from_spec,
     make_trajectory_dag_scorer,
     make_trajectory_policy_scorer,

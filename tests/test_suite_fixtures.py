@@ -14,13 +14,13 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind_suites.sta_lta import (
+from repere_suites.sta_lta import (
     STALTAFetchCodeSuite,
     STALTAIntentExtractionSuite,
     STALTAReportSuite,
     STALTATriggerCodeSuite,
 )
-from frugalmind_suites.sta_lta.items import VALID_SPLITS
+from repere_suites.sta_lta.items import VALID_SPLITS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -56,7 +56,7 @@ def _load_fixture(suite_id: str, split: str) -> dict:
 )
 def test_live_suite_matches_committed_fixture(suite_id, split):
     """The live suite at this split must match the per-(suite, split) fixture."""
-    from frugalmind_suites.sta_lta.items import _load_events
+    from repere_suites.sta_lta.items import _load_events
 
     suite = SUITE_FACTORIES[suite_id](split=split)
     fixture = _load_fixture(suite_id, split)

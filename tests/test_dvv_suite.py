@@ -5,10 +5,10 @@ import json
 
 import pytest
 
-pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install frugalmind[dvv])")
+pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install repere[dvv])")
 
-import frugalmind as F
-from frugalmind_suites import dvv
+import repere as F
+from repere_suites import dvv
 
 
 def test_two_suites_with_expected_identity():
@@ -74,7 +74,7 @@ def test_unknown_scorer_name_raises():
 def test_dvv_suites_are_registered_in_cli():
     # With codameter importable, the export-suite CLI must discover the dv/v
     # suites so `--suite codameter.*` resolves.
-    from frugalmind.cli import _all_registered_suites, _resolve_suites
+    from repere.cli import _all_registered_suites, _resolve_suites
 
     keys = {f"{s.dataset_id}.{s.suite_id}" for s in _all_registered_suites()}
     assert "codameter.param_recommendation" in keys
@@ -84,7 +84,7 @@ def test_dvv_suites_are_registered_in_cli():
 
 
 def test_export_suite_writes_jsonl(tmp_path):
-    from frugalmind.export import export_suites
+    from repere.export import export_suites
 
     # split="all" pins the full corpus: without it the suite would honour
     # FM_DVV_SPLIT from the environment and the row count would no longer be

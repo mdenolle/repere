@@ -1,4 +1,4 @@
-name: FrugalMind evals
+name: Repère evals
 
 on:
   workflow_dispatch:

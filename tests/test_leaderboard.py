@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from frugalmind.leaderboard import build_leaderboard, export_leaderboard
+from repere.leaderboard import build_leaderboard, export_leaderboard
 
 
 def test_build_leaderboard_ranks_by_score_then_cost():

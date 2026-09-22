@@ -1,5 +1,5 @@
 # =============================================================================
-# FrugalMind model registry
+# Repère model registry
 # =============================================================================
 # Tier definitions for cost-aware routing. Cost rates are USD per 1K tokens.
 # Local models are priced at 0.0 because the marginal monetary cost of an

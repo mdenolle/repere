@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from frugalmind import Generation
-from frugalmind.telemetry import (
+from repere import Generation
+from repere.telemetry import (
     TELEMETRY_SCHEMA_VERSION,
     JSONLTelemetry,
     _normalise_v1_to_v2,
@@ -294,7 +294,7 @@ def test_normalise_v1_leaves_run_start_and_run_end_intact():
 def test_read_jsonl_normalises_frozen_v1_fixture():
     """End-to-end regression test against a committed v1 log fixture —
     if read_jsonl drifts away from the v1 shim, this test catches it
-    loudly. The fixture mirrors the shape produced by FrugalMind 0.3.0."""
+    loudly. The fixture mirrors the shape produced by Repère 0.3.0."""
     records = read_jsonl(V1_FIXTURE)
     # The fixture has 1 run_start + 2 generation records + 1 run_end.
     assert [r["type"] for r in records] == [

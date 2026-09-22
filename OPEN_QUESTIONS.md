@@ -1,4 +1,4 @@
-# Open questions for FrugalMind-RCA
+# Open questions for Repère-RCA
 
 Everything the design needed from Marine and could not resolve from the
 repositories. Each question says what was assumed in the meantime, so the
@@ -9,7 +9,7 @@ next steps in DESIGN.md §8.
 
 The lab's GAIA and the GAIA benchmark (Mialon et al., 2023) collide, and the
 private repo `mdenolle/gaia-eval` collides with benchmark tooling names.
-Proposal: always "GAIA HazLab" in prose; "FrugalMind-RCA" for this suite;
+Proposal: always "GAIA HazLab" in prose; "Repère-RCA" for this suite;
 rename `gaia-eval` to `hazeval` before anything public references it.
 Assumed: the proposal. Alternative: keep "GAIA" and add a footnote at first
 mention.
@@ -56,7 +56,7 @@ Two written sources disagree on Opus 4.6 (15/75 USD per million in
 Every card in `pricing/prices.yaml` is `verified: false`. Needed: a person to
 verify each rate against the provider page on a stated date and set
 `verified_by`. Also: the cost convention for local models (0 USD, or an
-energy or hardware-floor axis per frugalmind issues #39 to #44).
+energy or hardware-floor axis per repere issues #39 to #44).
 
 ## Q7. The T1 reference and tolerance
 
@@ -89,7 +89,7 @@ source instead.
 
 ## Q10. Where the hidden split lives
 
-frugalmind documents two modes (derive from a secret; gated host with pinned
+repere documents two modes (derive from a secret; gated host with pinned
 revision). RCA private items are real data and cassettes, so Mode B.
 Needed: the host (gated HuggingFace dataset as planned in P3.3, or a UW
 share) and who holds the token.
@@ -111,11 +111,11 @@ is aRCADA itself or a new agent.
 ## Q13. Harbor
 
 The design borrows Harbor's task format and egress design without adopting
-its runtime. If the group wants FrugalMind-RCA tasks submitted to a Harbor
+its runtime. If the group wants Repère-RCA tasks submitted to a Harbor
 Hub dataset or run under Harbor's sandbox backends, the exporter in
 DESIGN.md §5.1 moves up the list. Needed: yes or no for now.
 
-## Q14. Existing frugalmind documentation drift found on the way
+## Q14. Existing repere documentation drift found on the way
 
 Not questions, but decisions to confirm: README says a 13-model registry
 (the file has 15 cards); the documented `inspect eval <file>@task` path

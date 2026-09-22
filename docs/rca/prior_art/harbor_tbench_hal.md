@@ -1,4 +1,4 @@
-# Prior art for FrugalMind: Harbor, Terminal-Bench 2.0 artifact pattern, HAL
+# Prior art for Repère: Harbor, Terminal-Bench 2.0 artifact pattern, HAL
 
 Date of survey: 2026-09-14. Everything below was read from cloned repositories, the arXiv PDF (text extracted with `pdftotext`), the GitHub API, the HuggingFace API, and the tbench.ai and hal.cs.princeton.edu sites. Nothing was rerun. Items I could not confirm are marked NOT VERIFIED.
 
@@ -39,7 +39,7 @@ Identifier corrections for the user's notes:
 | Telemetry | on by default (PostHog; job-level token usage, cost, reward); `HARBOR_TELEMETRY=off` | `docs-mintlify/telemetry/telemetry.mdx` |
 | Dependencies of note | `litellm>=1.92.0`, `pydantic>=2.12`, `supabase>=2.28`, `fastapi`, `dirhash` | `pyproject.toml` |
 
-Maintenance is intense: `CHANGELOG.md` is 50 KB and carries "Breaking" entries in the unreleased section (prompt templates now Jinja-sandboxed; built-in agents must declare `options_model`; judge TOMLs validated by Pydantic). A FrugalMind paper artifact must pin the exact Harbor version (the 4.0 leaderboard tooling itself only pins `harbor[modal]>=0.20.0`).
+Maintenance is intense: `CHANGELOG.md` is 50 KB and carries "Breaking" entries in the unreleased section (prompt templates now Jinja-sandboxed; built-in agents must declare `options_model`; judge TOMLs validated by Pydantic). A Repère paper artifact must pin the exact Harbor version (the 4.0 leaderboard tooling itself only pins `harbor[modal]>=0.20.0`).
 
 ### Task format
 
@@ -137,20 +137,20 @@ How `cost_usd` is produced (the load-bearing finding):
 
 `registry.json` (`docs-mintlify/core-concepts/datasets/registries.mdx`) is a JSON array of `{name, version, description, tasks[{name, git_url, git_commit_id, path}], metrics}`. The 13.6 MB `prior/harbor/registry.json` has 80 datasets; entry `terminal-bench@2.0` has 89 tasks pinned to `https://github.com/laude-institute/terminal-bench-2.git` commit `69671fbaac6d67a7ef0dfec016cc38a64ef7a77c`. The default registry is now Harbor Hub (`org/name@ref`, refs resolve to `sha256:` content digests; `DatasetConfig._get_package_task_configs` rewrites `ref` to the digest "for config version tracking"). Metrics: default mean with missing rewards counted as 0; custom `metric.py` (`uv-script`) reads a rewards JSONL and writes a JSON object.
 
-### Design constraints implied for FrugalMind (Harbor)
+### Design constraints implied for Repère (Harbor)
 
 1. Task directory must be `instruction.md` + `task.toml` + `environment/Dockerfile` (or pinned `docker_image` digest) + `tests/test.sh` writing `/logs/verifier/reward.json` with labeled dimensions (e.g. `correctness`, `data_integrity`, `citation_accuracy`), and must import nothing from the harness, so tasks outlive harness releases.
 2. Every task must declare `[environment] network_mode = "allowlist"` with an explicit `allowed_hosts` list (data hosts, package index, the agent's LLM API host), `[verifier] network_mode = "no-network"`, and `[verifier] environment_mode = "separate"` with a `tests/Dockerfile`; run only on backends that advertise `dynamic_network_policy`, and have CI reject tasks that fall back to `public`.
 3. Record per trial: task `sha256` digest, dataset git commit, agent `version()`, `model_info{name, provider}`, and the harness version + commit from `JobLock`; a paper artifact is incomplete without the job `lock.json`.
-4. Cost must not be taken from `cost_usd` as delivered. Recompute from ATIF per-step token counts (uncached input, cached input, cache write, output) against a FrugalMind-owned price table keyed by `(provider/model-id, effective_date)`, store both `cost_usd_reported` and `cost_usd_table` with `cost_source` and the price-table digest.
+4. Cost must not be taken from `cost_usd` as delivered. Recompute from ATIF per-step token counts (uncached input, cached input, cache write, output) against a Repère-owned price table keyed by `(provider/model-id, effective_date)`, store both `cost_usd_reported` and `cost_usd_table` with `cost_source` and the price-table digest.
 5. Require dated model snapshot ids in `-m` (reject aliases such as `claude-opus-4-6` without a date or a provider-side version) and record `reasoning_effort` as a first-class field; Harbor stores only the string the user typed.
 6. Use `n_attempts >= 5` (`-k 5`) as the default for any reported number; report mean ± 95% CI and pass@k from `JobStats`, plus the cost distribution across attempts, not just the mean.
-7. Keep `retry.exclude_exceptions` at Harbor's default (timeouts and missing reward are never retried) and count errored trials as reward 0, but add a FrugalMind exception taxonomy that separates upstream data-service failures (HTTP 5xx from the observatory API, FDSN timeouts) from agent failures, recorded in `exception_info` and reported as a separate column.
+7. Keep `retry.exclude_exceptions` at Harbor's default (timeouts and missing reward are never retried) and count errored trials as reward 0, but add a Repère exception taxonomy that separates upstream data-service failures (HTTP 5xx from the observatory API, FDSN timeouts) from agent failures, recorded in `exception_info` and reported as a separate column.
 8. Declare `artifacts` (fetched data files, generated code, RAG answer JSON) in `task.toml` so verifier fixes can be applied with `harbor job regrade` at zero LLM cost; treat verifier changes as "minor" versions per the Terminal-Bench semantic-versioning rule.
 9. Fix `timeout_sec`, `cpus`, `memory_mb` per task after a calibration run with headroom, and forbid `timeout_multiplier != 1`, `override_*`, and `extra_allowed_hosts` in any reported run.
 10. Emit ATIF (`capabilities.atif = True`) from the RAG agents too, since RAG agents are not terminal agents: wrap them as external `BaseAgent`s that call the LLM from the host, write the answer and retrieved-evidence list into the container, and let `tests/test.sh` grade it.
 
-### What FrugalMind could adopt directly vs must build (Harbor)
+### What Repère could adopt directly vs must build (Harbor)
 
 | Adopt as is | Must build |
 |---|---|
@@ -240,20 +240,20 @@ Versioning rule (`/news/continuous-benchmarks`): task patch → reuse trials; ve
 
 DOI status: Harbor and the TB repo each carry a Zenodo concept DOI in `CITATION.cff`. There is no DOI for a leaderboard submission, the HF submission dataset, or the Meta-Harness artifact.
 
-### Design constraints implied for FrugalMind (Terminal-Bench)
+### Design constraints implied for Repère (Terminal-Bench)
 
 1. A per-paper frozen artifact must contain four things the TB pattern keeps in three different places: (a) the agent and harness code at a git tag with `uv.lock`; (b) the full job directory (job `config.json`, `result.json`, `lock.json`, every trial with `result.json`, ATIF `trajectory.json`, verifier logs, artifacts); (c) the task dataset at a content digest or commit; (d) the price table used. Deposit (a)+(b)+(d) as one Zenodo record with a concept DOI, and cite the dataset digest inside it.
 2. The trial records must carry the code digest of what actually ran (Harbor's `TrialLock.task.digest` covers the task; add an `agent_code_digest`), so the artifact repo can be checked byte-for-byte; the Meta-Harness record cannot be.
 3. Submission JSON schema: copy TB's `source_filter` (agent, agent_version, model_name, reasoning_effort) and `metrics` (accuracy, `accuracy_ci95_half_width`, `n_trials`, token split into uncached/cached/output, `total_cost_usd`, `avg_trial_duration_sec`, pass@k) and add `price_table_digest`, `pricing_date`, `harness_version`, `dataset_digest`, and a `data_window` field for the live-data tasks.
 4. CI must reject: `timeout_multiplier != 1.0`, any `override_*`, any `extra_allowed_hosts`, incomplete task coverage, fewer than 5 trials per task, trials whose task digest differs from the pinned dataset, and passing trials without an ATIF trajectory. Errored trials count as reward 0; cost totals count every trial.
-5. Run an LLM reward-hacking judge over every passing trajectory before a row is published, with a `disqualified_trials` list and a challenge path; for FrugalMind the specific hack to detect is "agent found pre-processed or published values instead of fetching and processing raw observatory data".
-6. Make submitted trials immutable by copying them into a store the submitter cannot modify (TB clones Hub trials; for FrugalMind, a maintainer-owned bucket or the Zenodo deposit itself).
+5. Run an LLM reward-hacking judge over every passing trajectory before a row is published, with a `disqualified_trials` list and a challenge path; for Repère the specific hack to detect is "agent found pre-processed or published values instead of fetching and processing raw observatory data".
+6. Make submitted trials immutable by copying them into a store the submitter cannot modify (TB clones Hub trials; for Repère, a maintainer-owned bucket or the Zenodo deposit itself).
 7. Semantic-version the tasks: patch = reuse, verifier change = regrade from artifacts, environment or data-window change = rerun; keep one leaderboard per dataset version; define a saturation rule for retiring tasks.
 8. Calibrate timeouts and resources with a headroom run before freezing them (TB 4.0 moved to a flat 8 h agent timeout after measuring that timeouts drove errors); publish the calibration.
-9. Put the canary comment in every `instruction.md` and the "do not cheat" suffix with the numeric timeout; keep ground truth only in the verifier image; add the FrugalMind repo and any answer-bearing pages to the deny side of the allowlist.
+9. Put the canary comment in every `instruction.md` and the "do not cheat" suffix with the numeric timeout; keep ground truth only in the verifier image; add the Repère repo and any answer-bearing pages to the deny side of the allowlist.
 10. Record model `release_date` and `reasoning_effort` as leaderboard columns, since TB's own rows differ by effort at fixed model.
 
-### What FrugalMind could adopt directly vs must build (Terminal-Bench)
+### What Repère could adopt directly vs must build (Terminal-Bench)
 
 | Adopt as is | Must build |
 |---|---|
@@ -344,20 +344,20 @@ Reproducibility failures and model-version drift (Appendix A3, twelve hurdles): 
 
 Explicit recommendations (Conclusion and Table 2): systematic log analysis as a mandatory leaderboard component; standardised infrastructure instead of per-benchmark reimplementation; report tokens, failure modes and scaffold interactions, not accuracy alone; separate the harness environment from the agent environment to freeze benchmark dependencies; document exact model versions and reasoning settings (agent names of the form "Name (model-with-date)"); report both dollar and token Pareto frontiers because prices move.
 
-### Design constraints implied for FrugalMind (HAL)
+### Design constraints implied for Repère (HAL)
 
 1. Cost must be computed from a checked-in table keyed by exact model id with separate uncached-input, cache-write, cache-read and output prices (HAL's `MODEL_PRICES_DICT` + `CACHED_PRICE_OVERRIDES`), extended with an `effective_date` and a table version; the run must refuse to start if the model id is absent (`validate_model_pricing`), and must never silently skip an unpriced model as `get_total_cost` does.
 2. Every reported run names the dated model snapshot, the provider endpoint used (direct API vs aggregator), and the reasoning-effort setting in provider-native units; runs through aggregators that route across quantizations are excluded from headline numbers.
-3. Repeat every configuration K ≥ 5 times and report mean ± CI and per-task outcome consistency `(2 p̂ − 1)^2`; FrugalMind's tasks are cheap enough that HAL's excuse (cost) does not apply.
+3. Repeat every configuration K ≥ 5 times and report mean ± CI and per-task outcome consistency `(2 p̂ − 1)^2`; Repère's tasks are cheap enough that HAL's excuse (cost) does not apply.
 4. Infrastructure failures (rate limits, data-service outages) must surface as a distinct status, never as reward 0 by default; the report shows an error rate column next to accuracy (HAL hurdle 5; TB counts them as 0, which is fine for a leaderboard but hides infra noise in a paper).
-5. Run a rubric-based LLM log analysis over every trajectory with at least HAL's six categories (instruction violation, tool-use failure, self-correction, verification, environmental barrier, shortcut/gaming), plus FrugalMind-specific shortcuts: fetching published derived products instead of raw data, fabricating citations, answering metadata questions from parametric memory instead of the catalogue.
+5. Run a rubric-based LLM log analysis over every trajectory with at least HAL's six categories (instruction violation, tool-use failure, self-correction, verification, environmental barrier, shortcut/gaming), plus Repère-specific shortcuts: fetching published derived products instead of raw data, fabricating citations, answering metadata questions from parametric memory instead of the catalogue.
 6. Freeze the harness environment and each agent environment separately (`uv.lock` for both) and record `git_info`, `agent_hash` (sha256 of the agent directory), and the exact `run_command` in every result file, as HAL's `_UPLOAD.json` does.
 7. Log every LLM call with usage and timestamps keyed by task id to a local JSONL under the harness's control; do not make a hosted tracing service a hard dependency (hurdle 12).
 8. Keep task instructions and scaffold prompts in separate files (hurdle 10) so a prompt change never touches the task digest.
 9. Report both a dollar Pareto frontier and a token Pareto frontier, drawn as a convex hull including the origin, and re-price old runs from stored token counts when the price table changes.
-10. Maintain a `verified_by` field: a row is verified only when a FrugalMind maintainer reruns it from the DOI artifact; unverified community rows are shown but labelled.
+10. Maintain a `verified_by` field: a row is verified only when a Repère maintainer reruns it from the DOI artifact; unverified community rows are shown but labelled.
 
-### What FrugalMind could adopt directly vs must build (HAL)
+### What Repère could adopt directly vs must build (HAL)
 
 | Adopt as is (copy the code, not the harness) | Must build or replace |
 |---|---|
@@ -371,9 +371,9 @@ Explicit recommendations (Conclusion and Table 2): systematic log analysis as a 
 
 ---
 
-## 4. Cross-cutting summary for the FrugalMind design
+## 4. Cross-cutting summary for the Repère design
 
-| Requirement | Harbor gives | TB adds | HAL adds | FrugalMind must build |
+| Requirement | Harbor gives | TB adds | HAL adds | Repère must build |
 |---|---|---|---|---|
 | Accuracy jointly with dollars | per-trial `cost_usd` (LiteLLM or agent self-report), job totals | `total_cost_usd`, token splits, CI in submission JSON | dated price dict, cache tiers, dollar and token Pareto | owned price table with date + digest; recompute from ATIF; store reported and table costs |
 | Repeats and variance | `-k`, pass@k | ≥ 5 trials rule, `accuracy_ci95_half_width` | consistency `(2p̂−1)^2`, robustness phases | default K=5, per-task consistency, infra-error column |
@@ -382,7 +382,7 @@ Explicit recommendations (Conclusion and Table 2): systematic log analysis as a 
 | Live network tasks | allowlist per phase, egress sidecar, capability check | open-internet policy, judge for online solutions | shortcut detection via logs | host allowlists for OOI M2M, FDSN and portals; HTTP cassettes or dated snapshots; data-window field |
 | RAG agents | external `BaseAgent`, RewardKit judges | none | none | RAG wrappers; citation verifiers against a frozen index |
 
-Recommendation: build FrugalMind as a Harbor dataset plus custom agents, vendor the Terminal-Bench `leaderboard/` package for submissions and judging, and copy HAL's price-table and reliability-metric code into a small `frugalmind` package that owns pricing, re-pricing, consistency statistics, and the Zenodo packager.
+Recommendation: build Repère as a Harbor dataset plus custom agents, vendor the Terminal-Bench `leaderboard/` package for submissions and judging, and copy HAL's price-table and reliability-metric code into a small `repere` package that owns pricing, re-pricing, consistency statistics, and the Zenodo packager.
 
 ## 5. NOT VERIFIED list
 

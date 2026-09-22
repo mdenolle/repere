@@ -1,4 +1,4 @@
-# FrugalMind-RCA: design and architecture decision memo
+# Repère-RCA: design and architecture decision memo
 
 Status: draft for review, 2026-09-14. Branch `design/rca-harness`. Nothing
 in this document is a benchmark result; every record in the suite is a
@@ -14,8 +14,8 @@ file and line references for every claim about external systems).
 
 | Term | Use it for | Do not use it for |
 |---|---|---|
-| FrugalMind | the harness (this repository) | the RCA suite alone |
-| FrugalMind-RCA | this suite: three agent families serving the OOI Regional Cabled Array | |
+| Repère | the harness (this repository) | the RCA suite alone |
+| Repère-RCA | this suite: three agent families serving the OOI Regional Cabled Array | |
 | GAIA HazLab | the lab and its GitHub organisation; always two words, never bare "GAIA" in a paper that also cites agent benchmarks | |
 | the GAIA benchmark (Mialon et al., 2023) | the general-assistant benchmark, cited in full at first mention | |
 | aRCADA | mhemmett/arcada, the public assistant over the RCA | the RCA data itself |
@@ -27,16 +27,16 @@ of Washington hazards lab; unrelated to the GAIA benchmark of Mialon et al.,
 `mdenolle/gaia-eval` should be renamed before anything public references it
 (proposal: `hazeval`); see OPEN_QUESTIONS.md Q1.
 
-## 1. What this adds to frugalmind
+## 1. What this adds to repere
 
-frugalmind at `main@8db9914` is an Inspect-based harness with six suites,
+repere at `main@8db9914` is an Inspect-based harness with six suites,
 a subprocess or Docker sandbox, JSONL telemetry, a skill system, a Pareto
 leaderboard and a manuscript (inventory in `docs/rca/00_frugalmind_inventory.md`,
 test suite rerun today: 317 passed, 7 skipped). It has no OOI content, no
 frozen price map with dates, no repeats, no model-version pin check, no
 lexical baseline, no judge calibration, and no per-paper frozen artifact.
 
-FrugalMind-RCA adds, under `src/frugalmind_suites/rca/`:
+Repère-RCA adds, under `src/repere_suites/rca/`:
 
 | Piece | File | State |
 |---|---|---|
@@ -84,15 +84,15 @@ repos and are treated as a separate corpus with licence fields (§3.3).
 
 ## 3. Verification tiers
 
-### 3.1 Definitions and mapping to frugalmind's scorability spectrum
+### 3.1 Definitions and mapping to repere's scorability spectrum
 
-frugalmind already orders scorers T0 deterministic, T1 numerical, T2
+repere already orders scorers T0 deterministic, T1 numerical, T2
 perceptual, T3 trajectory, T4 rubric (`docs/dataset_submission.md` §4). The
 RCA tiers are organised by *how truth is established*, not by scorer type,
 so the two vocabularies coexist and every RCA record names its scorer method
 explicitly. To avoid the collision the RCA tier names carry a suffix:
 
-| RCA tier | Truth comes from | Scorer method (record field) | frugalmind scorer tier | Metric |
+| RCA tier | Truth comes from | Scorer method (record field) | repere scorer tier | Metric |
 |---|---|---|---|---|
 | `T1_physics` | an independently measured physical quantity with an oracle solver | `oracle_compare` | T1 numerical | absolute error, within-tolerance, F1 for intervals |
 | `T2_execution` | executing the generated code and checking the result deterministically | `execution_check` | T0/T1 | staged pass/fail 0.1 code, 0.2 runs, 0.7 correct |
@@ -150,9 +150,9 @@ Mechanism, modelled on AstaBench's three-layer enforcement
    snapshot_ref}` where `snapshot_ref` is the aRCADA commit plus the file's
    sha256; the fetch script refuses a mismatch. Records also carry
    `cutoff_date`. The validator enforces both for T3 (rule R05).
-2. **Tool-side filter.** frugalmind's `literature_search` already drops
+2. **Tool-side filter.** repere's `literature_search` already drops
    documents published after `cutoff_date` before ranking
-   (`src/frugalmind/agents/literature.py:157`). Two additions from AstaBench
+   (`src/repere/agents/literature.py:157`). Two additions from AstaBench
    are required: filter nested citation lists in results, and raise a tool
    error on a direct fetch of a post-cutoff id.
 3. **Scorer-side re-check.** `retrieval_leakage` (already in
@@ -236,24 +236,24 @@ provenance, held-out flag) plus the scoring method.
 ### 5.1 Build versus adopt
 
 Decision: keep Inspect AI as the evaluation loop and log substrate (already
-adopted in frugalmind 0.4.0; the substrate of HAL and AstaBench), borrow
+adopted in repere 0.4.0; the substrate of HAL and AstaBench), borrow
 specific pieces from Harbor, agent-eval, HAL and Terminal-Bench, and build
 the parts none of them has.
 
 | Concern | Decision | Reason (source in `docs/rca/prior_art/`) |
 |---|---|---|
-| Eval loop, logs, epochs, model providers | **adopt Inspect** (`.eval` logs with `revision`, `packages`, per-sample `model_usage`, `total_time`, `working_time`; `Epochs`; `ModelCost`) | frugalmind already runs on it; HAL's Inspect integration was deleted in 2026-01, AstaBench's is a thin layer over it; verified today with a mock run |
+| Eval loop, logs, epochs, model providers | **adopt Inspect** (`.eval` logs with `revision`, `packages`, per-sample `model_usage`, `total_time`, `working_time`; `Epochs`; `ModelCost`) | repere already runs on it; HAL's Inspect integration was deleted in 2026-01, AstaBench's is a thin layer over it; verified today with a mock run |
 | Container execution and egress control | **borrow Harbor's design, not its runtime**: allowlist per phase, egress proxy sidecar, separate verifier environment | Harbor needs Python 3.12, breaks on minor releases (v0.18 to v0.23 in ten weeks), phones home by default, and its Hub is a hosted service; the sidecar idea is what we need for §5.3 |
 | Task-directory format | **export, do not author**: records stay YAML; a converter emits Harbor task dirs (`instruction.md`, `task.toml`, `tests/`) when a task must run under Harbor or be submitted to a Harbor dataset | keeps one source of truth; Harbor tasks import nothing from the harness so the export is cheap |
 | Price map | **build** a dated, versioned, verified-flagged map (`pricing/prices.yaml`) | AstaBench's litellm pin is undated and had to be hand-patched; HAL's dict has no date; Harbor has no table at all |
 | Cost per sample | **build** `cost.py`; later also register Inspect `ModelCost` so `cost_limit` works | Inspect's number depends on what was loaded at run time; the published number must be recomputable from tokens |
 | Judge-token exclusion | **adopt agent-eval's span rule** (TODO; today by model id) | RAG judges may share a model with the agent |
-| Openness and tooling vocabulary | **adopt agent-eval's seven strings** (frugalmind already has `openness`; add `toolset` values) | cross-leaderboard comparability |
-| Pareto frontier | **adopt** the cost-ascending, score-descending sweep frugalmind already has; add CI on both axes at aggregate level | AstaBench has task-level CI only |
+| Openness and tooling vocabulary | **adopt agent-eval's seven strings** (repere already has `openness`; add `toolset` values) | cross-leaderboard comparability |
+| Pareto frontier | **adopt** the cost-ascending, score-descending sweep repere already has; add CI on both axes at aggregate level | AstaBench has task-level CI only |
 | Repeats and reliability | **build** in `run.py`: epochs, per-record mean, sd, pass rate, all-pass, bootstrap CI over records | none of the four prior systems aggregates across repeats; HAL's `(2p-1)^2` consistency is worth adding |
 | Trivial baselines | **build** `do_nothing`, `bm25_only`; retry-until-pass and escalation as later conditions | AAM and ABC R.13 |
 | Submission bundle and CI rules | **adopt Terminal-Bench's** `source_filter` and `metrics` fields, the five-trials rule, "errored trials count as 0, cost counts every trial", and the reward-hacking judge idea | see §5.4 |
-| Hidden split hosting | **keep frugalmind's** Mode A (derive from secret) / Mode B (gated host) policy | `docs/golden_data_provisioning.md` |
+| Hidden split hosting | **keep repere's** Mode A (derive from secret) / Mode B (gated host) policy | `docs/golden_data_provisioning.md` |
 
 ### 5.2 Where the sandbox boundary sits
 
@@ -265,11 +265,11 @@ Three processes, three trust levels:
 | Harness-owned tools (`fdsn_get_waveforms`, proposed `fdsn_get_stations`, `ooi_m2m_get`, `pi_portal_get`, `literature_search`, `sensor_kb_search`) | credentials, cutoff enforcement, cassettes | allowlisted hosts, recorded |
 | Sandbox (model-generated code) | staged input files only | `none`, or the replay proxy |
 
-Rules: credentials never enter the sandbox (frugalmind invariant 2 in
+Rules: credentials never enter the sandbox (repere invariant 2 in
 `docs/golden_data_provisioning.md`); reference values never enter the
 sample metadata (`inspect_tasks.public_view`); the checker runs in the
 harness, never in the sandbox; the sandbox image is pinned by digest before a
-record is frozen (R10). The existing frugalmind sandbox is a robustness
+record is frozen (R10). The existing repere sandbox is a robustness
 boundary, not a security boundary (its own docstring); the Docker backend
 with `--network=none` is the minimum for any reported number, and the host
 backend is for development only.
@@ -282,7 +282,7 @@ Options considered:
 | Option | Reproducible | Measures the real thing | Cost per rerun | Verdict |
 |---|---|---|---|---|
 | Live only | no: Terminal-Bench 2.1 found 9 of 89 tasks broken by external drift; OSWorld 13 of 46 | yes | network and rate limits every run | rejected as the scored default (ABC T.6) |
-| Harness tools only, sandbox offline (frugalmind today) | yes for tool outputs | no: 1a's deliverable is a script that fetches | low | keep for 1b, 1c, 1d |
+| Harness tools only, sandbox offline (repere today) | yes for tool outputs | no: 1a's deliverable is a script that fetches | low | keep for 1b, 1c, 1d |
 | Record and replay through a proxy | yes, with cassette hashes | yes in record mode; replay re-executes the agent's own request | low after recording | **chosen** |
 | Pre-fetched data bundles per task | yes | no: bypasses the fetch | low | used only where data volume forbids replay (T1 resync item) |
 
@@ -384,7 +384,7 @@ The runner refuses to price an unverified card unless
 card is unverified; the Opus 4.6 discrepancy (15/75 in `config/models.yaml`
 dated 2026-05-08 versus 5/25 in a 2026-06-24 table) must be resolved by a
 person before any Pareto plot is drawn (Q6). Local models cost 0 by
-frugalmind convention; their pin is the weights digest, which the runner
+repere convention; their pin is the weights digest, which the runner
 does not yet record.
 
 ### 6.3 Model-version pinning
@@ -428,7 +428,7 @@ per-family panel and error bars are to add.
 ```
 DESIGN.md, OPEN_QUESTIONS.md                      this memo and the decisions needed
 docs/rca/{00_frugalmind_inventory,ABC_AUDIT,AUTHORING}.md, docs/rca/prior_art/*.md
-src/frugalmind_suites/rca/
+src/repere_suites/rca/
   schema/golden_record.schema.json   validate.py   checkers.py   cost.py
   oracles/clock.py                   solvers.py    baselines.py
   inspect_tasks.py                   run.py        pricing/prices.yaml
@@ -443,9 +443,9 @@ End-to-end, verified today on this machine (host sandbox, scratch venv with
 inspect_ai 0.3.263 and obspy 1.5.1, no credentials):
 
 ```bash
-python -m frugalmind_suites.rca.validate
-python -m frugalmind_suites.rca.run --ids rca-coding-qc-continuity-001 \
-  --solver scripted:src/frugalmind_suites/rca/seeds/coding/_selftest/good \
+python -m repere_suites.rca.validate
+python -m repere_suites.rca.run --ids rca-coding-qc-continuity-001 \
+  --solver scripted:src/repere_suites/rca/seeds/coding/_selftest/good \
   --model mockllm/model --epochs 3 --out results/rca
 ```
 

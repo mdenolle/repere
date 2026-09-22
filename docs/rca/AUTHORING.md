@@ -1,7 +1,7 @@
-# Authoring golden records for FrugalMind-RCA
+# Authoring golden records for Repère-RCA
 
 This is the contract for co-authors. The validator
-(`python -m frugalmind_suites.rca.validate`) enforces everything marked with a
+(`python -m repere_suites.rca.validate`) enforces everything marked with a
 rule id; the rest is judgement, and the reviewer checks it.
 
 ## 1. Lifecycle
@@ -40,7 +40,7 @@ validation (used for release builds) fails on any template.
 ### T1 physics-verified (`oracle_compare`)
 
 - `scoring.oracle.solver` is an importable function under
-  `frugalmind_suites.rca.oracles`; the reference is computed at scoring time,
+  `repere_suites.rca.oracles`; the reference is computed at scoring time,
   never typed into the record.
 - `independent_measurement` must say what the reference is *and what it is
   not*. For chronfix it is a software estimate validated closed-loop against
@@ -57,7 +57,7 @@ validation (used for release builds) fails on any template.
 ### T2 execution-verified (`execution_check`)
 
 - Shape B only (R04). List `task.artifact_keys` the code must `record(...)`.
-- `scoring.checker` names a function in `frugalmind_suites.rca.checkers`;
+- `scoring.checker` names a function in `repere_suites.rca.checkers`;
   `args.expected` holds the reference values; use `all_or_nothing: true`
   for negative-case controls.
 - Every T2 record ships a known-good and a known-bad self-test answer under
@@ -114,10 +114,10 @@ with the exact question. Placeholder DOIs (`10.0000/...`) are rejected (R11).
 ## 6. Commands
 
 ```bash
-python -m frugalmind_suites.rca.validate                 # all seeds
-python -m frugalmind_suites.rca.validate --strict         # release build
+python -m repere_suites.rca.validate                 # all seeds
+python -m repere_suites.rca.validate --strict         # release build
 python scripts/rca_fetch_external.py                      # pinned inputs
-python -m frugalmind_suites.rca.run --ids <id> \
-   --solver scripted:src/frugalmind_suites/rca/seeds/coding/_selftest/good \
+python -m repere_suites.rca.run --ids <id> \
+   --solver scripted:src/repere_suites/rca/seeds/coding/_selftest/good \
    --model mockllm/model --epochs 1 --out results/rca    # self-test
 ```

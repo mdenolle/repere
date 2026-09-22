@@ -1,11 +1,11 @@
 # Numerical-regression scoring (Family 2: coding agents, data-out)
 
 Status: proposed (Phase 4 candidate). Reference implementation lives in
-`src/frugalmind_suites/pipeline_regression/`.
+`src/repere_suites/pipeline_regression/`.
 
 ## Why
 
-FrugalMind's coding-agent tasks come in two shapes:
+Repère's coding-agent tasks come in two shapes:
 
 1. **prompt → code, scored by execution** — the model writes a script; we run it
    and check it produced the right artifact. Covered today by
@@ -96,15 +96,15 @@ own image via a `sandbox_image` field in `pipelines.yaml`, which flows into the
 serialisable `scorer_spec` and is passed to `run_snippet(..., image=...)`. The
 resolution order in the docker backend is: explicit `image` arg → `FM_SANDBOX_IMAGE`
 → `DEFAULT_SANDBOX_IMAGE`. The host backend ignores it. Cheap tasks keep the light
-`ghcr.io/mdenolle/frugalmind-sandbox`; only the ML suites pay for the fat image.
+`ghcr.io/mdenolle/repere-sandbox`; only the ML suites pay for the fat image.
 
 Still to do: publish the per-suite images
-(`frugalmind-sandbox-seisbench`, `frugalmind-sandbox-noisepy`) and add a CI job
+(`repere-sandbox-seisbench`, `repere-sandbox-noisepy`) and add a CI job
 that builds them, mirroring `.github/workflows/sandbox-image.yml`.
 
 ## Follow-ups (not in this reference)
 
-- Promote shared scorers to `src/frugalmind/scorers.py` so seisbench, noisepy,
+- Promote shared scorers to `src/repere/scorers.py` so seisbench, noisepy,
   and codameter suites import one factory instead of copying it.
 - Grow `pipelines.yaml` into a parametric truth set (à la `events.yaml`) with
   `split`/`visibility`/`cutoff_date` and negative cases (a pipeline that should

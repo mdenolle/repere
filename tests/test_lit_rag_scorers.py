@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from frugalmind import TaskKind
-from frugalmind_suites.lit_rag.items import (
+from repere import TaskKind
+from repere_suites.lit_rag.items import (
     ALL_SUITES,
     LitRagGroundedQASuite,
     LitRagRetrievalSuite,
     LitRagTranslationSuite,
 )
-from frugalmind_suites.lit_rag.scorers import (
+from repere_suites.lit_rag.scorers import (
     make_citation_support_scorer,
     make_retrieval_scorer,
     make_scorer_from_spec,
@@ -164,7 +164,7 @@ def test_translation_and_grounded_suites_exist():
 def test_known_item_suite_is_a_real_eval_not_a_seed():
     """The document family must be demonstrated, not merely proposed: enough
     items to carry a score, real papers, objective gold."""
-    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+    from repere_suites.lit_rag.items import LitRagKnownItemSuite
 
     suite = LitRagKnownItemSuite()
     rows = list(suite.export_rows())
@@ -181,7 +181,7 @@ def test_known_item_suite_is_a_real_eval_not_a_seed():
 def test_known_item_shortlist_is_deterministic_and_contains_the_gold():
     """The same item must always show the same candidates, or the eval is not
     reproducible; and the gold must not always sit in the same slot."""
-    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+    from repere_suites.lit_rag.items import LitRagKnownItemSuite
 
     a = list(LitRagKnownItemSuite().items())
     b = list(LitRagKnownItemSuite().items())
@@ -199,7 +199,7 @@ def test_known_item_shortlist_is_deterministic_and_contains_the_gold():
 
 
 def test_known_item_scorer_discriminates():
-    from frugalmind_suites.lit_rag.items import LitRagKnownItemSuite
+    from repere_suites.lit_rag.items import LitRagKnownItemSuite
 
     prompt, gold, scorer = next(iter(LitRagKnownItemSuite().items()))
     import json

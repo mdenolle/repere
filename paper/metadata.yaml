@@ -61,16 +61,16 @@ competing-interests: >-
 data-availability: >-
   The public validation splits, the live evaluation results underlying Fig. 1
   and Tables 1–2, and the figure source data are available at
-  https://github.com/mdenolle/frugalmind. The hidden test splits are available
+  https://github.com/mdenolle/repere. The hidden test splits are available
   as a gated dataset; the generator is public and auditable, and only the master
   seed is withheld, so the truth set can be inspected without disclosing its
   answers (see Methods, "Contamination control").
   TODO: mint a Zenodo DOI for the release and cite it here.
 
 code-availability: >-
-  FrugalMind, including the evaluation substrate, all scorers, the sandbox, the
+  Repère, including the evaluation substrate, all scorers, the sandbox, the
   skills and the scripts that reproduce every number and figure in this paper,
-  is available at https://github.com/mdenolle/frugalmind under an MIT licence.
+  is available at https://github.com/mdenolle/repere under an MIT licence.
   TODO: archive the exact commit on Zenodo and cite the DOI.
 
 acknowledgements: >-

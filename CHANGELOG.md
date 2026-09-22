@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **FrugalMind** are recorded here. The format follows
+All notable changes to **Repère** are recorded here. The format follows
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and the
 project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html).
 
@@ -10,6 +10,19 @@ generated each release lives in [`ROADMAP.md`](ROADMAP.md); each item
 there cross-references the version that delivered it.
 
 ## [Unreleased]
+
+### Changed
+
+- **Project renamed: FrugalMind → Repère.** Repère is French for a fixed
+  survey benchmark marker — the shared reference every agent, regardless of
+  size or cost, is measured against. Package and import paths changed from
+  `frugalmind` / `frugalmind_suites` to `repere` / `repere_suites`
+  (`src/frugalmind` → `src/repere`, `src/frugalmind_suites` →
+  `src/repere_suites`); the `pyproject.toml` package name and the
+  `frugalmind` CLI entry point renamed to `repere` (now `repere.cli:main`).
+  The sandbox Docker image renamed from `ghcr.io/mdenolle/frugalmind-sandbox`
+  to `ghcr.io/mdenolle/repere-sandbox`. Mechanical rename only — no
+  behavioural change.
 
 ### Added (branch `design/rca-harness`)
 

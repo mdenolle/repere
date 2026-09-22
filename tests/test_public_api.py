@@ -1,10 +1,10 @@
-"""Smoke test that the lazy re-exports on `frugalmind` resolve correctly."""
+"""Smoke test that the lazy re-exports on `repere` resolve correctly."""
 
 from __future__ import annotations
 
 
 def test_lazy_exports_resolve():
-    import frugalmind as F
+    import repere as F
 
     assert F.BudgetGuard is not None
     assert F.AnthropicAdapter is not None
@@ -19,7 +19,7 @@ def test_lazy_exports_resolve():
 
 
 def test_lazy_export_unknown_attribute_raises():
-    import frugalmind as F
+    import repere as F
     import pytest
 
     with pytest.raises(AttributeError):

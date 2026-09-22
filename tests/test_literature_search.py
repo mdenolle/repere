@@ -10,7 +10,7 @@ import json
 
 import pytest
 
-from frugalmind.agents import literature as lit
+from repere.agents import literature as lit
 
 
 def test_seed_corpus_loads_and_ids_unique():
