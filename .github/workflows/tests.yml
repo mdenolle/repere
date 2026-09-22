@@ -1,0 +1,53 @@
+name: Tests
+
+# The full deterministic suite, on every pull request and every push to main,
+# with NO paths filter.
+#
+# Why this exists: until v0.5.2 nothing in CI ran the whole suite. dvv-suite.yml
+# ran tests/test_dvv_suite.py and sandbox-parity.yml ran three sandbox tests,
+# both behind paths filters, so most tests only ever ran on a contributor's
+# laptop. That is how nine held-out benchmark rows were committed and shipped in
+# the 0.5.1 wheel: the guard that would have caught them did not exist, and when
+# it was written there was no CI job to run it.
+#
+# tests/test_no_holdout_in_repo.py is the guard that must never be skipped, so
+# this job carries no paths filter and no conditional. It runs in the default
+# pixi environment, which needs no ObsPy, no network and no provider
+# credentials; the geo and plot paths are covered by sandbox-parity.yml.
+#
+# Lint is deliberately not gated here: `ruff check` reports 82 pre-existing
+# findings, so a gate would fail on arrival. Fix those first, then add it.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (deterministic suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: prefix-dev/setup-pixi@v0.10.0
+        with:
+          pixi-version: latest
+          cache: true
+
+      - name: Run the suite
+        run: pixi run test
+
+      - name: Restate the held-out guard on its own
+        # Redundant with the run above, and deliberately so: if someone ever
+        # narrows `pixi run test`, this step still fails the build.
+        run: pixi run pytest -q tests/test_no_holdout_in_repo.py

@@ -1,5 +1,10 @@
 # Golden data provisioning: derive it, or host it?
 
+> The procedure for keeping a *new* golden set out of the repository and out of
+> the wheel, and the guards that enforce it, are in
+> [`holdout_policy.md`](holdout_policy.md). This document decides how hidden
+> gold is held; that one is how it stays hidden.
+
 `dataset_submission.md` §1 sets the rule that matters: the `test` split's gold is
 **never distributed**. This document is about the mechanics of honouring that,
 because there are two very different ways to hold hidden gold, and suites in this
