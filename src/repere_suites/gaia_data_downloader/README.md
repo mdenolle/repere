@@ -54,3 +54,9 @@ Mirrors STA/LTA's split policy. Public issues describe acceptance criteria
 in prose; literal expected checksums and full reference fixtures live under
 `$REPERE_GAIA_GOLDEN_DIR` (gitignored). Tasks with `contamination_risk: high`
 default to `visibility: private`.
+
+`tasks.yaml` holds the 25 public validation tasks. The five test tasks are in
+`$REPERE_EVAL_DATA_DIR/gaia_data_downloader_test.yaml`, outside the repository
+and outside the wheel, and `_load_tasks` merges them when present. Their rows
+carry `expected_tools`, `required_cli_args` and the `expected_files` globs --
+the answers -- and several are `contamination_risk: high`.

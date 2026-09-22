@@ -8,15 +8,19 @@ the benchmark actually asks for without running Python, and lets a drift
 test catch unintended changes to either the prompt template or the gold
 construction.
 
-Outputs (default): one JSON per (suite, split) under tests/fixtures/, e.g.
+Outputs (default): one JSON per validation suite under tests/fixtures/, e.g.
     tests/fixtures/sta_lta.intent_extraction.validation.json
-    tests/fixtures/sta_lta.intent_extraction.test.json
     tests/fixtures/sta_lta.fetch_code.validation.json
-    tests/fixtures/sta_lta.fetch_code.test.json
     ...
 
 Each fixture lists only events from that split, so reviewers and drift
 tests see exactly what `STALTAIntentExtractionSuite(split=...)` would emit.
+
+Only the validation split is written under tests/fixtures/. A test-split
+fixture contains the held-out prompts and their gold -- the reference
+stalta_params appear in the prompt text -- so `--splits test` writes into
+REPERE_EVAL_DATA_DIR instead, next to the held-out events themselves. Ask for
+it explicitly; it needs the hidden partition to be present locally.
 """
 
 from __future__ import annotations
@@ -35,7 +39,11 @@ from repere_suites.sta_lta import (  # noqa: E402
     STALTAReportSuite,
     STALTATriggerCodeSuite,
 )
-from repere_suites.sta_lta.items import VALID_SPLITS, _load_events  # noqa: E402
+from repere_suites.sta_lta.items import (  # noqa: E402
+    PRIVATE_DIR,
+    VALID_SPLITS,
+    _load_events,
+)
 
 
 SUITE_FACTORIES: dict[str, type] = {
@@ -107,9 +115,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--splits",
         nargs="*",
-        default=list(VALID_SPLITS),
+        default=["validation"],
         choices=list(VALID_SPLITS),
-        help=f"Splits to dump; default: {' '.join(VALID_SPLITS)}",
+        help="Splits to dump; default: validation. `test` writes to "
+             "REPERE_EVAL_DATA_DIR, never to tests/fixtures/, because a "
+             "test-split fixture carries the held-out gold.",
     )
     args = parser.parse_args(argv)
 
@@ -121,7 +131,9 @@ def main(argv: list[str] | None = None) -> int:
             continue
         for split in args.splits:
             suite = SUITE_FACTORIES[sid](split=split)
-            out = args.output_dir / f"{sid}.{split}.json"
+            # The held-out fixtures follow the held-out events out of the repo.
+            out_dir = (PRIVATE_DIR / "fixtures") if split == "test" else args.output_dir
+            out = out_dir / f"{sid}.{split}.json"
             dump_suite(sid, suite, split=split, out_path=out)
             written.append(out)
             print(f"Wrote {out}")

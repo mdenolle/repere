@@ -4,7 +4,7 @@ Repère is an open evaluation framework for scientific AI agents in the geoscien
 
 The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide.
 
-> **v0.5.1 — renamed from FrugalMind to Repère, and on PyPI** (September 2026). `pip install repere`. Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+> **v0.5.2 — the held-out splits leave the repository and the wheel** (September 2026). `pip install repere`. Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 The current repository contains:
 
@@ -212,7 +212,7 @@ The STA/LTA suite tests a seismic analysis pipeline:
 4. Plot generation and comparison to approved goldens.
 5. One-paragraph technical reporting.
 
-The public sample truth set currently has six events across regional earthquakes, teleseisms, noise days, and quarry blasts. Several entries are marked `VERIFY`; do not publish benchmark numbers until those catalog entries are validated.
+The truth set has six events across regional earthquakes, teleseisms, noise days and quarry blasts. Two are the public `validation` split, committed in `events.yaml`. The other four are the `test` split and are **not** in this repository and **not** in the wheel: their rows carry `expected_detection`, the reference `stalta_params` and the station picks, so committing them would publish the gold. They live in `$REPERE_EVAL_DATA_DIR/sta_lta_test.yaml` and are merged at load time; `_load_events(split="test")` raises a `FileNotFoundError` naming that path when the partition is absent, rather than quietly returning nothing. Several held-out entries are marked `VERIFY`; do not publish benchmark numbers until those catalog entries are validated.
 
 The rationale for starting with STA/LTA is documented in `docs/stalta_benchmark_rationale.md`. In short, this is the smallest complete earthquake-seismology coding pipeline: fetch waveform data, detect a possible event, plot the result, and explain whether the source is plausibly local/regional, teleseismic, anthropogenic, or noise.
 
@@ -276,6 +276,12 @@ can read prompts and golds in a PR without running Python. If you change
 `events.yaml` or a suite prompt template, regenerate the fixtures and
 commit the diff in the same PR. `tests/test_suite_fixtures.py` will fail
 until you do.
+
+Only the four `*.validation.json` fixtures are committed. A test-split
+fixture spells the reference `stalta_params` out in its prompt text and
+carries the gold, so `build_suite_fixtures.py --splits test` writes into
+`$REPERE_EVAL_DATA_DIR/fixtures/` instead, and
+`tests/test_no_holdout_in_repo.py` fails if one is ever committed.
 
 ### 2. Build the plot PNG goldens
 

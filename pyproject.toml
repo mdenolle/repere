@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repere"
-version = "0.5.1"
+version = "0.5.2"
 description = "Cost-aware, rigor-preserving evaluation of scientific AI agents in the geosciences"
 readme = "README.md"
 requires-python = ">=3.10"

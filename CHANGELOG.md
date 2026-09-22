@@ -11,6 +11,50 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
+## [0.5.2] — 2026-09-22 — the held-out splits leave the repository
+
+### Fixed
+
+- **Nine held-out rows were committed, and shipped in the 0.5.1 wheel.** Four
+  `sta_lta` events and five `gaia_data_downloader` tasks were marked
+  `split: test, visibility: private` and lived inside `src/repere_suites/`,
+  where `.gitignore` does not reach and `package-data` publishes by
+  definition. The rows *are* the gold: an `sta_lta` test row states
+  `expected_detection`, the reference `stalta_params` and the station picks;
+  a GAIA test row states `expected_tools`, `required_cli_args` and the
+  `expected_files` globs, and several are `contamination_risk: high`. Four
+  exported fixtures under `tests/fixtures/sta_lta.*.test.json` carried the
+  same gold, with the reference parameters spelled out in the prompt text.
+  All of it now lives in `$REPERE_EVAL_DATA_DIR`, merged at load time.
+  **Treat those nine rows as compromised**: they were downloadable from PyPI,
+  so they need re-cutting, not just moving.
+- `_load_events` and the GAIA `_load_tasks` merge their held-out partition
+  when it is present and raise `FileNotFoundError` naming the expected path
+  when `split="test"` is asked for and it is absent. Silently returning zero
+  rows is how a hidden split becomes an invisible one. The held-out rows go
+  through the same validation as the public ones, so a malformed row fails at
+  load rather than on the run that decides a ranked score.
+- `build_suite_fixtures.py` defaults to the validation split and writes
+  test-split fixtures to `$REPERE_EVAL_DATA_DIR/fixtures/`, never into
+  `tests/fixtures/`.
+
+### Added
+
+- `tests/test_no_holdout_in_repo.py`: no committed truth set may contain a
+  `split: test` or `visibility: private` row, and no held-out file may sit
+  inside the installed package. Verified against a negative control — a
+  reintroduced held-out row fails both assertions.
+- `tests/test_suite_fixtures.py` gained `test_no_holdout_fixture_is_committed`,
+  and its test-split cases skip when the partition is absent, which is what CI
+  and a fresh clone see.
+
+### Changed
+
+- `events.yaml` holds 2 rows (was 6); `gaia_data_downloader/tasks.yaml` holds
+  25 (was 30). Loaded totals are unchanged when the partition is present.
+- `_validate_events` extracted from `_load_events` so both partitions share one
+  validator.
+
 ## [0.5.1] — 2026-09-22 — first PyPI release
 
 ### Added
@@ -315,7 +359,8 @@ P3.5 per-suite `RUBRIC.md` scorer rationale.
 - Pixi + conda dev environments, manual `pages.yml` and `evals.yml`
   workflows, README sketch.
 
-[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/mdenolle/repere/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/mdenolle/repere/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/mdenolle/repere/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mdenolle/repere/compare/v0.3.0...v0.4.0

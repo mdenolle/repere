@@ -175,8 +175,29 @@ These are the ones that actually get violated in practice.
 | Suite | Mode | Hidden gold held as |
 | --- | --- | --- |
 | `codameter` (dv/v) | **A** derived | `CODAMETER_GOLDEN_SECRET` (a repo secret) |
-| `sta_lta` | **B** hosted | gated HF repo (real waveforms + golden plots) |
+| `sta_lta` | **B** hosted | gated HF repo (real waveforms + golden plots), plus the four test **event rows** in `$REPERE_EVAL_DATA_DIR/sta_lta_test.yaml` |
+| `gaia_data_downloader` | **B** hosted | the five test **task rows** in `$REPERE_EVAL_DATA_DIR/gaia_data_downloader_test.yaml` |
+| `synthetic_stalta` | **A** derived | secret generator seed; `$REPERE_EVAL_DATA_DIR/synthetic_stalta_test.yaml` |
+| `paper_workflow` | **B** hosted | `$REPERE_EVAL_DATA_DIR` (unpublished-paper split) |
 | lit/RAG, real-data suites | **B** hosted | gated HF repo, pinned revision |
+
+### The row itself can be the gold
+
+A held-out row is not only a pointer to gold held elsewhere; for the real-event
+suites the row *is* gold. An `sta_lta` test row states `expected_detection` and
+the reference `stalta_params`; a `gaia_data_downloader` test row states
+`expected_tools`, `required_cli_args` and the `expected_files` globs. Both were
+committed inside `src/repere_suites/` through v0.5.1 and shipped in that wheel,
+because `.gitignore` only guards `data/`, and package data is published by
+definition.
+
+So "hidden" has to mean hidden from the repository **and** from the
+distribution. Two guards enforce it now, and both have negative-control tests:
+`tests/test_no_holdout_in_repo.py` fails if any committed truth set contains a
+`split: test` or `visibility: private` row, and the PyPI publish workflow
+installs the built wheel into a throwaway venv before uploading. Treat the nine
+rows that shipped in 0.5.1 as compromised: they need re-cutting, not just
+moving.
 
 New suite? Run the decision rule above. If your gold is synthetic and cheap,
 derive it — it is strictly less to secure.

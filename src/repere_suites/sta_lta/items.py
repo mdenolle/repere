@@ -24,6 +24,24 @@ from .scorers import make_scorer_from_spec
 _DEFAULT_EVENTS = Path(__file__).parent / "events.yaml"
 EVENTS_PATH = Path(os.environ.get("REPERE_STALTA_EVENTS", _DEFAULT_EVENTS))
 
+# --------------------------------------------------------------------------
+# Public validation vs hidden test, the same split as synthetic_stalta and
+# paper_workflow use.
+#
+# `events.yaml` (in-repo) is the PUBLIC validation split: develop against it,
+# reproduce the demo board with it. It is deliberately committed.
+#
+# The TEST split is NOT in git and is NOT in the wheel. Its rows carry the
+# answers -- expected_detection, the reference stalta_params, the station
+# picks -- so committing them would publish the benchmark's gold. They live in
+# REPERE_EVAL_DATA_DIR alongside the other held-out partitions; pull them with
+# `scripts/pull_eval_data.py`. A benchmark whose answers ship in its own
+# package measures memorisation, not capability.
+# --------------------------------------------------------------------------
+_REPO = Path(__file__).resolve().parents[3]
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", _REPO / "data" / "private"))
+HIDDEN_EVENTS_PATH = PRIVATE_DIR / "sta_lta_test.yaml"
+
 
 VALID_SPLITS = ("validation", "test")
 VALID_VISIBILITIES = ("public", "private")
@@ -145,33 +163,17 @@ def parse_origin_time(value: str) -> datetime:
     return dt
 
 
-def _load_events(
-    path: Path = EVENTS_PATH,
-    *,
-    split: str | None = None,
-    visibility: str | None = None,
-) -> list[dict]:
-    """Load and validate the events file, optionally filtered by split/visibility.
+def _validate_events(events: list, source: Path | str) -> list[dict]:
+    """Validate a list of event rows in place and return it.
 
-    `split=None` (default) returns every event. `split="validation"` and
-    `split="test"` filter to those subsets. The `REPERE_STALTA_SPLIT` environment
-    variable supplies a default when no `split` is passed; set it to "all"
-    or unset it to disable.
-
-    `visibility` works the same way for public vs private events.
+    Shared by the packaged `events.yaml` and the held-out partition, so a
+    malformed held-out row fails at load rather than on the run that decides
+    a ranked score.
     """
-    split = _resolve_split(split)
-    visibility = _resolve_visibility(visibility)
-
-    with open(path) as f:
-        data = yaml.safe_load(f)
-    events = data.get("events", [])
-    if not isinstance(events, list):
-        raise ValueError(f"events.yaml `events` must be a list; got {type(events).__name__}")
     for idx, ev in enumerate(events):
         if not isinstance(ev, dict):
             raise ValueError(
-                f"events.yaml events[{idx}] must be a mapping; got {type(ev).__name__} ({ev!r:.80})"
+                f"{source} events[{idx}] must be a mapping; got {type(ev).__name__} ({ev!r:.80})"
             )
         eid = ev.get("id", f"<unknown @ events[{idx}]>")
 
@@ -228,6 +230,69 @@ def _load_events(
             ev["cutoff_date"] = _normalise_cutoff_date(ev["cutoff_date"])
         else:
             ev["cutoff_date"] = default_cutoff_date(ev)
+    return events
+
+
+def _load_events(
+    path: Path = EVENTS_PATH,
+    *,
+    split: str | None = None,
+    visibility: str | None = None,
+) -> list[dict]:
+    """Load and validate the events file, optionally filtered by split/visibility.
+
+    `split=None` (default) returns every event. `split="validation"` and
+    `split="test"` filter to those subsets. The `REPERE_STALTA_SPLIT` environment
+    variable supplies a default when no `split` is passed; set it to "all"
+    or unset it to disable.
+
+    `visibility` works the same way for public vs private events.
+    """
+    split = _resolve_split(split)
+    visibility = _resolve_visibility(visibility)
+
+    with open(path) as f:
+        data = yaml.safe_load(f)
+    events = data.get("events", [])
+    if not isinstance(events, list):
+        raise ValueError(f"events.yaml `events` must be a list; got {type(events).__name__}")
+
+    # Merge the held-out partition, but only when reading the packaged file: a
+    # caller that passes an explicit path wants exactly that file. The merge
+    # happens after the per-row validation below, so malformed rows in the file
+    # under test still produce their own error rather than tripping over the
+    # hidden partition first.
+    merge_hidden = Path(path) == Path(EVENTS_PATH) and HIDDEN_EVENTS_PATH.is_file()
+    events = _validate_events(events, path)
+
+    if merge_hidden:
+        hidden = yaml.safe_load(HIDDEN_EVENTS_PATH.read_text()) or {}
+        hidden_events = hidden.get("events", [])
+        if not isinstance(hidden_events, list):
+            raise ValueError(
+                f"{HIDDEN_EVENTS_PATH} `events` must be a list; "
+                f"got {type(hidden_events).__name__}"
+            )
+        # Same validation as the public rows: a held-out row that fails it would
+        # otherwise only blow up on the run that decides a ranked score.
+        hidden_events = _validate_events(hidden_events, HIDDEN_EVENTS_PATH)
+        clash = {e["id"] for e in events} & {e["id"] for e in hidden_events}
+        if clash:
+            raise ValueError(
+                f"event id(s) {sorted(clash)} appear in both {path} and "
+                f"{HIDDEN_EVENTS_PATH}; an id belongs to exactly one partition"
+            )
+        events = events + hidden_events
+
+    if split == "test" and not any(ev["split"] == "test" for ev in events):
+        raise FileNotFoundError(
+            "the hidden test split is not available locally.\n"
+            f"  expected: {HIDDEN_EVENTS_PATH}\n"
+            "  pull it (requires access to the gated dataset):\n"
+            "      pixi run -e full python scripts/pull_eval_data.py\n"
+            "  Ranked scores are computed on the hidden split only; the public "
+            "`validation` split is for development."
+        )
     if split is not None:
         events = [ev for ev in events if ev["split"] == split]
     if visibility is not None:

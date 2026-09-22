@@ -59,6 +59,8 @@ The suite is deliberately not all-positive. A model that scores 1.0 on Nisqually
 
 `STALTAPlotSuite` needs approved golden PNGs. Public sample goldens may live in `src/repere_suites/sta_lta/data/golden/`. Private full-suite goldens should stay outside git and be passed with `REPERE_STALTA_GOLDEN_DIR`.
 
+The held-out **events** are a separate thing from the golden PNGs, and a separate file: `events.yaml` holds the two public validation events only, and the four test events live in `$REPERE_EVAL_DATA_DIR/sta_lta_test.yaml`, merged by `_load_events` when present. Their rows carry `expected_detection` and the reference `stalta_params`, so they belong outside the repository and outside the wheel.
+
 1. Run `STALTAPlotSuite` once with a trusted reference model and the actual ObsPy environment.
 2. Manually inspect the output PNGs.
 3. Copy approved outputs into the private or public golden location.
