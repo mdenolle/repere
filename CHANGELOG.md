@@ -11,6 +11,39 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-09-22 — first PyPI release
+
+### Added
+
+- **Published to PyPI as [`repere`](https://pypi.org/project/repere/).**
+  `pip install repere`. Uploaded by `.github/workflows/publish.yml` on a
+  version tag through PyPI Trusted Publishing, so no API token exists
+  anywhere; the job's OIDC token is exchanged for the upload credential. Four
+  guards run before the publish job, because a PyPI version cannot be reused
+  once uploaded: the tag must match `project.version`, `twine check` must pass
+  on both artifacts, no `Requires-Dist` may carry a direct URL, and the wheel
+  must load every suite's data files from a throwaway venv.
+- **`[project]` metadata for the PyPI page.** `authors`, `keywords` (mirroring
+  `CITATION.cff`), ten `classifiers`, and `[project.urls]` (Homepage,
+  Repository, Documentation, Changelog, Issues). No
+  `License :: OSI Approved :: MIT License` classifier: the license reaches
+  PyPI as `License-Expression` under PEP 639, and setuptools>=77 errors out if
+  a project declares both. No author email, since package metadata is
+  published and scraped.
+
+### Changed
+
+- `description` is now "Cost-aware, rigor-preserving evaluation of scientific
+  AI agents in the geosciences". It read "Cost-optimized multi-agent
+  evaluation and routing prototype", which is the PyPI page's one-line summary
+  and no longer described the project.
+
+Why a new version rather than metadata on v0.5.0: that tag is public and the
+sandbox image `ghcr.io/mdenolle/repere-sandbox:v0.5.0` is pinned to its
+commit, so changing the metadata would have meant a distribution no git tag
+reproduces. Nothing was ever uploaded to PyPI under 0.5.0, so 0.5.1 as the
+first PyPI release leaves no visible gap.
+
 ## [0.5.0] — 2026-09-22 — the Repère rename
 
 ### Changed
@@ -282,7 +315,8 @@ P3.5 per-suite `RUBRIC.md` scorer rationale.
 - Pixi + conda dev environments, manual `pages.yml` and `evals.yml`
   workflows, README sketch.
 
-[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/mdenolle/repere/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/mdenolle/repere/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/mdenolle/repere/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mdenolle/repere/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mdenolle/repere/compare/v0.2.0...v0.3.0
