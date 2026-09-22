@@ -52,5 +52,5 @@ pixi run export-leaderboard
 
 Mirrors STA/LTA's split policy. Public issues describe acceptance criteria
 in prose; literal expected checksums and full reference fixtures live under
-`$FM_GAIA_GOLDEN_DIR` (gitignored). Tasks with `contamination_risk: high`
+`$REPERE_GAIA_GOLDEN_DIR` (gitignored). Tasks with `contamination_risk: high`
 default to `visibility: private`.

@@ -2,12 +2,12 @@ name: Sandbox parity (host vs docker)
 
 # ROADMAP P2.2 acceptance criterion:
 #   "Plot and code suites pass identically with and without
-#    FM_USE_DOCKER_SANDBOX."
+#    REPERE_USE_DOCKER_SANDBOX."
 #
 # This workflow builds the pinned sandbox image locally and runs the
 # STA/LTA suite tests twice — once with the host-Python sandbox
-# (FM_USE_DOCKER_SANDBOX=0), once with the Docker sandbox
-# (FM_USE_DOCKER_SANDBOX=1, FM_SANDBOX_IMAGE pointing at the locally-
+# (REPERE_USE_DOCKER_SANDBOX=0), once with the Docker sandbox
+# (REPERE_USE_DOCKER_SANDBOX=1, REPERE_SANDBOX_IMAGE pointing at the locally-
 # built tag). Both invocations must pass, and the dedicated parity test
 # in tests/test_sandbox_parity.py asserts that a deterministic plot
 # snippet produces byte-identical artefacts under both backends.
@@ -79,15 +79,15 @@ jobs:
 
       - name: Run sandbox tests (host Python)
         env:
-          FM_USE_DOCKER_SANDBOX: "0"
+          REPERE_USE_DOCKER_SANDBOX: "0"
         run: |
           pytest tests/test_canonical_recipe.py tests/test_sta_lta_suite.py \
                  tests/test_sandbox_parity.py -v
 
       - name: Run sandbox tests (Docker)
         env:
-          FM_USE_DOCKER_SANDBOX: "1"
-          FM_SANDBOX_IMAGE: "repere-sandbox:ci"
+          REPERE_USE_DOCKER_SANDBOX: "1"
+          REPERE_SANDBOX_IMAGE: "repere-sandbox:ci"
         run: |
           pytest tests/test_canonical_recipe.py tests/test_sta_lta_suite.py \
                  tests/test_sandbox_parity.py -v

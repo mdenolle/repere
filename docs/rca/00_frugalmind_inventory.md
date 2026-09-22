@@ -57,7 +57,7 @@ harness-competence axis (n_tool_calls, errors, submitted, converged);
 
 ## Infrastructure
 
-- Sandbox: `sta_lta/sandbox.py` runs host Python by default; `FM_USE_DOCKER_SANDBOX=1` switches to `ghcr.io/mdenolle/frugalmind-sandbox` (python 3.10-slim, numpy 1.26.4, scipy 1.13.1, matplotlib 3.9.2, scikit-image 0.24.0, obspy 1.4.1) with `--network=none`, non-root, tini. Network I/O is by design outside the sandbox: the `fdsn_get_waveforms` tool fetches in the harness process.
+- Sandbox: `sta_lta/sandbox.py` runs host Python by default; `REPERE_USE_DOCKER_SANDBOX=1` switches to `ghcr.io/mdenolle/frugalmind-sandbox` (python 3.10-slim, numpy 1.26.4, scipy 1.13.1, matplotlib 3.9.2, scikit-image 0.24.0, obspy 1.4.1) with `--network=none`, non-root, tini. Network I/O is by design outside the sandbox: the `fdsn_get_waveforms` tool fetches in the harness process.
 - CI: `evals.yml` (manual smoke), `pages.yml` (site deploy), `sandbox-image.yml` (GHCR build on tag/main), `sandbox-parity.yml` (host vs docker parity), `dvv-suite.yml` (weekly codameter run with the hidden secret). Recent runs green (2026-08-04).
 - Site: static leaderboard with Chart.js Pareto scatter (`computeParetoFront` in `site/app.js`), openness and toolset pills, skill-lift table.
 - Data policy docs: `docs/dataset_submission.md` (strict row schema, validation/test split, visibility, cutoff_date, canary string, rotation), `docs/golden_data_provisioning.md` (derive-from-secret vs host-gated), `docs/telemetry.md`, `docs/agentic_eval.md`, `docs/leaderboard_conditions.md`.

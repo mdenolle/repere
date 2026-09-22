@@ -15,8 +15,8 @@
 #   docker build -f docker/sandbox.Dockerfile -t repere-sandbox:dev .
 #
 # Run a snippet end-to-end (host-side path is the same as
-# FM_USE_DOCKER_SANDBOX=1 in sandbox.py):
-#   docker run --rm -v "$(pwd)/scratch:/work" -e FM_OUT_DIR=/work \
+# REPERE_USE_DOCKER_SANDBOX=1 in sandbox.py):
+#   docker run --rm -v "$(pwd)/scratch:/work" -e REPERE_OUT_DIR=/work \
 #     repere-sandbox:dev python /work/snippet.py
 #
 # Published to ghcr.io/mdenolle/repere-sandbox on tag pushes by
@@ -62,7 +62,7 @@ RUN pip install --no-cache-dir \
         "PyYAML==6.0.2"
 
 # Run as non-root. The host-side `run_snippet` driver mounts a writable
-# tmpdir at /work and sets FM_OUT_DIR=/work, so the container only needs
+# tmpdir at /work and sets REPERE_OUT_DIR=/work, so the container only needs
 # write access there.
 RUN useradd --create-home --shell /bin/bash fmuser \
  && mkdir -p /work \

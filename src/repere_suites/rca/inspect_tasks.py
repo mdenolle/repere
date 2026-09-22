@@ -382,7 +382,7 @@ async def _score_t3(rec: dict[str, Any], state: TaskState) -> Score:
 async def _score_t4(rec: dict[str, Any], state: TaskState) -> Score:
     completion = state.output.completion if state.output else ""
     judge = rec["scoring"].get("judge") or {}
-    if os.environ.get("FM_RCA_ENABLE_JUDGE") != "1":
+    if os.environ.get("REPERE_RCA_ENABLE_JUDGE") != "1":
         return _void(
             "T4 judge disabled: judge scores are reportable only after inter-rater agreement and judge calibration (DESIGN.md §4.4)",
             completion,

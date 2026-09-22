@@ -126,9 +126,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if args.sandbox == "docker":
-        os.environ["FM_USE_DOCKER_SANDBOX"] = "1"
+        os.environ["REPERE_USE_DOCKER_SANDBOX"] = "1"
     else:
-        os.environ.pop("FM_USE_DOCKER_SANDBOX", None)
+        os.environ.pop("REPERE_USE_DOCKER_SANDBOX", None)
 
     from inspect_ai import eval as inspect_eval
 
@@ -165,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     log = logs[0]
 
     price_map = load_price_map(args.price_map)
-    judge_model = os.environ.get("FM_RCA_JUDGE_MODEL")
+    judge_model = os.environ.get("REPERE_RCA_JUDGE_MODEL")
 
     rows: list[dict[str, Any]] = []
     for s in log.samples or []:
@@ -304,7 +304,7 @@ def main(argv: list[str] | None = None) -> int:
         "allow_unverified_prices": args.allow_unverified_prices,
         "allow_live_network": args.allow_live_network,
         "sandbox_backend": args.sandbox,
-        "sandbox_image": os.environ.get("FM_SANDBOX_IMAGE"),
+        "sandbox_image": os.environ.get("REPERE_SANDBOX_IMAGE"),
         "revision": ev.revision.model_dump() if getattr(ev, "revision", None) else None,
         "packages": {**(getattr(ev, "packages", None) or {}), **pkgs},
         "inspect_status": log.status,

@@ -3,7 +3,7 @@
 Source of truth: GitHub issues labeled ``golden-task`` in
 ``uw-ssec/gaia-agentic-ai`` (see ``provenance.yaml`` in the suite directory).
 Output:          ``src/repere_suites/gaia_data_downloader/tasks.yaml``
-                 (and the private partition under ``$FM_GAIA_GOLDEN_DIR``).
+                 (and the private partition under ``$REPERE_GAIA_GOLDEN_DIR``).
 
 Modes
 -----
@@ -25,7 +25,7 @@ This is a STUB / OUTLINE — the real implementation needs:
   * ``_render_issue_body()`` that round-trips through the
     ``.github/ISSUE_TEMPLATE/golden-task.yml`` form on the upstream repo.
   * Public/private partition split (records with visibility=='private' go to
-    ``$FM_GAIA_GOLDEN_DIR``, NEVER to the public ``tasks.yaml``).
+    ``$REPERE_GAIA_GOLDEN_DIR``, NEVER to the public ``tasks.yaml``).
 """
 from __future__ import annotations
 
@@ -196,7 +196,7 @@ def emit_release(release: str, dry_run: bool) -> None:
         {"schema_version": float(SCHEMA_VERSION), "tasks": public},
         sort_keys=False,
     )
-    private_dir = Path(os.environ.get("FM_GAIA_GOLDEN_DIR", "/tmp/fm_gaia_private"))
+    private_dir = Path(os.environ.get("REPERE_GAIA_GOLDEN_DIR", "/tmp/fm_gaia_private"))
     private_path = private_dir / f"tasks.{release}.private.yaml"
     sha_path = SUITE_DIR / f"tasks.{release}.sha256"
 

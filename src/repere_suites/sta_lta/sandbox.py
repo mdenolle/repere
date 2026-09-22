@@ -9,10 +9,10 @@ Two execution backends share the same surface (P2.2):
 * **Host Python** (default). Snippets run under ``sys.executable`` against
   whatever the host has installed. Fast, deterministic on a given machine,
   but vulnerable to "works on my machine" drift across contributors.
-* **Docker image** (opt-in via ``FM_USE_DOCKER_SANDBOX=1``). Snippets run
+* **Docker image** (opt-in via ``REPERE_USE_DOCKER_SANDBOX=1``). Snippets run
   inside the pinned ``docker/sandbox.Dockerfile`` image. Reproducible
   across machines, at the cost of needing Docker on the host. The image
-  name is configurable via ``FM_SANDBOX_IMAGE``
+  name is configurable via ``REPERE_SANDBOX_IMAGE``
   (default ``ghcr.io/mdenolle/repere-sandbox:latest``).
 
 Both backends return identical :class:`ExecResult` shapes and use the
@@ -37,8 +37,8 @@ from typing import Any
 # Env-var contract for the docker backend. Names live here so tests can
 # reference them without hard-coding strings, and so the docker workflow
 # in CI is documented next to the dispatch.
-ENV_USE_DOCKER = "FM_USE_DOCKER_SANDBOX"
-ENV_SANDBOX_IMAGE = "FM_SANDBOX_IMAGE"
+ENV_USE_DOCKER = "REPERE_USE_DOCKER_SANDBOX"
+ENV_SANDBOX_IMAGE = "REPERE_SANDBOX_IMAGE"
 DEFAULT_SANDBOX_IMAGE = "ghcr.io/mdenolle/repere-sandbox:latest"
 
 
@@ -71,7 +71,7 @@ def extract_code(model_output: str) -> str:
 _PREAMBLE = textwrap.dedent(
     """
     import json, os, sys, traceback
-    OUT_DIR = os.environ["FM_OUT_DIR"]
+    OUT_DIR = os.environ["REPERE_OUT_DIR"]
     _result_path = os.path.join(OUT_DIR, "__fm_result__.json")
     _captured = {}
 
@@ -170,7 +170,7 @@ def _run_snippet_host(
         snippet_path.write_text(_PREAMBLE + "\n" + code)
         staged = _stage_inputs(out_dir, input_files)
 
-        env = {"FM_OUT_DIR": out_dir, "PATH": "/usr/bin:/bin"}
+        env = {"REPERE_OUT_DIR": out_dir, "PATH": "/usr/bin:/bin"}
         if extra_env:
             env.update(extra_env)
         for key in ("HOME", "TMPDIR", "PYTHONPATH"):
@@ -219,7 +219,7 @@ def _run_snippet_docker(
 
     Mounts a host tmpdir at /work inside the container, writes the snippet
     + preamble there, and runs ``python /work/snippet.py``. The container's
-    FM_OUT_DIR is /work, so the artefact-capture preamble lands the result
+    REPERE_OUT_DIR is /work, so the artefact-capture preamble lands the result
     JSON and any plot files in the same host directory that
     ``_persist_artifacts`` reads after the run.
 
@@ -273,7 +273,7 @@ def _run_snippet_docker(
                 "-v",
                 f"{out_dir}:/work",
                 "-e",
-                "FM_OUT_DIR=/work",
+                "REPERE_OUT_DIR=/work",
                 # HOME inside the container would be /home/fmuser, which a
                 # foreign-UID process can't write. Point it at /tmp so any
                 # numpy / matplotlib caches that try to scribble to $HOME
@@ -317,7 +317,7 @@ def _run_snippet_docker(
 
 
 def _docker_requested() -> bool:
-    """Read ``FM_USE_DOCKER_SANDBOX`` and treat the standard truthy spellings
+    """Read ``REPERE_USE_DOCKER_SANDBOX`` and treat the standard truthy spellings
     as 'use docker'. Anything else (unset, '0', 'false', '') stays on the
     host Python backend so the default behaviour is unchanged."""
     raw = os.environ.get(ENV_USE_DOCKER, "")
@@ -336,12 +336,12 @@ def run_snippet(
 
     The backend is chosen by environment variable:
 
-    * ``FM_USE_DOCKER_SANDBOX`` truthy → pinned Docker image (P2.2).
+    * ``REPERE_USE_DOCKER_SANDBOX`` truthy → pinned Docker image (P2.2).
     * Anything else → host Python (the historical behaviour).
 
     When the docker backend is active, the image is resolved in priority order:
     the explicit ``image`` argument (a per-suite image — e.g. a seisbench or
-    noisepy sandbox for numerical-regression tasks), then ``FM_SANDBOX_IMAGE``,
+    noisepy sandbox for numerical-regression tasks), then ``REPERE_SANDBOX_IMAGE``,
     then :data:`DEFAULT_SANDBOX_IMAGE`. The host backend ignores ``image``.
 
     ``input_files`` (``{basename: host_path}``) are copied into the snippet's

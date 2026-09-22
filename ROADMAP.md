@@ -97,7 +97,7 @@ builds on:
 > **Deliverables**
 > - New required fields on every event in `events.yaml`.
 > - `_load_events(split=…)` in `items.py`; `EVENTS_PATH` honours
->   `FM_STALTA_SPLIT` env var.
+>   `REPERE_STALTA_SPLIT` env var.
 > - Fixture dumper writes `tests/fixtures/sta_lta.<suite>.<split>.json`.
 > - Suite tests parameterised on split.
 >
@@ -264,12 +264,12 @@ builds on:
 > **Deliverables**
 > - `docker/sandbox.Dockerfile` with pinned deps.
 > - `src/repere_suites/sta_lta/sandbox.py` learns to dispatch to the
->   image when `FM_USE_DOCKER_SANDBOX=1`.
+>   image when `REPERE_USE_DOCKER_SANDBOX=1`.
 > - CI builds and caches the image.
 >
 > **Acceptance**
 > - Plot and code suites pass identically with and without
->   `FM_USE_DOCKER_SANDBOX`.
+>   `REPERE_USE_DOCKER_SANDBOX`.
 > - The image is published as a GHCR artifact on tag.
 >
 > **Effort** M
@@ -279,7 +279,7 @@ builds on:
 > scipy / matplotlib / scikit-image / obspy / PyYAML), `docker/README.md`,
 > `.github/workflows/sandbox-image.yml` (build on PR, push to GHCR on tag
 > + main with buildx GHA cache), `.github/workflows/sandbox-parity.yml`
-> (dual job runs the suite under `FM_USE_DOCKER_SANDBOX=0` and `=1`),
+> (dual job runs the suite under `REPERE_USE_DOCKER_SANDBOX=0` and `=1`),
 > a refactored `src/repere_suites/sta_lta/sandbox.py` with a clean
 > `_run_snippet_host` / `_run_snippet_docker` split dispatched via
 > `_docker_requested()`, `tests/test_docker_sandbox.py` (23 dispatch /
@@ -289,7 +289,7 @@ builds on:
 > artefact bits; docker leg auto-skips when the daemon isn't reachable).
 > Full sweep: **199 passing, 1 skipped** (was 189 before P2.4 + 24 new in
 > P2.2). Default behaviour unchanged — host Python path runs identically
-> to pre-P2.2 when `FM_USE_DOCKER_SANDBOX` is unset.
+> to pre-P2.2 when `REPERE_USE_DOCKER_SANDBOX` is unset.
 
 ## P2.3 · Move large goldens to DVC or HuggingFace
 

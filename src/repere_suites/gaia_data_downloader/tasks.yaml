@@ -22,7 +22,7 @@
 #                              test       = held-out set; goldens are private.
 #   visibility               (required)  public | private
 #                              public  = task wording committed.
-#                              private = wording lives under FM_GAIA_GOLDEN_DIR.
+#                              private = wording lives under REPERE_GAIA_GOLDEN_DIR.
 #   prompt                   (required)  the user message handed to the agent
 #   expected_tools           (required)  list of tool/skill names the agent
 #                              should reasonably use (for tool-efficiency score).
@@ -40,7 +40,7 @@
 #                              Defaults applied by the loader where omitted.
 #   notes                    (optional)  rationale and provenance
 #
-# Suites filter by split. The FM_GAIA_SPLIT env var sets the default.
+# Suites filter by split. The REPERE_GAIA_SPLIT env var sets the default.
 # Inventory (v0.1):
 #   30 tasks total = 25 public/validation + 5 private/test
 #   Difficulty: 10 easy / 15 medium / 5 hard

@@ -33,7 +33,7 @@ DEFAULT_DIR = HERE / "data" / "external" / "chronfix" / "HYS14"
 
 
 def _dir() -> Path:
-    return Path(os.environ.get("FM_RCA_CHRONFIX_DIR", DEFAULT_DIR))
+    return Path(os.environ.get("REPERE_RCA_CHRONFIX_DIR", DEFAULT_DIR))
 
 
 def _load(directory: Path | None = None):

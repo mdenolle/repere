@@ -90,7 +90,7 @@ def test_chart_uses_a_readable_layout_on_a_phone(tmp_path):
     it stays legible."""
     # Set the viewport via env, not a brittle string-replace: the stub's exact
     # formatting must not silently decide whether the narrow layout is exercised.
-    env = {**os.environ, "FM_VW": "375", "FM_VH": "812"}
+    env = {**os.environ, "REPERE_VW": "375", "REPERE_VH": "812"}
     render = REPO / "site" / "test" / "render_test.mjs"
     proc = subprocess.run(
         ["node", str(render)], cwd=REPO, capture_output=True, text=True,

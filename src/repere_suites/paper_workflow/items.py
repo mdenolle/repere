@@ -35,12 +35,12 @@ from repere.export import BenchmarkRow
 from repere_suites.orchestration.scorers import make_scorer_from_spec
 
 _HERE = Path(__file__).parent
-ONTOLOGY_PATH = Path(os.environ.get("FM_PW_ONTOLOGY", _HERE / "ontology.yaml"))
-PAPERS_PATH = Path(os.environ.get("FM_PW_PAPERS", _HERE / "papers.yaml"))
+ONTOLOGY_PATH = Path(os.environ.get("REPERE_PW_ONTOLOGY", _HERE / "ontology.yaml"))
+PAPERS_PATH = Path(os.environ.get("REPERE_PW_PAPERS", _HERE / "papers.yaml"))
 
 # Unpublished papers (the honest test split) never live in git.
 _REPO = _HERE.resolve().parents[2]
-PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", _REPO / "data" / "private"))
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", _REPO / "data" / "private"))
 HIDDEN_PAPERS_PATH = PRIVATE_DIR / "paper_workflow_test.yaml"
 
 VALID_SPLITS = ("validation", "test")
@@ -57,7 +57,7 @@ def operation_ids() -> list[str]:
 
 def _resolve_split(split: str | None) -> str | None:
     if split is None:
-        env = os.environ.get("FM_PW_SPLIT")
+        env = os.environ.get("REPERE_PW_SPLIT")
         if env in (None, "", "all"):
             return None
         split = env

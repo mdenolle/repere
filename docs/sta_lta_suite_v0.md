@@ -57,7 +57,7 @@ The suite is deliberately not all-positive. A model that scores 1.0 on Nisqually
 
 ## Generating goldens
 
-`STALTAPlotSuite` needs approved golden PNGs. Public sample goldens may live in `src/repere_suites/sta_lta/data/golden/`. Private full-suite goldens should stay outside git and be passed with `FM_STALTA_GOLDEN_DIR`.
+`STALTAPlotSuite` needs approved golden PNGs. Public sample goldens may live in `src/repere_suites/sta_lta/data/golden/`. Private full-suite goldens should stay outside git and be passed with `REPERE_STALTA_GOLDEN_DIR`.
 
 1. Run `STALTAPlotSuite` once with a trusted reference model and the actual ObsPy environment.
 2. Manually inspect the output PNGs.

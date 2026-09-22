@@ -94,7 +94,7 @@ P2.2 pins **one** image for every task. seisbench pulls torch; noisepy is heavy.
 A single mega-image is slow and brittle. So each regression pipeline names its
 own image via a `sandbox_image` field in `pipelines.yaml`, which flows into the
 serialisable `scorer_spec` and is passed to `run_snippet(..., image=...)`. The
-resolution order in the docker backend is: explicit `image` arg → `FM_SANDBOX_IMAGE`
+resolution order in the docker backend is: explicit `image` arg → `REPERE_SANDBOX_IMAGE`
 → `DEFAULT_SANDBOX_IMAGE`. The host backend ignores it. Cheap tasks keep the light
 `ghcr.io/mdenolle/repere-sandbox`; only the ML suites pay for the fat image.
 

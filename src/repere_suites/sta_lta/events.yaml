@@ -23,7 +23,7 @@
 #                              test       = held-out set; goldens may be private.
 #   visibility               (required)  public | private
 #                              public  = items + goldens may be committed.
-#                              private = goldens live under FM_STALTA_GOLDEN_DIR.
+#                              private = goldens live under REPERE_STALTA_GOLDEN_DIR.
 #   cutoff_date              (optional)  YYYY-MM-DD; date past which a
 #                              retrieval-augmented agent must not query
 #                              (catalogs, papers, network status pages).
@@ -37,7 +37,7 @@
 #   notes                    (optional)  free-text rationale and provenance
 #
 # Suites filter by split. `STALTAIntentExtractionSuite(split="validation")`
-# emits only validation events; the FM_STALTA_SPLIT env var sets the default.
+# emits only validation events; the REPERE_STALTA_SPLIT env var sets the default.
 # =============================================================================
 
 schema_version: 0.3

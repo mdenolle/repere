@@ -22,7 +22,7 @@ from repere.export import BenchmarkRow
 from .scorers import make_scorer_from_spec
 
 _DEFAULT_EVENTS = Path(__file__).parent / "events.yaml"
-EVENTS_PATH = Path(os.environ.get("FM_STALTA_EVENTS", _DEFAULT_EVENTS))
+EVENTS_PATH = Path(os.environ.get("REPERE_STALTA_EVENTS", _DEFAULT_EVENTS))
 
 
 VALID_SPLITS = ("validation", "test")
@@ -30,9 +30,9 @@ VALID_VISIBILITIES = ("public", "private")
 
 
 def _resolve_split(split: str | None) -> str | None:
-    """Honour FM_STALTA_SPLIT when caller passed nothing; validate when present."""
+    """Honour REPERE_STALTA_SPLIT when caller passed nothing; validate when present."""
     if split is None:
-        env = os.environ.get("FM_STALTA_SPLIT")
+        env = os.environ.get("REPERE_STALTA_SPLIT")
         if env in (None, "", "all"):
             return None
         split = env
@@ -154,7 +154,7 @@ def _load_events(
     """Load and validate the events file, optionally filtered by split/visibility.
 
     `split=None` (default) returns every event. `split="validation"` and
-    `split="test"` filter to those subsets. The `FM_STALTA_SPLIT` environment
+    `split="test"` filter to those subsets. The `REPERE_STALTA_SPLIT` environment
     variable supplies a default when no `split` is passed; set it to "all"
     or unset it to disable.
 
@@ -239,7 +239,7 @@ class _SplitAwareSuite(DenolleGroupSuite):
     """Mixin: filters events by ``split`` and ``visibility`` at items() time.
 
     All five STA/LTA suites accept the same two keyword args. Defaults to
-    "no filter"; set the env var ``FM_STALTA_SPLIT`` for a process-wide default.
+    "no filter"; set the env var ``REPERE_STALTA_SPLIT`` for a process-wide default.
     """
 
     def __init__(
@@ -474,7 +474,7 @@ class STALTAPlotSuite(_SplitAwareSuite):
     @staticmethod
     def _golden_dir() -> Path:
         return Path(
-            os.environ.get("FM_STALTA_GOLDEN_DIR", Path(__file__).parent / "data" / "golden")
+            os.environ.get("REPERE_STALTA_GOLDEN_DIR", Path(__file__).parent / "data" / "golden")
         )
 
     def _compose(self, ev: dict) -> tuple[str, dict, dict, dict]:

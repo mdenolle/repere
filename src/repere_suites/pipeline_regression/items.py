@@ -25,7 +25,7 @@ from repere.export import BenchmarkRow
 from .scorers import make_scorer_from_spec
 
 _DEFAULT_PIPELINES = Path(__file__).parent / "pipelines.yaml"
-PIPELINES_PATH = Path(os.environ.get("FM_PIPELINES", _DEFAULT_PIPELINES))
+PIPELINES_PATH = Path(os.environ.get("REPERE_PIPELINES", _DEFAULT_PIPELINES))
 
 VALID_SPLITS = ("validation", "test")
 VALID_VISIBILITIES = ("public", "private")
@@ -33,7 +33,7 @@ VALID_VISIBILITIES = ("public", "private")
 
 def _resolve_split(split: str | None) -> str | None:
     if split is None:
-        env = os.environ.get("FM_PIPELINES_SPLIT")
+        env = os.environ.get("REPERE_PIPELINES_SPLIT")
         if env in (None, "", "all"):
             return None
         split = env

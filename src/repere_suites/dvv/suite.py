@@ -50,7 +50,7 @@ def _cfm():
 
 
 def _env_split(explicit: str | None) -> str | None:
-    split = explicit if explicit is not None else os.environ.get("FM_DVV_SPLIT")
+    split = explicit if explicit is not None else os.environ.get("REPERE_DVV_SPLIT")
     if split in (None, "", "all"):
         return None
     if split not in _VALID_SPLITS:

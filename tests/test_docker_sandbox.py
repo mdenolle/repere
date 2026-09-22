@@ -66,7 +66,7 @@ def test_docker_requested_defaults_to_false_when_unset(monkeypatch):
 
 
 def test_run_snippet_uses_host_backend_by_default(monkeypatch):
-    """With FM_USE_DOCKER_SANDBOX unset, the host backend handles the call.
+    """With REPERE_USE_DOCKER_SANDBOX unset, the host backend handles the call.
 
     We patch _run_snippet_host to a sentinel and assert it was the one invoked.
     """
@@ -104,7 +104,7 @@ def test_run_snippet_dispatches_to_docker_when_env_set(monkeypatch):
     monkeypatch.setattr(sandbox, "_run_snippet_host", fake_host)
     monkeypatch.setattr(sandbox, "_run_snippet_docker", fake_docker)
     run_snippet("print('hi')", timeout_s=1.0)
-    # Default image when FM_SANDBOX_IMAGE is unset.
+    # Default image when REPERE_SANDBOX_IMAGE is unset.
     assert calls == [f"docker:{DEFAULT_SANDBOX_IMAGE}"]
 
 
@@ -149,7 +149,7 @@ def test_empty_code_short_circuits_before_dispatch(monkeypatch):
 
 
 def test_docker_backend_returns_structured_error_when_binary_missing(monkeypatch):
-    """If FM_USE_DOCKER_SANDBOX is set but no docker on PATH, surface an
+    """If REPERE_USE_DOCKER_SANDBOX is set but no docker on PATH, surface an
     informative ok=False rather than letting an OSError bubble up. The
     error message must mention the env var name so the user can recover."""
     monkeypatch.setenv(ENV_USE_DOCKER, "1")
@@ -192,7 +192,7 @@ def _capture_subprocess_run(monkeypatch):
 
 def test_docker_command_includes_image_and_volume_and_env(monkeypatch):
     """The docker invocation must mount the host tmpdir at /work, set
-    FM_OUT_DIR=/work, run as --rm, and pass the configured image last
+    REPERE_OUT_DIR=/work, run as --rm, and pass the configured image last
     before the in-container `python /work/snippet.py`. Any drift here
     breaks the artefact-capture contract with the preamble."""
     monkeypatch.setenv(ENV_USE_DOCKER, "1")
@@ -209,9 +209,9 @@ def test_docker_command_includes_image_and_volume_and_env(monkeypatch):
     # Volume mount: -v <hosttmp>:/work
     vol_idx = cmd.index("-v")
     assert cmd[vol_idx + 1].endswith(":/work"), cmd[vol_idx + 1]
-    # FM_OUT_DIR env: -e FM_OUT_DIR=/work
+    # REPERE_OUT_DIR env: -e REPERE_OUT_DIR=/work
     env_idx = cmd.index("-e")
-    assert "FM_OUT_DIR=/work" in [cmd[env_idx + 1], *cmd[env_idx + 3 :: 2]]
+    assert "REPERE_OUT_DIR=/work" in [cmd[env_idx + 1], *cmd[env_idx + 3 :: 2]]
     # Image then in-container python invocation.
     assert cmd[-3] == "repere-sandbox:probe"
     assert cmd[-2:] == ["python", "/work/snippet.py"]
@@ -223,10 +223,10 @@ def test_docker_command_passes_extra_env_through(monkeypatch):
     monkeypatch.setattr(sandbox.shutil, "which", lambda name: "/usr/bin/docker")
     captured = _capture_subprocess_run(monkeypatch)
 
-    run_snippet("print('hi')", timeout_s=2.0, extra_env={"FM_PROBE": "abc"})
+    run_snippet("print('hi')", timeout_s=2.0, extra_env={"REPERE_PROBE": "abc"})
     cmd = captured[0]
-    # Find the FM_PROBE entry; it must follow a `-e` flag.
-    indices = [i for i, x in enumerate(cmd) if x == "FM_PROBE=abc"]
+    # Find the REPERE_PROBE entry; it must follow a `-e` flag.
+    indices = [i for i, x in enumerate(cmd) if x == "REPERE_PROBE=abc"]
     assert indices, cmd
     assert cmd[indices[0] - 1] == "-e"
 
@@ -304,7 +304,7 @@ def test_run_snippet_host_backend_round_trips_record_call(monkeypatch):
 
 def test_persist_artifacts_skips_subdirectories_without_raising(tmp_path, monkeypatch):
     """A snippet that calls ``os.makedirs`` (or any code that creates a
-    directory in FM_OUT_DIR) would have tripped the original implementation
+    directory in REPERE_OUT_DIR) would have tripped the original implementation
     with IsADirectoryError when read_bytes hit the subdir. We now filter
     non-regular files first and skip them silently — the scorer sees
     whatever regular files survived."""

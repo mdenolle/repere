@@ -27,7 +27,7 @@ from repere.export import BenchmarkRow
 from .scorers import make_scorer_from_spec
 
 _DEFAULT_CASES = Path(__file__).parent / "cases.yaml"
-CASES_PATH = Path(os.environ.get("FM_SYNTH_STALTA_CASES", _DEFAULT_CASES))
+CASES_PATH = Path(os.environ.get("REPERE_SYNTH_STALTA_CASES", _DEFAULT_CASES))
 
 # --------------------------------------------------------------------------
 # Public validation vs hidden test.
@@ -37,11 +37,11 @@ CASES_PATH = Path(os.environ.get("FM_SYNTH_STALTA_CASES", _DEFAULT_CASES))
 #
 # The TEST split — the answers a ranked score is computed from — is NOT in git.
 # Its gold onsets and the secret generator seed live in a gated Hugging Face
-# dataset; pull them with `scripts/pull_eval_data.py` into FM_EVAL_DATA_DIR.
+# dataset; pull them with `scripts/pull_eval_data.py` into REPERE_EVAL_DATA_DIR.
 # A benchmark whose answers are public measures memorisation, not capability.
 # --------------------------------------------------------------------------
 _REPO = Path(__file__).resolve().parents[3]
-PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", _REPO / "data" / "private"))
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", _REPO / "data" / "private"))
 HIDDEN_CASES_PATH = PRIVATE_DIR / "synthetic_stalta_test.yaml"
 
 VALID_SPLITS = ("validation", "test")
@@ -49,7 +49,7 @@ VALID_SPLITS = ("validation", "test")
 
 def _resolve_split(split: str | None) -> str | None:
     if split is None:
-        env = os.environ.get("FM_SYNTH_STALTA_SPLIT")
+        env = os.environ.get("REPERE_SYNTH_STALTA_SPLIT")
         if env in (None, "", "all"):
             return None
         split = env

@@ -126,7 +126,7 @@ deterministic, offline core is in
 > **The seed corpus is a placeholder.** Its abstracts are synthetic and its
 > DOIs are non-resolvable (`10.0000/ooi-seed-*`). Replace `documents` with the
 > group's real OOI/COZI papers — schema, ids, tooling, and gold sets stay the
-> same. Point at a different file with `FM_LITRAG_CORPUS=/path/to/corpus.json`.
+> same. Point at a different file with `REPERE_LITRAG_CORPUS=/path/to/corpus.json`.
 
 Retrieval gets a third, domain-specific harness signal beyond §4:
 `retrieval_leakage(submitted_ids, corpus, cutoff_date)` returns any **fabricated**

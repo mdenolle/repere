@@ -15,7 +15,7 @@ roadmap item, applied to the GAIA suite. Three tasks are defined:
   * gaia_dl_hard
 
 Each task:
-  1. Loads from tasks.yaml (filtered by difficulty + split honoring FM_GAIA_SPLIT).
+  1. Loads from tasks.yaml (filtered by difficulty + split honoring REPERE_GAIA_SPLIT).
   2. Runs the gaia-data-downloader agent in a Docker sandbox.
   3. Scores with execution_pass + structural_checksum + trajectory_quality
      + tool_efficiency.
@@ -43,7 +43,7 @@ VALID_SPLITS = ("validation", "test")
 
 def _resolve_split(split: str | None) -> str | None:
     if split is None:
-        env = os.environ.get("FM_GAIA_SPLIT")
+        env = os.environ.get("REPERE_GAIA_SPLIT")
         if env in (None, "", "all"):
             return None
         split = env

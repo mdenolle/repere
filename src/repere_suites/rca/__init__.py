@@ -40,7 +40,7 @@ TIERS = ("T1_physics", "T2_execution", "T3_reference", "T4_judgment")
 
 def private_data_dir() -> Path | None:
     """Root of the private (hidden split) records and files, if configured."""
-    v = os.environ.get("FM_RCA_PRIVATE_DIR")
+    v = os.environ.get("REPERE_RCA_PRIVATE_DIR")
     return Path(v) if v else None
 
 

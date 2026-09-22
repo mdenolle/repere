@@ -330,7 +330,7 @@
             "properties": {
               "path": {
                 "type": "string",
-                "description": "Path relative to the suite data root (public) or to FM_RCA_PRIVATE_DIR (private)."
+                "description": "Path relative to the suite data root (public) or to REPERE_RCA_PRIVATE_DIR (private)."
               },
               "sha256": {
                 "type": "string",

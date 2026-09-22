@@ -214,7 +214,7 @@ fails when the artifact and its source diverge.
 |---|---|---|---|
 | `(prompt, gold)` fixtures for intent / fetch_code / trigger_code / report | [`tests/fixtures/sta_lta.<suite>.json`](tests/fixtures/) | `python scripts/build_suite_fixtures.py` | [`tests/test_suite_fixtures.py`](tests/test_suite_fixtures.py) |
 | Plot PNG goldens (public) | [`src/repere_suites/sta_lta/data/golden/<id>.png`](src/repere_suites/sta_lta/data/golden/) | `python scripts/build_plot_goldens.py` | [`tests/test_canonical_recipe.py`](tests/test_canonical_recipe.py) |
-| Plot PNG goldens (private) | `$FM_STALTA_GOLDEN_DIR/<id>.png` (gitignored) | `python scripts/build_plot_goldens.py --private` | none — private; reviewed manually |
+| Plot PNG goldens (private) | `$REPERE_STALTA_GOLDEN_DIR/<id>.png` (gitignored) | `python scripts/build_plot_goldens.py --private` | none — private; reviewed manually |
 | Static leaderboard data | [`site/data/leaderboard.json`](site/data/leaderboard.json), [`site/data/skill_lift.json`](site/data/skill_lift.json) | `python scripts/build_site_data.py` | [`tests/test_site_data.py`](tests/test_site_data.py) |
 
 ### 1. Build the `(prompt, gold)` fixtures for the four parametric suites
@@ -275,8 +275,8 @@ deterministic synthetic):
 python scripts/build_plot_goldens.py --only nisqually-2001 tohoku-2011-teleseism
 
 # (B) Private goldens for VERIFY events still under validation.
-#     Output dir is gitignored; FM_STALTA_GOLDEN_DIR points scorers at it.
-FM_STALTA_GOLDEN_DIR=~/private/fm_goldens \
+#     Output dir is gitignored; REPERE_STALTA_GOLDEN_DIR points scorers at it.
+REPERE_STALTA_GOLDEN_DIR=~/private/fm_goldens \
   python scripts/build_plot_goldens.py --private \
   --only pnsn-quiet-day-VERIFY mt-rainier-swarm-2024-VERIFY
 
@@ -339,7 +339,7 @@ fails the test before it reaches Pages.
   VERIFIED citable events (Nisqually 2001, Tōhoku 2011).
 - Do not commit full private goldens, provider secrets, or paid-eval
   outputs.
-- Point scorers at private STA/LTA goldens via `FM_STALTA_GOLDEN_DIR`; the
+- Point scorers at private STA/LTA goldens via `REPERE_STALTA_GOLDEN_DIR`; the
   generator's `--private` flag respects it.
 - Store local eval outputs under `results/`, which is gitignored.
 - Use GitHub Actions secrets for future private CI access.

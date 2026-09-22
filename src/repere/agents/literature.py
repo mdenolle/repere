@@ -9,7 +9,7 @@ contract in ``ROADMAP.md``), and returns URLs rather than the stable ids the
 scorer parses. So retrieval here runs over a snapshotted corpus:
 
 * :func:`load_corpus` reads a JSON corpus (default: the seed OOI/COZI fixture,
-  overridable with ``FM_LITRAG_CORPUS``).
+  overridable with ``REPERE_LITRAG_CORPUS``).
 * :func:`search_corpus` ranks documents by a deterministic lexical score and
   **enforces the cutoff** — a paper published after ``cutoff_date`` is never
   returned, so the agent physically cannot cite post-cutoff work.
@@ -62,10 +62,10 @@ class Document:
 
 
 def corpus_path(path: str | os.PathLike[str] | None = None) -> Path:
-    """Resolve the corpus path: explicit arg > ``FM_LITRAG_CORPUS`` > default."""
+    """Resolve the corpus path: explicit arg > ``REPERE_LITRAG_CORPUS`` > default."""
     if path is not None:
         return Path(path)
-    env = os.environ.get("FM_LITRAG_CORPUS")
+    env = os.environ.get("REPERE_LITRAG_CORPUS")
     return Path(env) if env else _DEFAULT_CORPUS
 
 

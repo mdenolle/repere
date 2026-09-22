@@ -34,7 +34,7 @@ def test_param_scorer_rewards_a_sound_config():
     from codameter import golden
     from codameter import use_cases as uc
 
-    # split="all" so a stray FM_DVV_SPLIT can't filter the target case out and
+    # split="all" so a stray REPERE_DVV_SPLIT can't filter the target case out and
     # make this fail spuriously.
     suite = dvv.DVVParamRecommendationSuite(split="all")
     # volcano is guaranteed present: as of codameter's hideable golden set
@@ -87,7 +87,7 @@ def test_export_suite_writes_jsonl(tmp_path):
     from repere.export import export_suites
 
     # split="all" pins the full corpus: without it the suite would honour
-    # FM_DVV_SPLIT from the environment and the row count would no longer be
+    # REPERE_DVV_SPLIT from the environment and the row count would no longer be
     # comparable to golden.CASES.
     suite = dvv.DVVParamRecommendationSuite(split="all")
     manifest = export_suites([suite], out_dir=tmp_path, version=dvv.VERSION)

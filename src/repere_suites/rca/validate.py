@@ -274,7 +274,7 @@ def rule_errors(record: dict[str, Any], *, strict: bool, base_dir: Path) -> list
         path = f.get("path", "")
         sha = f.get("sha256", "")
         candidates = [base_dir / path, PUBLIC_DATA_DIR / path, EXTERNAL_DATA_DIR / path]
-        private_root = os.environ.get("FM_RCA_PRIVATE_DIR")
+        private_root = os.environ.get("REPERE_RCA_PRIVATE_DIR")
         if private_root:
             candidates.append(Path(private_root) / path)
         found = next((c for c in candidates if c.is_file()), None)

@@ -24,12 +24,22 @@ there cross-references the version that delivered it.
   to `ghcr.io/mdenolle/repere-sandbox`. Mechanical rename only — no
   behavioural change.
 
+- **Environment variables renamed: `FM_*` → `REPERE_*`.** All 31 of them,
+  same order and meaning: `REPERE_USE_DOCKER_SANDBOX`, `REPERE_SANDBOX_IMAGE`,
+  `REPERE_OUT_DIR`, `REPERE_STALTA_GOLDEN_DIR`, `REPERE_STALTA_SPLIT`,
+  `REPERE_EVAL_DATA_DIR`, `REPERE_RCA_PRIVATE_DIR` and the rest. **No
+  back-compatibility shim**: the old names are read nowhere, and because every
+  read site is an `os.environ.get(..., default)` an `FM_*` export left in a
+  shell profile or a CI secret now falls through to the default silently
+  instead of erroring. Re-export anything you had set. Historical entries
+  below keep the `FM_*` spelling that shipped in 0.3.0 and 0.4.0.
+
 ### Added (branch `design/rca-harness`)
 
-- **FrugalMind-RCA design and skeleton.** `DESIGN.md` (taxonomy, tiers,
+- **Repère-RCA design and skeleton.** `DESIGN.md` (taxonomy, tiers,
   architecture decision memo), `OPEN_QUESTIONS.md`, `docs/rca/` (inventory,
   authoring guide, ABC audit, prior-art notes, rubric stubs) and
-  `src/frugalmind_suites/rca/`: JSON-Schema golden-record contract with two
+  `src/repere_suites/rca/`: JSON-Schema golden-record contract with two
   shapes and an explicit verification tier, validator with rules R01 to R15,
   16 template seed records, frozen price map skeleton, cost layer with
   model-pin and price-verification flags, T2 checkers, T1 chronfix clock
@@ -251,7 +261,7 @@ P3.5 per-suite `RUBRIC.md` scorer rationale.
 - Pixi + conda dev environments, manual `pages.yml` and `evals.yml`
   workflows, README sketch.
 
-[Unreleased]: https://github.com/mdenolle/frugalmind/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/mdenolle/frugalmind/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/mdenolle/frugalmind/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/mdenolle/frugalmind/releases/tag/v0.1.0
+[Unreleased]: https://github.com/mdenolle/repere/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mdenolle/repere/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/mdenolle/repere/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/mdenolle/repere/releases/tag/v0.1.0

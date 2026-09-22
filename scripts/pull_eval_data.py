@@ -15,7 +15,7 @@ Usage
     huggingface-cli login          # or export HF_TOKEN=hf_...
     pixi run -e full python scripts/pull_eval_data.py
 
-Files land in ``$FM_EVAL_DATA_DIR`` (default ``data/private/``), which is
+Files land in ``$REPERE_EVAL_DATA_DIR`` (default ``data/private/``), which is
 gitignored. The suites pick them up automatically.
 """
 
@@ -27,10 +27,10 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PRIVATE_DIR = Path(os.environ.get("FM_EVAL_DATA_DIR", REPO / "data" / "private"))
+PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", REPO / "data" / "private"))
 
 # The gated dataset. Override for a fork / a different lab.
-HF_REPO = os.environ.get("FM_HF_DATASET", "gaia-hazlab/repere-hidden")
+HF_REPO = os.environ.get("REPERE_HF_DATASET", "gaia-hazlab/repere-hidden")
 
 # Files the hidden dataset is expected to provide. Add one line per suite whose
 # test split is hidden.

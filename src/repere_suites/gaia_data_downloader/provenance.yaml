@@ -32,5 +32,5 @@ design_doc:
 contamination_policy:
   - Public issues never contain literal expected checksums or full file listings.
   - Tasks tagged `contamination_risk: high` default to `visibility: private`.
-  - Private partition lives under FM_GAIA_GOLDEN_DIR (gitignored), distributed
+  - Private partition lives under REPERE_GAIA_GOLDEN_DIR (gitignored), distributed
     via UW-internal share, never echoed back into LLM prompts.

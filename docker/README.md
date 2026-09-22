@@ -22,10 +22,10 @@ The host-Python sandbox is the default. Opt into the Docker sandbox
 with one env var:
 
 ```bash
-FM_USE_DOCKER_SANDBOX=1 FM_SANDBOX_IMAGE=repere-sandbox:dev pytest
+REPERE_USE_DOCKER_SANDBOX=1 REPERE_SANDBOX_IMAGE=repere-sandbox:dev pytest
 ```
 
-`FM_SANDBOX_IMAGE` defaults to `ghcr.io/mdenolle/repere-sandbox:latest`
+`REPERE_SANDBOX_IMAGE` defaults to `ghcr.io/mdenolle/repere-sandbox:latest`
 once the CI workflow has pushed an image.
 
 ## Pinned versions
@@ -49,8 +49,8 @@ still pass against the committed PNGs.
 `.github/workflows/sandbox-image.yml` builds the image on every PR and
 pushes to GHCR (`ghcr.io/mdenolle/repere-sandbox`) on tag pushes
 and merges to `main`. `.github/workflows/sandbox-parity.yml` runs the
-relevant test set twice — once with `FM_USE_DOCKER_SANDBOX=0` (host
-Python), once with `FM_USE_DOCKER_SANDBOX=1` against the locally-built
+relevant test set twice — once with `REPERE_USE_DOCKER_SANDBOX=0` (host
+Python), once with `REPERE_USE_DOCKER_SANDBOX=1` against the locally-built
 `repere-sandbox:ci` tag — and the dual-job matches the ROADMAP P2.2
 acceptance criterion. The pre-existing `.github/workflows/evals.yml`
 runs Pixi smoke tests and is unrelated to the sandbox parity flow.
