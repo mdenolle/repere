@@ -5548,7 +5548,6 @@ packages:
   - pyyaml>=6.0
   - pytest>=8.0 ; extra == 'test'
   - obspy>=1.4 ; extra == 'geo'
-  - codameter @ git+https://github.com/Denolle-Lab/codameter.git@9c3259b982ad79b35fb5e85cc8fb0952dc09244a ; extra == 'dvv'
   - matplotlib>=3.8 ; extra == 'plot'
   - numpy>=1.26 ; extra == 'plot'
   - scikit-image>=0.22 ; extra == 'plot'
