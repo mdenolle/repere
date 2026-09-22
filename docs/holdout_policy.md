@@ -125,6 +125,39 @@ test, because a guard nobody has seen fail is a guess.
    `/`. That catches both directions: data that should ship and is missing, and
    data that ships and should not.
 
+### Reproducing the fresh-clone view locally
+
+Your machine has the held-out partition; CI, contributors and anyone who runs
+`pip install repere` do not. Point the env var at an empty directory to see what
+they see, before you open the PR:
+
+```bash
+mkdir -p /tmp/no-private
+REPERE_EVAL_DATA_DIR=/tmp/no-private pytest
+```
+
+This is not hypothetical. `tests/test_sta_lta_suite.py` asserted
+`len(_load_events()) >= 6` and required all four event categories; it passed on
+the authoring machine and failed on the first CI run after the split, because
+two of the four categories -- `noise_day` and `quarry_blast` -- are held-out
+rows. Any test that asserts a count or a category set over the *merged* truth
+set has to skip when the partition is absent.
+
+### A consequence worth fixing: the public split is all-positive
+
+`noise_day` and `quarry_blast` are both held out, so the public validation split
+contains two positive cases and no negative one. The suite's design says the
+opposite -- "a model that scores 1.0 on Nisqually but hallucinates an earthquake
+on a noise day is a worse model" -- and a contributor developing against the
+public split never meets a case whose right answer is "no event".
+
+The cheap repair: the two burned rows that carry those categories
+(`pnsn-quiet-day-VERIFY`, `cascade-quarry-blast-VERIFY`) are already public via
+the 0.5.1 wheel and are both flagged `NEEDS VERIFICATION`, so demoting them to
+public validation rows costs nothing that has not already been spent, and
+restores negative-case coverage where contributors can see it. Re-cut the
+held-out negative cases from events that have never been published.
+
 Still worth adding, in rough priority order:
 
 - **Secret scanning and push protection.** Free on a public repository and now
@@ -163,5 +196,7 @@ To re-cut:
 - [ ] The loader implements all five properties of the contract above.
 - [ ] `provenance.yaml` describes the partition without restating an answer.
 - [ ] `pytest` passes locally, including `tests/test_no_holdout_in_repo.py`.
+- [ ] `REPERE_EVAL_DATA_DIR=/tmp/no-private pytest` also passes: no test may
+      depend on the held-out partition without skipping when it is absent.
 - [ ] The held-out partition is in the gated dataset, not only on one laptop.
 - [ ] If `package-data` gained a pattern, a wheel was built and inspected.

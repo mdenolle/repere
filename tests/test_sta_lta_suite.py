@@ -2,12 +2,32 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 import repere as F
 from repere_suites import sta_lta as S
 from repere_suites.sta_lta import scorers
 
 
-def test_events_load_with_required_categories():
+def test_public_validation_split_loads():
+    """What a fresh clone and a `pip install repere` actually see."""
+    events = S.items._load_events(split="validation")
+    assert len(events) == 2
+    categories = {ev["category"] for ev in events}
+    assert categories == {"regional_earthquake", "teleseism"}
+
+
+def test_full_truth_set_covers_all_four_categories():
+    """Negative-case discipline lives in the held-out partition.
+
+    noise_day and quarry_blast are both held-out rows, so the public validation
+    split is all-positive: a contributor developing against it never sees a
+    case where the right answer is "no event". That is a gap in the public
+    split, not a property of the benchmark -- see docs/holdout_policy.md on
+    demoting burned rows to public validation rows.
+    """
+    if not S.items.HIDDEN_EVENTS_PATH.is_file():
+        pytest.skip(f"held-out partition absent ({S.items.HIDDEN_EVENTS_PATH})")
     events = S.items._load_events()
     assert len(events) >= 6
     categories = {ev["category"] for ev in events}
