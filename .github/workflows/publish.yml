@@ -1,0 +1,144 @@
+name: Publish to PyPI
+
+# Publishes the sdist and wheel to PyPI on a version tag push, using Trusted
+# Publishing (OIDC): PyPI is configured to trust this repository + this
+# workflow filename + the `pypi` environment, so there is no API token stored
+# anywhere. Changing this file's name, or the environment name below, breaks
+# the trust relationship and PyPI will reject the upload -- update the
+# publisher on PyPI first if either has to change.
+#
+# Deliberately no `paths:` filter. A paths filter applies to tag pushes too,
+# and a release tag points at a version-bump commit, so the release would
+# silently never be published (the same trap that kept sandbox-image.yml from
+# building tagged images).
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # 3.12, not the 3.10 test target: the version guard below needs
+          # tomllib (3.11+). The wheel is py3-none-any, so the interpreter that
+          # builds it does not constrain what can install it.
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade build twine
+
+      - name: Refuse to publish a tag that disagrees with the version
+        # A tag and a pyproject version that drift apart put a distribution on
+        # PyPI that no git tag reproduces, and PyPI versions cannot be reused.
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(python -c 'import tomllib,pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')
+          if [ -z "$pkg" ]; then
+            echo "::error::could not read project.version from pyproject.toml"
+            exit 1
+          fi
+          echo "tag=$tag pyproject=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match pyproject version $pkg"
+            exit 1
+          fi
+
+      - name: Build
+        run: python -m build
+
+      - name: Check metadata
+        run: twine check dist/*
+
+      - name: Assert no direct-URL dependency slipped back in
+        # PyPI rejects direct-URL requirements. The dv/v backend pin lives in
+        # requirements-dvv.txt for exactly this reason; catch it here rather
+        # than in a failed upload.
+        run: |
+          if python -c "
+          import sys, zipfile, glob
+          whl = glob.glob('dist/*.whl')[0]
+          z = zipfile.ZipFile(whl)
+          md = z.read([n for n in z.namelist() if n.endswith('METADATA')][0]).decode()
+          bad = [l for l in md.splitlines() if l.startswith('Requires-Dist') and ('git+' in l or ' @ ' in l)]
+          print('\n'.join(bad))
+          sys.exit(1 if bad else 0)
+          "; then
+            echo "no direct-URL requirements"
+          else
+            echo "::error::direct-URL requirement in wheel metadata; PyPI will reject it"
+            exit 1
+          fi
+
+      - name: Verify the wheel carries every suite's data files
+        # package-data once covered a single suite, so a wheel imported
+        # cleanly and then enumerated zero items in six of seven suites.
+        # Installing it somewhere else and loading each suite from / is the
+        # only check that catches that.
+        run: |
+          python -m venv /tmp/wheeltest
+          /tmp/wheeltest/bin/pip install --quiet "$(ls dist/*.whl)[rca]"
+          cd /
+          /tmp/wheeltest/bin/python - <<'PY'
+          from repere_suites.sta_lta import items as sl
+          from repere_suites.synthetic_stalta import items as ss
+          from repere_suites.lit_rag import items as lr
+          from repere_suites.orchestration import items as orch
+          from repere_suites.paper_workflow import items as pw
+          from repere_suites.pipeline_regression import items as pr
+          from repere_suites.rca import validate
+          import pathlib
+
+          counts = {
+              # No split argument: _resolve_split(None) honours
+              # REPERE_STALTA_SPLIT, which is unset here, so this is every event.
+              "sta_lta": len(sl._load_events()),
+              "synthetic_stalta": len(ss._load()),
+              "lit_rag": sum(len(lr._load_tasks(k)) for k in ("retrieval", "translation", "grounded_qa")),
+              "orchestration": len(orch._load_tasks()),
+              "paper_workflow": len(pw.load_ontology()),
+              "pipeline_regression": len(pr._load_pipelines()),
+              "rca_seeds": len(list((pathlib.Path(validate.__file__).parent / "seeds").rglob("*.yaml"))),
+          }
+          for name, n in counts.items():
+              print(f"{name}: {n}")
+          empty = [name for name, n in counts.items() if n == 0]
+          if empty:
+              raise SystemExit(f"suites with no data in the wheel: {empty}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # Must match the environment named on PyPI's trusted-publisher config.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/repere
+    permissions:
+      # Mints the OIDC token Trusted Publishing exchanges for an upload
+      # credential. Without it the upload fails with no usable credential.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
