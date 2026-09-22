@@ -15,8 +15,8 @@ Two suites, one per output type:
   scorer regresses it against the truth, anchored so a no-change series scores ~0.
 
 ``codameter`` is imported lazily, so this module imports even when codameter is
-absent; building rows or scoring then raises a clear error. Install the suite's
-extra to enable it: ``pip install repere[dvv]``.
+absent; building rows or scoring then raises a clear error. Install the
+backend to enable it: ``pip install -r requirements-dvv.txt``.
 """
 from __future__ import annotations
 
@@ -44,7 +44,8 @@ def _cfm():
     except ImportError as exc:  # pragma: no cover - exercised only without codameter
         raise ImportError(
             "the dv/v suite needs codameter; install it with "
-            "`pip install repere[dvv]` (or `pip install codameter`)."
+            "`pip install -r requirements-dvv.txt`, which carries the pinned "
+            "commit the scores are defined against."
         ) from exc
     return cfm
 

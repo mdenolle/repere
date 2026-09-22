@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install repere[dvv])")
+pytest.importorskip("codameter", reason="dv/v suite needs codameter (pip install -r requirements-dvv.txt)")
 
 import repere as F
 from repere_suites import dvv

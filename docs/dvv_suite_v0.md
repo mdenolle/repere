@@ -10,7 +10,7 @@ how well a choice recovers the truth, not by matching a fixed answer.
 
 | File | Purpose |
 |---|---|
-| `suite.py` | Two `DenolleGroupSuite` subclasses, one per output type. Thin adapter over `codameter.repere`. |
+| `suite.py` | Two `DenolleGroupSuite` subclasses, one per output type. Thin adapter over `codameter.frugalmind`. |
 | `scorers.py` | `make_scorer_from_spec` -> codameter's deterministic scorers. |
 
 The cases (ten per suite) come from `codameter.golden.CASES`: six mainstream,
@@ -51,7 +51,7 @@ importable):
 
 ```bash
 repere export-suite --suite codameter.param_recommendation --out datasets/
-# or, from codameter: pixi run repere-export
+# or, from codameter: pixi run frugalmind-export   (codameter's own task name)
 ```
 
 ## Scoring philosophy

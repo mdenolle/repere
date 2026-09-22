@@ -330,7 +330,7 @@ def _all_registered_suites() -> list[Any]:
 
     The dv/v suites need their scoring backend (``codameter``) to export rows, so
     they are included only when it is importable. This keeps a bulk export
-    working for contributors who have not installed the ``[dvv]`` extra.
+    working for contributors who have not installed the dv/v scoring backend.
     """
     from importlib.util import find_spec
 
