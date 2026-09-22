@@ -4,7 +4,7 @@ Repère is an open evaluation framework for scientific AI agents in the geoscien
 
 The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide.
 
-> **v0.5.0 — renamed from FrugalMind to Repère** (September 2026). Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
+> **v0.5.1 — renamed from FrugalMind to Repère, and on PyPI** (September 2026). `pip install repere`. Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
 The current repository contains:
 

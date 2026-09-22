@@ -4,15 +4,50 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "repere"
-version = "0.5.0"
-description = "Cost-optimized multi-agent evaluation and routing prototype"
+version = "0.5.1"
+description = "Cost-aware, rigor-preserving evaluation of scientific AI agents in the geosciences"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
+# No email: package metadata is published and scraped, and that is a separate
+# decision from naming the author.
+authors = [{ name = "Marine Denolle" }]
+# Mirrors the keyword list in CITATION.cff so the two records agree.
+keywords = [
+    "ai-for-science",
+    "evaluation",
+    "benchmark",
+    "scientific-agents",
+    "cost-aware-evaluation",
+    "geoscience",
+    "seismology",
+]
+# No "License :: OSI Approved :: MIT License" classifier: the license reaches
+# PyPI as License-Expression (PEP 639) via `license` above, and setuptools>=77
+# errors out if a project declares both.
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "PyYAML>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://mdenolle.github.io/repere/"
+Repository = "https://github.com/mdenolle/repere"
+Documentation = "https://github.com/mdenolle/repere/tree/main/docs"
+Changelog = "https://github.com/mdenolle/repere/blob/main/CHANGELOG.md"
+Issues = "https://github.com/mdenolle/repere/issues"
 
 [project.optional-dependencies]
 test = [
