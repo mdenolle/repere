@@ -112,6 +112,7 @@ where = ["src"]
 "repere_suites.paper_workflow" = ["ontology.yaml", "papers.yaml"]
 "repere_suites.pipeline_regression" = ["pipelines.yaml"]
 "repere_suites.gaia_data_downloader" = ["tasks.yaml", "provenance.yaml", "README.md"]
+"repere_suites.atlas" = ["pins.yaml"]
 "repere_suites.rca" = [
     "schema/*.json",
     "pricing/*.yaml",

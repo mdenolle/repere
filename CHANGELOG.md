@@ -13,13 +13,26 @@ there cross-references the version that delivered it.
 
 ### Added
 
+- **RCA Atlas owns the RCA golden items; Repère pulls them.**
+  `src/repere_suites/atlas/` pins `coszo-hub/RCA-Atlas` at a commit and the
+  SHA-256 of 11 dataset files, `scripts/pull_atlas.py` downloads them into
+  `$REPERE_EVAL_DATA_DIR/atlas/<commit>/` and refuses any file that does not
+  match its pin. No Atlas row is committed or packaged: the Atlas licence is
+  proprietary, and one copy of each case is the point.
+  `tests/test_atlas_pull.py` covers the hash checks without network access and
+  fails if a pinned file is ever committed. `docs/golden_packaging/ATLAS_PROPOSAL.md`
+  is rewritten around the decision: which Atlas suites can test Repère's
+  models, the skill-lift design for the 21 agent tasks, and the questions for
+  the Atlas owners.
+- `tests/test_no_holdout_in_repo.py` now checks the RCA seeds, which it never
+  covered although `seeds/*/*.yaml` ships in the wheel.
 - **`docs/golden_packaging/`** — one page for packaging a golden data set,
   from authored cases to a pinned `repere.suite.v1` release: the row and
   manifest schemas (as JSON Schema), where hidden gold lives (derive or host),
   the export procedure, pinning, a pre-merge checklist, and when to author an
   RCA golden record instead. The example under `example/` was produced by
   `repere.export.export_suites`. Collects what was spread across four
-  documents; `ATLAS_PROPOSAL.md` applies it to the Atlas routing cases.
+  documents; `ATLAS_PROPOSAL.md` covers the RCA Atlas integration.
 - **`src/repere/jev.py`** and **`src/repere/jev_scorers.py`** — prototype
   free-text scorers (cited-claim support, report-of-work honesty) on the
   TypeSafe Jev service, unit-tested against a scripted transport only. No
@@ -105,6 +118,14 @@ there cross-references the version that delivered it.
 
 ### Fixed
 
+- **PR #54 committed two RCA Atlas rows** (`route-001`, `route-005`) as the
+  golden-packaging example. The example is now the
+  one public row of Repère's own orchestration suite. The rows remain in git
+  history.
+- One RCA seed, `rca-coding-timing-resyncs-hys14-002`, is a committed
+  `split: test` template. It carries no stored answer, but it ships in the
+  wheel. The new guard lists it as pending removal and fails once the file is
+  gone and the exception is not.
 - **A K=5 sweep produced leaderboard rows reading `n_epochs: 1`.** The per-repeat
   series only ever reached `skill_lift.json`; `demo_dashboard` built each
   leaderboard row from `arm["score"]`, the mean, and discarded `arm["scores"]`.

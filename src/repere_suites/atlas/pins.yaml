@@ -1,0 +1,64 @@
+# RCA Atlas golden data sets, pinned by commit and SHA-256.
+#
+# RCA Atlas (coszo-hub/RCA-Atlas) owns these items. Its licence is proprietary,
+# so Repère never commits or packages a row: `fetch_atlas()` downloads each
+# file at `commit` into $REPERE_EVAL_DATA_DIR/atlas/<commit>/ and refuses any
+# file whose hash differs from the one below. This file holds hashes and row
+# counts only, which identify a dataset version without reproducing it.
+#
+# The hashes were computed from a checkout of `commit` on 2026-10-15; the
+# routing hash equals the `dataset_sha256` in Atlas's own
+# results/2026-10-08-baseline/provenance/routing.json.
+#
+# `commit` is on Atlas's unmerged `rca-atlas-eval-suite` branch, not on main.
+# Replace it with a release tag on Atlas main once one exists.
+
+repo: coszo-hub/RCA-Atlas
+commit: e8d828d3cacecbcd349031bcde84ca31705bda18
+pinned_on: "2026-10-15"
+
+files:
+  routing:
+    path: src/atlas_eval/datasets/routing_v1.jsonl
+    sha256: 8bd5764c024b763a9fbf789bca596295052857153379a54e0d86a233fc6a16f4
+    rows: 156
+  quake_questions:
+    path: src/atlas_eval/datasets/quake_questions_v1.jsonl
+    sha256: 09aee219a721b627422f50b0d1377fd67ab5a26b9ca589048850a1ad97452cc0
+    rows: 26
+  quakes:
+    path: src/atlas_eval/datasets/quakes_v1.jsonl
+    sha256: bdf6508449f959cfb77283654d8ad933fa0da3ce2fbe256f1458d72148646ed3
+    rows: 35
+  gaps:
+    path: src/atlas_eval/datasets/gaps_v1.jsonl
+    sha256: d882bde3a4f4baf325775d857080589c06641fd72aa0bd531127e0a631bfce78
+    rows: 120
+  timing:
+    path: src/atlas_eval/datasets/timing_v1.jsonl
+    sha256: 0a7e3efec628c92696b1974eb65157f18f8f5dfbe5bf6a3447d444876d547ece
+    rows: 60
+  dvv:
+    path: src/atlas_eval/datasets/dvv_v1.jsonl
+    sha256: bbc7572f314906de2b8f024dd68f06111cb80790aea0848a0114b1e84fa33e9c
+    rows: 72
+  pressure:
+    path: src/atlas_eval/datasets/pressure_v1.jsonl
+    sha256: b17883559365b4df9d3c59493ac14e514b9d01d0f13bf1a2169c300ac9c6c80b
+    rows: 72
+  agent_tasks:
+    path: src/atlas_eval/datasets/agent_tasks_v1.jsonl
+    sha256: b4be9abc5ea84439704c4820c40aca62d03dc491c7c3f99b3aed049153361cc7
+    rows: 21
+  answers_extra:
+    path: src/atlas_eval/datasets/answers_extra_v1.jsonl
+    sha256: 405663a49ba172671376ce8b0770bcb054bb4c6cb2aa33e89c7b09b9e329ee4f
+    rows: 12
+  rca_eval:
+    path: src/model_eval/datasets/rca_eval_v1.jsonl
+    sha256: e21437c05912dcee3b355b0cf644adc74de947078cd6fa503a0107cdb5e90476
+    rows: 60
+  rca_eval_gold:
+    path: src/model_eval/datasets/rca_eval_v1_gold.jsonl
+    sha256: 0062ff09df07ea0fa9ac44a79f0881917748b0479e0c87f555cfe26b356b899f
+    rows: 60
