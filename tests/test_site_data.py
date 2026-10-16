@@ -35,17 +35,28 @@ def test_leaderboard_json_has_required_fields():
     assert payload["generated_at"]
     rows = payload["leaderboard"]
     assert rows, "leaderboard.json must contain at least one row"
+    assert payload["schema_version"] == "0.2", (
+        "the committed board must be schema v0.2; regenerate or migrate it"
+    )
     required = {
         "rank",
         "model_id",
         "agent_condition",
         "suite",
-        "score",
+        "score_mean",
+        "score_ci95",
+        "score_runs",
+        "n_epochs",
         "cost_usd",
+        "scoring_cost_usd",
         "n_completed",
         "n_total",
         "openness",
         "toolset",
+        "phase",
+        "on_frontier_cost",
+        "on_frontier_tokens",
+        "reliability",
     }
     for row in rows:
         missing = required - set(row)
@@ -146,13 +157,13 @@ def test_css_has_chart_and_category_classes():
     rule silently renders an unreadable figure rather than erroring."""
     css = (REPO_ROOT / "site" / "styles.css").read_text()
     for cls in (
-        ".lift-line",   # the skill-lift connector — the core visual claim
-        ".pt",          # markers
+        ".lift-line",  # the skill-lift connector — the core visual claim
+        ".pt",  # markers
         ".gridline",
         ".axis-label",
-        ".chip",        # category filters
-        ".tag",         # eval tags
-        "#tooltip",     # hover card (model version + weights)
+        ".chip",  # category filters
+        ".tag",  # eval tags
+        "#tooltip",  # hover card (model version + weights)
     ):
         assert cls in css, f"styles.css missing rule for {cls}"
 
@@ -164,3 +175,37 @@ def test_site_uses_gaia_hazlab_palette():
     assert "#4b2e83" in css, "UW Husky Purple (--purple) missing"
     assert "#2a1a4f" in css, "deep purple ink (--ink) missing"
     assert "Montserrat" in css and "Inter" in css
+
+
+def test_committed_board_states_its_evidence_honestly():
+    """A row with one run must not look like a row with five.
+
+    The July board is real but single-run. v0.2 says so per row (`n_epochs`,
+    null `score_ci95`) and in the payload notes, rather than presenting point
+    estimates as though they carried intervals.
+    """
+    payload = json.loads((SITE_DATA / "leaderboard.json").read_text())
+    rows = payload["leaderboard"]
+    for row in rows:
+        assert row["n_epochs"] >= 1
+        assert len(row["score_runs"]) == row["n_epochs"]
+        if row["n_epochs"] < 2:
+            assert row["score_ci95"] is None
+    if any(r["n_epochs"] < 2 for r in rows):
+        assert any("single run" in n for n in payload["notes"])
+
+
+def test_retired_v0_1_fields_are_absent_from_the_committed_board():
+    payload = json.loads((SITE_DATA / "leaderboard.json").read_text())
+    for row in payload["leaderboard"]:
+        for retired in ("score", "quality_percent", "efficiency_score"):
+            assert retired not in row, f"v0.1 field {retired!r} survived the migration"
+
+
+def test_the_frontier_is_marked_within_each_suite():
+    """Every suite on the board has at least one row on its own cost frontier."""
+    payload = json.loads((SITE_DATA / "leaderboard.json").read_text())
+    suites = {r["suite"] for r in payload["leaderboard"] if r["phase"] == "baseline"}
+    for suite in suites:
+        rows = [r for r in payload["leaderboard"] if r["suite"] == suite]
+        assert any(r["on_frontier_cost"] for r in rows), f"{suite} has no frontier row"

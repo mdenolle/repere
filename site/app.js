@@ -92,6 +92,18 @@ const X_AXES = {
     full: (r) => r.latency_full_s,
     fmt: (v) => `${Math.round(v)}s`,
   },
+  tokens: {
+    // Provider-independent (issue #41). A board pinned to 2026 prices ages
+    // badly; tokens let a reader re-price every row under a different list.
+    // Output tokens only, because that is what the sweep records per arm --
+    // the skill's effect on *input* tokens is the prefix it adds, which is a
+    // property of the skill, not of the model's behaviour.
+    label: "Output tokens per run — the axis that survives a price change",
+    short: "Output tokens per run",
+    none: (r) => r.out_tokens_none,
+    full: (r) => r.out_tokens_full,
+    fmt: (v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${Math.round(v)}`),
+  },
   size: {
     // Static property of the model, so it needs no measurement and works even on
     // result files produced before the run recorded `size_b`.
@@ -409,7 +421,7 @@ function renderAxisPicker() {
   const box = document.querySelector("#xaxis-picker");
   if (!box) return;
   box.innerHTML = "";
-  const labels = { cost: "Cost ($)", latency: "Latency (s)", size: "Model size (B)" };
+  const labels = { cost: "Cost ($)", latency: "Latency (s)", tokens: "Tokens", size: "Model size (B)" };
   for (const key of Object.keys(X_AXES)) {
     const ax = X_AXES[key];
     const has = state.rows.some(

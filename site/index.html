@@ -215,6 +215,63 @@
         </div>
       </section>
 
+      <!-- ================= BOARD: cost vs quality, with the frontier ======= -->
+      <section id="board">
+        <div class="section-head">
+          <p class="eyebrow">The board</p>
+          <h2>What is on the frontier, per task.</h2>
+          <p class="lede">
+            The dashed line is the <strong>cost-quality frontier</strong>: the set of systems no
+            mixture of other systems beats. It starts at the origin because not deploying an agent
+            is always an option, and it is drawn <strong>within each eval</strong> — a perfect score
+            on parameter choice and a perfect score on retrieval are not the same achievement.
+            Hollow dashed markers are single runs: point estimates with no interval.
+          </p>
+        </div>
+
+        <div class="card chart-card">
+          <div class="chart-toolbar">
+            <div class="filters" id="board-suites" role="group" aria-label="Choose an eval"></div>
+            <div class="filters" id="board-axis" role="group" aria-label="Choose the cost axis"></div>
+          </div>
+
+          <svg id="board-chart" viewBox="0 0 900 460" role="img"
+               aria-label="Cost versus deterministic score, with the frontier per eval"></svg>
+
+          <div class="legend" id="board-legend"></div>
+          <p class="chart-note" id="board-note"></p>
+
+          <ul class="chart-note" id="board-warnings" hidden></ul>
+
+          <details class="data-table-wrap">
+            <summary>Show the numbers as a table</summary>
+            <div class="table-scroll">
+              <table class="data-table">
+                <caption class="sr-only">
+                  Score with its 95% interval, number of runs, cost, tokens, and which
+                  frontier each configuration sits on.
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Model</th>
+                    <th scope="col">Condition</th>
+                    <th scope="col">Score % (± pp)</th>
+                    <th scope="col">Runs</th>
+                    <th scope="col">Consistency</th>
+                    <th scope="col">Cost</th>
+                    <th scope="col">Tokens</th>
+                    <th scope="col">Frontier</th>
+                  </tr>
+                </thead>
+                <tbody id="board-table-body"></tbody>
+              </table>
+            </div>
+          </details>
+          <p class="meta-line" id="board-provenance"></p>
+        </div>
+      </section>
+
+
       <!-- ================= CONTRIBUTE ================= -->
       <section id="contribute">
         <div class="section-head">
@@ -310,5 +367,6 @@
 
     <div id="tooltip" role="tooltip"></div>
     <script src="app.js" type="module"></script>
+    <script src="board.js" type="module"></script>
   </body>
 </html>
