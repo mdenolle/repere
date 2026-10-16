@@ -51,10 +51,24 @@ _FAMILY_GROUPS = {
 }
 
 _TIER_METHODS = {
-    "T1_physics": {"oracle_compare"},
-    "T2_execution": {"execution_check"},
-    "T3_reference": {"retrieval_metrics", "citation_support", "exact_match"},
-    "T4_judgment": {"rubric_judge"},
+    "V1_physics": {"oracle_compare"},
+    "V2_execution": {"execution_check"},
+    "V3_reference": {"retrieval_metrics", "citation_support", "exact_match"},
+    "V4_judgment": {"rubric_judge"},
+}
+
+# Which metric names a given scoring.method can actually produce. Before R16
+# this field was decorative: nothing in the package read `scoring.metrics`, so a
+# record could declare `citation_precision` under a method that computes nDCG and
+# no check would notice. An annotation nothing verifies is worse than no
+# annotation, because a reader believes it.
+_METHOD_METRICS = {
+    "oracle_compare": {"abs_error", "within_tolerance", "f1"},
+    "execution_check": {"pass_fail"},
+    "retrieval_metrics": {"recall_at_k", "precision_at_k", "mrr", "ndcg_at_k"},
+    "citation_support": {"citation_precision", "citation_recall", "pass_fail"},
+    "exact_match": {"pass_fail"},
+    "rubric_judge": {"rubric_mean"},
 }
 
 _SHAPE_B_REQUIRED = ("tools", "inputs", "task", "sandbox")
@@ -171,35 +185,35 @@ def rule_errors(record: dict[str, Any], *, strict: bool, base_dir: Path) -> list
             f"R02: tier {tier} requires scoring.method in {sorted(_TIER_METHODS[tier])}, got {method!r}"
         )
 
-    # R03 T1 needs an oracle with an independent measurement and a tolerance
-    if tier == "T1_physics":
+    # R03 V1 needs an oracle with an independent measurement and a tolerance
+    if tier == "V1_physics":
         oracle = scoring.get("oracle") or {}
         if not oracle:
-            errs.append("R03: T1_physics requires scoring.oracle")
+            errs.append("R03: V1_physics requires scoring.oracle")
         elif "tolerance" not in oracle:
-            errs.append("R03: T1_physics oracle must state a tolerance (abs/rel + units)")
+            errs.append("R03: V1_physics oracle must state a tolerance (abs/rel + units)")
 
-    # R04 T2 needs a checker and shape B
-    if tier == "T2_execution":
+    # R04 V2 needs a checker and shape B
+    if tier == "V2_execution":
         if not scoring.get("checker"):
-            errs.append("R04: T2_execution requires scoring.checker")
+            errs.append("R04: V2_execution requires scoring.checker")
         if shape != "B_tool":
-            errs.append("R04: T2_execution items must be shape B_tool (something has to execute)")
+            errs.append("R04: V2_execution items must be shape B_tool (something has to execute)")
 
-    # R05 T3 needs a non-null cutoff_date and a corpus snapshot
-    if tier == "T3_reference":
+    # R05 V3 needs a non-null cutoff_date and a corpus snapshot
+    if tier == "V3_reference":
         if not g("cutoff_date"):
-            errs.append("R05: T3_reference requires a non-null cutoff_date")
+            errs.append("R05: V3_reference requires a non-null cutoff_date")
         if not g("corpus_snapshot"):
-            errs.append("R05: T3_reference requires corpus_snapshot (corpus_id + snapshot_ref)")
+            errs.append("R05: V3_reference requires corpus_snapshot (corpus_id + snapshot_ref)")
 
-    # R06 T4 needs a judge block with >=2 raters; judge score never reportable without agreement
-    if tier == "T4_judgment":
+    # R06 V4 needs a judge block with >=2 raters; judge score never reportable without agreement
+    if tier == "V4_judgment":
         judge = scoring.get("judge") or {}
         if not judge:
-            errs.append("R06: T4_judgment requires scoring.judge")
+            errs.append("R06: V4_judgment requires scoring.judge")
         elif int(judge.get("min_raters", 0)) < 2:
-            errs.append("R06: T4_judgment requires min_raters >= 2")
+            errs.append("R06: V4_judgment requires min_raters >= 2")
 
     # R07 shape B completeness / shape A exclusions
     if shape == "B_tool":
@@ -305,6 +319,19 @@ def rule_errors(record: dict[str, Any], *, strict: bool, base_dir: Path) -> list
             errs.append(
                 "R15: frozen items must run network=replay or none; allowlist is for record mode only"
             )
+
+    # R16 every declared metric must be one the record's scoring.method produces
+    declared = scoring.get("metrics") or []
+    if method in _METHOD_METRICS:
+        allowed = _METHOD_METRICS[method]
+        for m in declared:
+            if m not in allowed:
+                errs.append(
+                    f"R16: scoring.method {method!r} cannot produce metric {m!r}; "
+                    f"it produces {sorted(allowed)}"
+                )
+    if not declared:
+        errs.append("R16: scoring.metrics must name at least one metric")
 
     return errs
 

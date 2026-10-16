@@ -46,7 +46,7 @@ def test_list_models_uses_default_registry(capsys):
     out = capsys.readouterr().out
     rows = json.loads(out)
     assert any(r["id"].startswith("claude-") for r in rows)
-    assert any(r["tier"] == "cloud" for r in rows)
+    assert any(r["size_band"] == "cloud" for r in rows)
 
 
 def test_list_skills_includes_manifest_entries(capsys):

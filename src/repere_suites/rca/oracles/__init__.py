@@ -1,4 +1,4 @@
-"""T1 oracle solvers. Addressed from records as ``module:function``.
+"""V1 oracle solvers. Addressed from records as ``module:function``.
 
 Only modules under ``repere_suites.rca.oracles`` may be resolved, for the
 same reason as checkers: a record must not be able to import arbitrary code

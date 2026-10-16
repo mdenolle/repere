@@ -1,4 +1,4 @@
-"""Deterministic checkers for T2 (execution-verified) RCA records.
+"""Deterministic checkers for V2 (execution-verified) RCA records.
 
 A checker is a pure function ``(exec_result, args) -> CheckOutcome`` that
 never calls a model and never touches the network. It is addressed from a

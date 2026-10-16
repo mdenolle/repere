@@ -76,13 +76,13 @@ def test_missing_fan_in_costs_edge_recall():
     assert scorer(_plan(wf["nodes"], thinned), gold) < full
 
 
-def test_hard_tier_withholds_the_abstract():
-    """The `hard` tier must make the model DESIGN the workflow, not extract it."""
+def test_hard_difficulty_withholds_the_abstract():
+    """The `hard` difficulty must make the model DESIGN the workflow, not extract it."""
     suite = PaperWorkflowSuite()
     p = dict(suite._papers()[0])
-    p["tier"] = "hard"
+    p["difficulty"] = "hard"
     prompt, _, _, meta = suite._compose(p)
-    assert meta["tier"] == "hard"
+    assert meta["difficulty"] == "hard"
     assert "Abstract:" not in prompt
     assert "Title:" in prompt
 

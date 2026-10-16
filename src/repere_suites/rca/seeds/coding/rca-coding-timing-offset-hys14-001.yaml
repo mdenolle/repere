@@ -5,7 +5,7 @@ schema_version: rca.golden.v0.1
 id: rca-coding-timing-offset-hys14-001
 family: coding
 group: 1c_calibration_timing
-tier: T1_physics
+tier: V1_physics
 shape: B_tool
 status: template
 difficulty: hard

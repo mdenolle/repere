@@ -17,7 +17,7 @@ from repere import ModelCard, ModelRegistry
 from repere.adapters import EchoAdapter
 from repere.budget import BudgetGuard
 from repere.leaderboard import LeaderboardRunner, build_skill_lift_leaderboard
-from repere.registry import cards_in_tier, load_registry_yaml
+from repere.registry import cards_in_size_band, load_registry_yaml
 from repere.skills import SkillLoader, render_with_skill
 from repere_suites.sta_lta import STALTAIntentExtractionSuite
 
@@ -101,7 +101,7 @@ def _three_small_cards() -> list[ModelCard]:
         except KeyError:
             continue
     if len(picked) < 3:
-        for c in cards_in_tier(registry, "small"):
+        for c in cards_in_size_band(registry, "small"):
             if c.id not in {p.id for p in picked}:
                 picked.append(c)
             if len(picked) >= 3:

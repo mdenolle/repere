@@ -5,7 +5,7 @@ schema_version: rca.golden.v0.1
 id: rca-sensor-photo-request-004
 family: sensor
 group: 3_sensor
-tier: T4_judgment
+tier: V4_judgment
 shape: A_text
 status: template
 difficulty: easy

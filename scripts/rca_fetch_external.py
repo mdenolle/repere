@@ -12,16 +12,16 @@ silently different corpus or correction table would change scores.
 Groups
 ------
 chronfix   coszo-hub/chronfix @ 486f05b, examples/HYS14/{hour_times.npy,
-           delta_t_hourly_clean.npy, trigger_periods.csv}: the T1 reference.
+           delta_t_hourly_clean.npy, trigger_periods.csv}: the V1 reference.
            MIT licence (LICENSE in that repo).
 arcada     mhemmett/arcada @ 14294bc, catalog/{instruments.json, papers.json,
-           pdf-chunks.json, pi-pages.json}: the corpus snapshots for T3 and
+           pdf-chunks.json, pi-pages.json}: the corpus snapshots for V3 and
            the sensor family. Code is MIT; the data files carry no separate
            licence statement (see docs/rca/prior_art/arcada.md §8) -- TODO
            confirm redistribution terms with the authors before any public
            release of derived records.
 mhz        one UTC day (2023-03-15) of OO.HYS14..MHZ and OO.HYS12..MHZ from
-           the EarthScope FDSN dataselect service, for the T1 offset item.
+           the EarthScope FDSN dataselect service, for the V1 offset item.
 """
 
 from __future__ import annotations

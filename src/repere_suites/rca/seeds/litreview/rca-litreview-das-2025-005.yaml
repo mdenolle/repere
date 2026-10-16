@@ -4,7 +4,7 @@ schema_version: rca.golden.v0.1
 id: rca-litreview-das-2025-005
 family: litreview
 group: 2_litreview
-tier: T3_reference
+tier: V3_reference
 shape: A_text
 status: template
 difficulty: medium

@@ -6,7 +6,7 @@ schema_version: rca.golden.v0.1
 id: rca-sensor-explain-hys12-vs-hys14-003
 family: sensor
 group: 3_sensor
-tier: T4_judgment
+tier: V4_judgment
 shape: A_text
 status: template
 difficulty: medium

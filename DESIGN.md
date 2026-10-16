@@ -41,7 +41,7 @@ Repère-RCA adds, under `src/repere_suites/rca/`:
 | Piece | File | State |
 |---|---|---|
 | Golden-record schema (shape A and B, explicit tier) | `schema/golden_record.schema.json` | done |
-| Validator: JSON Schema plus 15 cross-field rules R01 to R15 | `validate.py` | done, 16 seeds pass, `--strict` fails templates |
+| Validator: JSON Schema plus 16 cross-field rules R01 to R16 | `validate.py` | done, 16 seeds pass, `--strict` fails templates |
 | 16 seed records, all `status: template` | `seeds/{coding,litreview,sensor}/` | done; every one carries co-author TODOs |
 | Frozen price map with versions and verification flags | `pricing/prices.yaml` | skeleton; Anthropic rates from two written sources that disagree on Opus 4.6; all other providers TODO |
 | Cost layer: price a run, flag unpinned models and unverified prices | `cost.py` | done |
@@ -65,12 +65,12 @@ Q3).
 
 | Family | Group | What the agent must produce | Tier | Shape | Seeds |
 |---|---|---|---|---|---|
-| 1 coding | 1a download and processing | resolve a plain-language request to OOI M2M, EarthScope FDSN or a PI portal and emit a script that runs and returns the records | T2 | B | `rca-coding-download-hys14-bhz-001`, `rca-coding-download-m2m-prest-001` |
-| 1 coding | 1b QC | gaps, overlaps, coverage; clean windows are first-class negative cases | T2 | B | `rca-coding-qc-continuity-001` (control) |
-| 1 coding | 1c calibration and timing | clock offset at an hour; resync detection | T1 | B | `rca-coding-timing-offset-hys14-001`, `rca-coding-timing-resyncs-hys14-002` |
-| 1 coding | 1d coding plus tool calls | STA/LTA with given parameters via `python_session` | T2 | B | `rca-coding-stalta-hys14-001` |
-| 2 lit-review | 2 | which papers used a sensor; grounded answers with citations; abstention after the cutoff | T3 | A | five `rca-litreview-*` |
-| 3 sensor | 3 | which channel; data availability; what a sensor is; known issues; photos with credit | T3, T4 | A | five `rca-sensor-*` |
+| 1 coding | 1a download and processing | resolve a plain-language request to OOI M2M, EarthScope FDSN or a PI portal and emit a script that runs and returns the records | V2 | B | `rca-coding-download-hys14-bhz-001`, `rca-coding-download-m2m-prest-001` |
+| 1 coding | 1b QC | gaps, overlaps, coverage; clean windows are first-class negative cases | V2 | B | `rca-coding-qc-continuity-001` (control) |
+| 1 coding | 1c calibration and timing | clock offset at an hour; resync detection | V1 | B | `rca-coding-timing-offset-hys14-001`, `rca-coding-timing-resyncs-hys14-002` |
+| 1 coding | 1d coding plus tool calls | STA/LTA with given parameters via `python_session` | V2 | B | `rca-coding-stalta-hys14-001` |
+| 2 lit-review | 2 | which papers used a sensor; grounded answers with citations; abstention after the cutoff | V3 | A | five `rca-litreview-*` |
+| 3 sensor | 3 | which channel; data availability; what a sensor is; known issues; photos with credit | V3, V4 | A | five `rca-sensor-*` |
 
 Board note "data: nc ... python" under 1d: unread, see Q2. The model row on
 the board (Claude, OpenAI, Gemini, Olmo, Qwen, Kimi, Mistral) is the sweep
@@ -90,14 +90,17 @@ repere already orders scorers T0 deterministic, T1 numerical, T2
 perceptual, T3 trajectory, T4 rubric (`docs/dataset_submission.md` §4). The
 RCA tiers are organised by *how truth is established*, not by scorer type,
 so the two vocabularies coexist and every RCA record names its scorer method
-explicitly. To avoid the collision the RCA tier names carry a suffix:
+explicitly. To end the collision the RCA tiers carry a `V` prefix (V for
+verification: how the truth was established) and the scorability spectrum keeps
+`T` (T for the tier of scorer the task admits). The two are indexed together in
+[`docs/glossary.md`](docs/glossary.md):
 
 | RCA tier | Truth comes from | Scorer method (record field) | repere scorer tier | Metric |
 |---|---|---|---|---|
-| `T1_physics` | an independently measured physical quantity with an oracle solver | `oracle_compare` | T1 numerical | absolute error, within-tolerance, F1 for intervals |
-| `T2_execution` | executing the generated code and checking the result deterministically | `execution_check` | T0/T1 | staged pass/fail 0.1 code, 0.2 runs, 0.7 correct |
-| `T3_reference` | a date-bounded reference corpus and human-graded relevance | `retrieval_metrics`, `citation_support`, `exact_match` | T0 | nDCG@k, recall@k, citation precision and recall, abstention |
-| `T4_judgment` | an expert rubric | `rubric_judge` | T4 | rubric mean, reported only with agreement statistics |
+| `V1_physics` | an independently measured physical quantity with an oracle solver | `oracle_compare` | T1 numerical | absolute error, within-tolerance, F1 for intervals |
+| `V2_execution` | executing the generated code and checking the result deterministically | `execution_check` | T0/T1 | staged pass/fail 0.1 code, 0.2 runs, 0.7 correct |
+| `V3_reference` | a date-bounded reference corpus and human-graded relevance | `retrieval_metrics`, `citation_support`, `exact_match` | T0 | nDCG@k, recall@k, citation precision and recall, abstention |
+| `V4_judgment` | an expert rubric | `rubric_judge` | T4 | rubric mean, reported only with agreement statistics |
 
 Void versus fail (ABC T.3): when the harness cannot score for a reason that
 is not the agent's fault, the sample is `void` with a reason and excluded

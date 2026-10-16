@@ -6,7 +6,7 @@ schema_version: rca.golden.v0.1
 id: rca-coding-download-m2m-prest-001
 family: coding
 group: 1a_download_processing
-tier: T2_execution
+tier: V2_execution
 shape: B_tool
 status: template
 difficulty: medium

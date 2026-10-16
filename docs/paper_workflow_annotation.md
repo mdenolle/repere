@@ -52,17 +52,17 @@ agent cannot simply look the answer up.
 > `data/private/paper_workflow_test.yaml` (gitignored) and upload to the gated
 > dataset.
 
-## Difficulty tiers
+## Difficulty levels
 
-The model is given progressively less to work with. Set `tier:` accordingly.
+The model is given progressively less to work with. Set `difficulty:` accordingly.
 
-| tier | The model sees | What it tests |
+| difficulty | The model sees | What it tests |
 |---|---|---|
 | `easy` | title + abstract + methods | extraction |
 | `medium` | title + abstract | inferring the methodology |
 | `hard` | **title only** | **designing** the workflow — genuine research reasoning |
 
-The `hard` tier is the interesting one. Prefer it where the title alone states a
+The `hard` level is the interesting one. Prefer it where the title alone states a
 well-posed research question.
 
 ## How to annotate
@@ -87,7 +87,7 @@ well-posed research question.
 
 ```yaml
   - id: your-paper-short-id
-    tier: medium              # easy | medium | hard
+    difficulty: medium        # easy | medium | hard
     split: validation         # `test` for UNPUBLISHED work (and keep it out of git)
     visibility: public        # `private` for `test`
     cutoff_date: "2025-06-01"
@@ -95,7 +95,7 @@ well-posed research question.
       The paper's title.
     abstract: >-
       The paper's abstract.
-    # methods: >-             # only needed for tier: easy
+    # methods: >-             # only needed for difficulty: easy
     #   The methods section.
     workflow:
       nodes:

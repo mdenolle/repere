@@ -1,4 +1,4 @@
-"""T1 oracle: clock offset of OO.HYS14 from the chronfix correction files.
+"""V1 oracle: clock offset of OO.HYS14 from the chronfix correction files.
 
 The reference is chronfix's delivered hourly ``delta_t`` series
 (``examples/HYS14/{hour_times.npy, delta_t_hourly_clean.npy, trigger_periods.csv}``

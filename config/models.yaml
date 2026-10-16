@@ -1,17 +1,18 @@
 # =============================================================================
 # Repère model registry
 # =============================================================================
-# Tier definitions for cost-aware routing. Cost rates are USD per 1K tokens.
+# Size-band definitions for cost-aware routing. Cost rates are USD per 1K tokens.
 # Local models are priced at 0.0 because the marginal monetary cost of an
 # Ollama/vLLM call on hardware you already pay for is ~zero; if you want to
 # attribute electricity or amortized GPU rental, override at registry-load
 # time.
 #
-# Tiers:
+# Size bands (the word 'tier' is reserved for scorer tiers T0-T4; see
+# docs/glossary.md):
 #   - nano:    < 2B params, instant on CPU, weakest reasoning
 #   - small:   2-9B params, common open-weight chat models
 #   - medium:  9-35B params, stronger reasoning, slower on CPU
-#   - big:     35-200B params, top open-weight tier or distilled frontier
+#   - big:     35-200B params, top open-weight band or distilled frontier
 #   - cloud:   API-served frontier or near-frontier models
 #
 # Cost values are recorded as of public list prices when this file was written.
@@ -25,7 +26,7 @@ models:
   # ---- nano: tiny local models ---------------------------------------------
   - id: qwen2.5:0.5b
     family: qwen2.5
-    tier: nano
+    size_band: nano
     size_b: 0.5
     context_window: 32000
     backend: ollama
@@ -39,7 +40,7 @@ models:
 
   - id: gemma2:2b
     family: gemma2
-    tier: nano
+    size_band: nano
     size_b: 2.0
     context_window: 8192
     backend: ollama
@@ -53,7 +54,7 @@ models:
   # ---- small: 7-9B open weights --------------------------------------------
   - id: mistral:7b
     family: mistral
-    tier: small
+    size_band: small
     size_b: 7.0
     context_window: 32000
     backend: ollama
@@ -66,7 +67,7 @@ models:
 
   - id: llama3.1:8b
     family: llama3.1
-    tier: small
+    size_band: small
     size_b: 8.0
     context_window: 128000
     backend: ollama
@@ -79,7 +80,7 @@ models:
 
   - id: qwen2.5:7b
     family: qwen2.5
-    tier: small
+    size_band: small
     size_b: 7.0
     context_window: 128000
     backend: ollama
@@ -95,7 +96,7 @@ models:
   # where the small chat models tend to guess.
   - id: deepseek-r1:7b
     family: deepseek-r1
-    tier: small
+    size_band: small
     size_b: 7.0
     context_window: 128000
     backend: ollama
@@ -117,7 +118,7 @@ models:
   # rest of this entry stays valid.
   - id: olmo2:7b
     family: olmo2
-    tier: small
+    size_band: small
     size_b: 7.0
     context_window: 4096
     backend: ollama
@@ -132,7 +133,7 @@ models:
   # ---- medium: 14-35B open weights -----------------------------------------
   - id: qwen2.5:14b
     family: qwen2.5
-    tier: medium
+    size_band: medium
     size_b: 14.0
     context_window: 128000
     backend: ollama
@@ -145,7 +146,7 @@ models:
 
   - id: gemma2:27b
     family: gemma2
-    tier: medium
+    size_band: medium
     size_b: 27.0
     context_window: 8192
     backend: ollama
@@ -159,7 +160,7 @@ models:
   # ---- big: 70B+ open weights ----------------------------------------------
   - id: llama3.3:70b
     family: llama3.3
-    tier: big
+    size_band: big
     size_b: 70.0
     context_window: 128000
     backend: ollama
@@ -174,7 +175,7 @@ models:
   # ---- cloud: API-served frontier and near-frontier ------------------------
   - id: claude-haiku-4-5-20251001
     family: claude-4
-    tier: cloud
+    size_band: cloud
     size_b: null
     context_window: 200000
     backend: anthropic
@@ -187,7 +188,7 @@ models:
 
   - id: claude-sonnet-4-6
     family: claude-4
-    tier: cloud
+    size_band: cloud
     size_b: null
     context_window: 200000
     backend: anthropic
@@ -200,7 +201,7 @@ models:
 
   - id: claude-opus-4-6
     family: claude-4
-    tier: cloud
+    size_band: cloud
     size_b: null
     context_window: 200000
     backend: anthropic
@@ -213,7 +214,7 @@ models:
 
   - id: gpt-4o-mini
     family: gpt-4o
-    tier: cloud
+    size_band: cloud
     size_b: null
     context_window: 128000
     backend: openai
@@ -225,7 +226,7 @@ models:
 
   - id: gpt-4o
     family: gpt-4o
-    tier: cloud
+    size_band: cloud
     size_b: null
     context_window: 128000
     backend: openai
