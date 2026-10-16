@@ -20,7 +20,7 @@ def _registry() -> ModelRegistry:
             backend="ollama",
             cost_per_1k_in=0.0,
             cost_per_1k_out=0.0,
-            metadata={"tier": "nano"},
+            metadata={"size_band": "nano"},
         )
     )
     r.register(
@@ -32,7 +32,7 @@ def _registry() -> ModelRegistry:
             backend="openai",
             cost_per_1k_in=0.001,
             cost_per_1k_out=0.002,
-            metadata={"tier": "small"},
+            metadata={"size_band": "small"},
         )
     )
     r.register(
@@ -44,7 +44,7 @@ def _registry() -> ModelRegistry:
             backend="anthropic",
             cost_per_1k_in=0.015,
             cost_per_1k_out=0.075,
-            metadata={"tier": "cloud"},
+            metadata={"size_band": "cloud"},
         )
     )
     return r

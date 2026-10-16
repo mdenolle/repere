@@ -6,7 +6,7 @@ schema_version: rca.golden.v0.1
 id: rca-sensor-channel-code-hys14-001
 family: sensor
 group: 3_sensor
-tier: T3_reference
+tier: V3_reference
 shape: A_text
 status: template
 difficulty: easy

@@ -5,9 +5,11 @@
 | [`../../DESIGN.md`](../../DESIGN.md) | task taxonomy, tier definitions, architecture decision memo, evaluation design |
 | [`../../OPEN_QUESTIONS.md`](../../OPEN_QUESTIONS.md) | decisions that need Marine or a co-author |
 | [`00_frugalmind_inventory.md`](00_frugalmind_inventory.md) | what frugalmind contained before this suite, with what was rerun |
-| [`AUTHORING.md`](AUTHORING.md) | how to write and verify a golden record; validator rules R01 to R15 |
+| [`AUTHORING.md`](AUTHORING.md) | how to write and verify a golden record; validator rules R01 to R16 |
+| [`../golden_packaging/README.md`](../golden_packaging/README.md) | packaging a golden set as a versioned release; §7 says when an RCA record is the right authoring surface |
 | [`ABC_AUDIT.md`](ABC_AUDIT.md) | Agentic Benchmark Checklist audit of the suite's current state |
 | [`rubrics/`](rubrics/) | T4 rubrics (all TODO) |
+| [`../glossary.md`](../glossary.md) | every metric, tier and field name, defined once; start here if a term is unfamiliar |
 | [`prior_art/`](prior_art/) | reading notes, one file per system read, with file and line references: aRCADA; chronfix and COSZO; AstaBench, agent-eval and Inspect; Harbor, Terminal-Bench and HAL; the three papers (AI agents that matter, the ABC checklist, GEPA) |
 
 The reading notes were produced by assistant readers on 2026-09-14 from

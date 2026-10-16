@@ -240,7 +240,7 @@ def _list_models(args: argparse.Namespace) -> int:
             {
                 "id": c.id,
                 "family": c.family,
-                "tier": c.metadata.get("tier"),
+                "size_band": c.metadata.get("size_band"),
                 "backend": c.backend,
                 "size_b": c.size_b,
                 "cost_per_1k_in": c.cost_per_1k_in,

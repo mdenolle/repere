@@ -75,7 +75,7 @@ def main() -> int:
         score = scorer(json.dumps({"calls": calls}), gold)
         flag = "provisional" if meta["provisional"] else "author-validated"
         status = "OK " if score > 0.999 else "BAD"
-        print(f"  [{status}] {pid:32} tier={meta['tier']:6} {flag:16} "
+        print(f"  [{status}] {pid:32} difficulty={meta['difficulty']:6} {flag:16} "
               f"self-score={score:.3f}  ({len(nodes)} ops, {len(edges)} deps)")
         if score <= 0.999:
             problems.append(

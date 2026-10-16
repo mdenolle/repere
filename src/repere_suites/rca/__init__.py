@@ -10,8 +10,8 @@ Layout::
     seeds/<family>/*.yaml              template records (status: template)
     data/public/                       small public fixtures, sha256-pinned
     pricing/prices.yaml                frozen price map (versioned, dated)
-    validate.py                        schema + cross-field rules (R01..R15)
-    checkers.py                        T2 deterministic checkers
+    validate.py                        schema + cross-field rules (R01..R16)
+    checkers.py                        V2 deterministic checkers
     cost.py                            cost layer over Inspect logs
     solvers.py                         scripted self-test solver
     inspect_tasks.py                   Inspect @task + tier-dispatching @scorer
@@ -35,7 +35,7 @@ PUBLIC_DATA_DIR = HERE / "data" / "public"
 PRICES_PATH = HERE / "pricing" / "prices.yaml"
 
 FAMILIES = ("coding", "litreview", "sensor")
-TIERS = ("T1_physics", "T2_execution", "T3_reference", "T4_judgment")
+TIERS = ("V1_physics", "V2_execution", "V3_reference", "V4_judgment")
 
 
 def private_data_dir() -> Path | None:

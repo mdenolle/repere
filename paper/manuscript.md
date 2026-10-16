@@ -265,8 +265,10 @@ laboratory does feel.
 
 ### Quality floors and frugality
 
-Each task carries a quality floor: the score below which an output is not
-scientifically usable. The floor is a property of the task and the discipline,
+The argument that an accuracy-only agent leaderboard misleads without a cost
+axis is due to @kapoor2024agentsthatmatter; what a scientific setting adds is
+that the threshold is not a matter of taste. Each task carries a quality floor:
+the score below which an output is not scientifically usable. The floor is a property of the task and the discipline,
 set by what a reviewer would accept, and not of the model. For each *(model,
 scaffolding)* configuration we report the deterministic score and the realised
 cost in United States dollars, computed from token usage returned by the serving
@@ -353,14 +355,63 @@ scoring, and costs from realised token usage. The complete run comprised 410
 inference calls with no harness errors and a total cloud expenditure of
 US$0.135.
 
+### Reliability, robustness and the cost frontier
+
+A single score conflates two questions a laboratory must keep apart: whether a
+system is capable, and whether it is dependable. We therefore report each
+configuration over $K$ repeats and derive three further quantities from them.
+
+**Self-agreement.** For each record we compute $(2\hat{p}-1)^2$, where
+$\hat{p}$ is the fraction of repeats that clear the task's quality floor. The
+statistic is one when every repeat agrees, whether by passing or by failing, and
+zero at an even split. We adopt the form given by @rabanser2026reliability in
+their public reporting rather than the variance ratio stated in the text of the
+same work, which is degenerate for Bernoulli outcomes: the sample variance of
+$K$ binary draws estimates $\hat{p}(1-\hat{p})$, so the ratio reduces to the
+constant $K/(K-1)$ and the expression is negative for every record that is not
+unanimous.
+
+**Robustness.** We re-run each task against a degraded environment and report
+the retained accuracy $\min(\mathrm{Acc}_{\text{perturbed}} /
+\mathrm{Acc}_{\text{baseline}}, 1)$ under three perturbations: injected
+service faults at rate $p=0.2$ (FDSN 503 and timeout responses, partial returns
+from the OOI machine-to-machine interface, truncated miniSEED, well-formed but
+empty streams); meaning-preserving changes to the interface (epoch rather than
+ISO-8601 timestamps, the three spellings of an empty SEED location code, a
+dotted station identifier rather than its four named components); and $J=5$
+paraphrases of the request. Perturbations that a domain expert would answer
+differently after are excluded by construction, which rules out channel-code
+substitution: `BHZ` and `HHZ` denote different passbands and sample rates.
+
+**The cost frontier.** Following @kapoor2026hal we draw the frontier as the
+convex hull of the achievable set rather than as a staircase of undominated
+points, and we include the origin. The hull is the correct envelope because a
+randomised mixture of two systems is itself deployable, so a configuration lying
+inside it is dominated by a strategy that can be run; the origin belongs to the
+set because declining to deploy is always available. The frontier is computed
+within each evaluation, never across them: a perfect score on parameter
+selection and a perfect score on retrieval are not commensurable. We report the
+frontier on tokens as well as on dollars, since the dollar axis is a function of
+a price list that will change after publication.
+
 ### Reproducibility and statistics
 
 Scoring is fully deterministic given a model response, so the only stochasticity
-is the model's sampling. Each configuration was run once; we therefore report
-point estimates without confidence intervals, and the individual scores should be
-read accordingly. <!-- TODO(marine): replace with n>=5 repeats and 95% CIs before
-submission. Local models cost $0 to re-run; there is no excuse for omitting this
-and a reviewer will demand it. -->
+is the model's sampling. Each configuration was therefore run $K=5$ times at a
+fixed temperature, and we report the mean with a 95% interval computed from
+Student's $t$ over the repeats. Configurations for which only a single run is
+available are marked as such and carry no interval; we do not report a
+zero-width interval for them, because a renderer cannot otherwise distinguish an
+unmeasured quantity from a measured absence of variance.
+
+Two populations are involved and we keep them apart. The interval on a
+leaderboard row is over repeats of one configuration. The interval on a suite
+mean is a percentile bootstrap over records, which answers the different
+question of whether another sample of tasks would give a different mean.
+
+<!-- TODO(marine): the sweep reported here is limited to four items per suite
+and three local models; extend to the full item counts and the cloud reference
+row on the GPU host before submission, and restate the numbers below. -->
 
 Every quantity that affects a score — the truth set, the skill, the scorer
 specification, the model identifier and the sandbox image — is recorded on the

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -132,3 +133,42 @@ def test_unknown_suite_gets_a_distinct_shape_not_a_silent_collision():
     assert 'SUITE_SHAPE[r.suite] || "circle"' not in js
     assert 'SUITE_SHAPE[suite] || "circle"' not in js
     assert "_FALLBACK_SHAPES" in js and "console.warn" in js
+
+
+# ---------------------------------------------------------------------------
+# The board panel (site/board.js), added with schema v0.2
+# ---------------------------------------------------------------------------
+
+BOARD_RENDER_TEST = REPO / "site" / "test" / "board_render_test.mjs"
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_board_actually_renders_markers_and_a_frontier():
+    """Same lesson as the chart above, applied to the new panel.
+
+    The board exists to show the frontier. A frontier that throws before it is
+    drawn looks exactly like a board where nothing is on the frontier, which is
+    a claim, not a bug report.
+    """
+    proc = subprocess.run(
+        ["node", str(BOARD_RENDER_TEST)],
+        cwd=REPO, capture_output=True, text=True, timeout=60,
+    )
+    out = proc.stdout + proc.stderr
+    assert proc.returncode == 0, f"board failed to render:\n{out[-1500:]}"
+    assert "BOARD RENDERS" in out, out[-800:]
+
+
+def test_board_html_carries_every_id_board_js_looks_up():
+    """A renamed id fails silently in the browser: querySelector returns null."""
+    html = (REPO / "site" / "index.html").read_text()
+    js = (REPO / "site" / "board.js").read_text()
+    ids = set(re.findall(r'querySelector\("#([\w-]+)"\)', js))
+    assert ids, "board.js looks up no ids; the selector contract test is broken"
+    missing = [i for i in sorted(ids) if f'id="{i}"' not in html]
+    assert not missing, f"board.js queries ids absent from index.html: {missing}"
+
+
+def test_board_js_is_loaded_by_the_page():
+    html = (REPO / "site" / "index.html").read_text()
+    assert 'src="board.js"' in html, "board.js is never loaded, so the panel stays empty"

@@ -53,6 +53,7 @@ from repere.leaderboard import (  # noqa: E402
     build_skill_lift_leaderboard,
 )
 from repere.registry import load_registry_yaml  # noqa: E402
+from repere.reliability import record_consistency, resource_consistency  # noqa: E402
 from repere.skills import (  # noqa: E402
     SkillLoader,
     render_with_skill,
@@ -153,7 +154,13 @@ def _lit_rag_items():
 def _dvv_items():
     # codameter#15 makes an installed copy resolve/regenerate its golden data
     # (per-user cache), so no manifest workaround is needed here.
-    from codameter import repere as cfm
+    #
+    # `codameter.frugalmind` is codameter's own module name upstream, not a
+    # leftover of the Repere rename -- it is codameter's to rename, not ours.
+    # Do not let a blanket frugalmind -> repere substitution touch this line.
+    # (It did, once: this import read `codameter.repere` and broke every live
+    # dv/v run until the package was installed and the failure became visible.)
+    from codameter import frugalmind as cfm
 
     rows = cfm.build_rows("param_recommendation", split="validation")
     bad_config = json.dumps({"freqmin": 9.5, "freqmax": 10.0})
@@ -469,15 +476,33 @@ def _main_live(args) -> int:
             agg = {}
             for mode in ("none", "full"):
                 scores = [a["score"] for a in runs[mode]]
+                costs = [a["cost"] for a in runs[mode]]
+                latencies = [a["latency_s"] for a in runs[mode]]
+                tokens = [a["out_tokens"] for a in runs[mode]]
                 agg[mode] = {
                     "score": _mean(scores),
                     "ci95": _ci95(scores),
                     "scores": scores,
-                    "cost": _mean([a["cost"] for a in runs[mode]]),
-                    "latency_s": _mean([a["latency_s"] for a in runs[mode]]),
-                    "out_tokens": _mean([a["out_tokens"] for a in runs[mode]]),
+                    "cost": _mean(costs),
+                    "latency_s": _mean(latencies),
+                    "out_tokens": _mean(tokens),
                     "n": runs[mode][0]["n"],
                     "errors": sum(a["errors"] for a in runs[mode]),
+                    # Keep the per-repeat resource series, not just its mean.
+                    # `consistency_resource` is the coefficient of variation
+                    # over these; a mean throws away the only thing it needs.
+                    "cost_runs": costs,
+                    "latency_runs": latencies,
+                    "token_runs": tokens,
+                    # Self-agreement across repeats, binarised at the pass
+                    # threshold. This is ARM-level: "did the whole suite clear
+                    # the bar on each run", not per-item agreement, which would
+                    # need the per-item scores kept per repeat. The distinction
+                    # is recorded on the row so a reader is not misled.
+                    "consistency_outcome": record_consistency(scores, pass_threshold=0.9),
+                    "consistency_resource": resource_consistency(
+                        {"cost_usd": costs, "latency_s": latencies, "out_tokens": tokens}
+                    ),
                 }
             none, full = agg["none"], agg["full"]
 
@@ -511,26 +536,61 @@ def _main_live(args) -> int:
                 "size_b": getattr(card, "size_b", None),
                 "score_none_ci95": none["ci95"],
                 "score_full_ci95": full["ci95"],
+                "consistency_outcome_none": none["consistency_outcome"],
+                "consistency_outcome_full": full["consistency_outcome"],
+                "consistency_resource_none": none["consistency_resource"],
+                "consistency_resource_full": full["consistency_resource"],
+                "consistency_scope": "arm",
+                "cost_none_runs": none["cost_runs"],
+                "cost_full_runs": full["cost_runs"],
+                "latency_none_runs": none["latency_runs"],
+                "latency_full_runs": full["latency_runs"],
                 "score_none_runs": none["scores"],
                 "score_full_runs": full["scores"],
             }
             for mode, arm in (("none", none), ("full", full)):
                 cond = ("generic-coding-agent" if mode == "none"
                         else f"{skill_name}+skill-{skill_version}")
+                # Pass the whole repeat series, not just its mean. Until this
+                # was fixed, a 5-repeat sweep produced leaderboard rows reading
+                # `n_epochs: 1` with a null interval, because the per-repeat
+                # data only ever reached skill_lift.json. The board reported
+                # single runs for a run that was anything but.
                 flat.append({
                     "model_id": card.id, "suite": suite_name,
-                    "agent_condition": cond, "score": arm["score"],
+                    "agent_condition": cond,
+                    "score_runs": arm["scores"],
                     "cost_usd": arm["cost"],
+                    "latency_s_runs": arm["latency_runs"],
+                    "out_tokens": round(arm["out_tokens"]),
                     "n_completed": arm["n"] - arm["errors"], "n_total": arm["n"],
                     "openness": op,
                     "toolset": "standard" if mode == "none" else "custom-interface",
                     "skill_name": skill_name, "skill_version": skill_version,
                     "run_file": "demo_dashboard.py --live",
+                    "reliability": {
+                        "consistency_outcome": arm["consistency_outcome"],
+                        "consistency_resource": arm["consistency_resource"],
+                        "consistency_scope": "arm",
+                    },
                 })
 
     note = ("LIVE RUN: real model inference (Ollama locally / Anthropic API), real "
             "prompts, real skill injection, graded by the real deterministic scorers. "
             "Costs are actual token usage; local open-weight models bill $0 marginal.")
+    # The protocol belongs in the note, not only in the operator's memory. A
+    # board run with --limit scored a subset of each suite and would otherwise
+    # present itself as a full run; `n_total` records it per row, but a reader
+    # looking at the headline note would not see it.
+    protocol = [f"{args.repeats} repeat(s) per configuration", f"temperature {args.temperature}"]
+    if args.limit:
+        protocol.append(
+            f"LIMITED RUN: only the first {args.limit} items of each suite were scored, "
+            "so scores are not comparable to a full-suite run (see n_total per row)"
+        )
+    if args.models:
+        protocol.append(f"models: {', '.join(args.models)}")
+    note = note + " Protocol: " + "; ".join(protocol) + "."
     return _emit(flat, skill_rows, note, "scripts/demo_dashboard.py --live",
                  merge=args.merge)
 

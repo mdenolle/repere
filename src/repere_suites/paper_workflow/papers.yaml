@@ -1,7 +1,7 @@
 # =============================================================================
 # "Agentify the paper" — research-workflow truth set (Family 3)
 # =============================================================================
-# TASK. Given a paper's abstract (and, at the easier tiers, its methods), the
+# TASK. Given a paper's abstract (and, at the easier difficulties, its methods), the
 # orchestrator must emit the RESEARCH WORKFLOW that produces it: a DAG of
 # research operations drawn from `ontology.yaml`. It is scored on the graph, not
 # on prose — node F1 (did it call for the right operations?), edge F1 (did it get
@@ -31,7 +31,7 @@
 #   easy   : abstract + methods section  -> mostly extraction
 #   medium : abstract only               -> must infer the methodology
 #   hard   : title + research question   -> must DESIGN the workflow
-#            (this is the tier that actually tests research reasoning)
+#            (this is the difficulty that actually tests research reasoning)
 #
 # STATUS: SCAFFOLD. The two entries below are worked examples annotated by the
 # framework author from public abstracts, to exercise the schema and scorers.
@@ -50,7 +50,7 @@ papers:
 
   - id: ridgecrest-dvv-example
     provisional: true          # <-- author validation required
-    tier: medium
+    difficulty: medium
     split: validation
     visibility: public
     cutoff_date: "2020-01-01"
@@ -94,7 +94,7 @@ papers:
 
   - id: ml-phase-picking-example
     provisional: true          # <-- author validation required
-    tier: medium
+    difficulty: medium
     split: validation
     visibility: public
     cutoff_date: "2022-01-01"

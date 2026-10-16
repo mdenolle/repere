@@ -9,7 +9,7 @@ Example (offline self-test, no credentials)::
 
 Example (live model)::
 
-    python -m repere_suites.rca.run --family coding --tier T2_execution \\
+    python -m repere_suites.rca.run --family coding --tier V2_execution \\
         --model anthropic/claude-haiku-4-5-20251001 --epochs 5 --out results/rca
 
 What gets written to ``<out>/<run_id>/``:
@@ -30,7 +30,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import random
 import statistics
 import sys
 import time
@@ -38,6 +37,13 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from repere.reliability import (
+    bootstrap_ci,
+    outcome_consistency,
+    record_consistency,
+    resource_consistency,
+)
 
 from . import PRICES_PATH
 from .cost import load_price_map, price_usage, sum_usage
@@ -49,20 +55,10 @@ def _now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def _bootstrap_ci(
-    values: list[float], *, n_boot: int = 2000, seed: int = 0, alpha: float = 0.05
-) -> tuple[float, float] | None:
-    if len(values) < 2:
-        return None
-    rng = random.Random(seed)
-    means = []
-    n = len(values)
-    for _ in range(n_boot):
-        means.append(sum(rng.choice(values) for _ in range(n)) / n)
-    means.sort()
-    lo = means[int((alpha / 2) * n_boot)]
-    hi = means[min(n_boot - 1, int((1 - alpha / 2) * n_boot))]
-    return (lo, hi)
+# `_bootstrap_ci` used to live here; it moved to `repere.reliability` so the
+# public board and this runner share one implementation, and is re-exported
+# under the old name so nothing that imported it from here breaks.
+_bootstrap_ci = bootstrap_ci
 
 
 def _make_solver(spec: str):
@@ -97,7 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--ids", help="comma-separated record ids")
     ap.add_argument("--family", choices=["coding", "litreview", "sensor"])
-    ap.add_argument("--tier", choices=["T1_physics", "T2_execution", "T3_reference", "T4_judgment"])
+    ap.add_argument("--tier", choices=["V1_physics", "V2_execution", "V3_reference", "V4_judgment"])
     ap.add_argument("--split", default="validation", choices=["validation", "test"])
     ap.add_argument("--no-templates", action="store_true", help="exclude status=template records")
     ap.add_argument(
@@ -257,6 +253,10 @@ def main(argv: list[str] | None = None) -> int:
             "max": max(sc) if sc else None,
             "pass_rate": (sum(1 for x in sc if x >= args.pass_threshold) / len(sc)) if sc else None,
             "all_pass": (all(x >= args.pass_threshold for x in sc)) if sc else None,
+            # (2p-1)^2 over the epochs of this record: 1.0 when every epoch
+            # agreed, 0.0 at an even split. None below two epochs, because one
+            # run says nothing about its own repeatability.
+            "consistency_outcome": record_consistency(sc, pass_threshold=args.pass_threshold),
             "cost_usd_mean": statistics.fmean(d["costs"]) if d["costs"] else None,
             "cost_usd_total": sum(d["costs"]) if d["costs"] else None,
         }
@@ -273,6 +273,16 @@ def main(argv: list[str] | None = None) -> int:
             if record_means
             else None
         ),
+        # Two further consistency numbers, both None until --epochs > 1.
+        # `consistency_all_pass` is the fraction of records that passed every
+        # epoch, which is a cliff: one failed epoch out of five reads the same
+        # as five. `consistency_outcome` grades the disagreement instead.
+        "consistency_outcome": outcome_consistency(
+            [d["scores"] for d in per_record.values()], pass_threshold=args.pass_threshold
+        ),
+        "consistency_resource": resource_consistency(
+            {"cost_usd": [r["cost_usd"] for r in rows if r["cost_usd"] is not None]}
+        ),
         "cost_usd_total": sum(r["cost_usd"] for r in rows if r["cost_usd"] is not None)
         if any(r["cost_usd"] is not None for r in rows)
         else None,
@@ -284,9 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         from importlib.metadata import version as _pkgver
 
-        pkgs = {
-            p: _pkgver(p) for p in ("inspect_ai", "repere", "obspy", "numpy") if _safe_ver(p)
-        }
+        pkgs = {p: _pkgver(p) for p in ("inspect_ai", "repere", "obspy", "numpy") if _safe_ver(p)}
     except Exception:  # pragma: no cover
         pkgs = {}
     ev = log.eval

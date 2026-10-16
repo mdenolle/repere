@@ -7,7 +7,7 @@
                the top-k document ids as a JSON array. aRCADA's deployed
                retriever is MiniSearch (BM25-based); this is the same
                retrieval class with no model behind it, so it is the natural
-               non-agentic control for T3 and the *leakage detector* for
+               non-agentic control for V3 and the *leakage detector* for
                catalog-derived items: any item this baseline answers at
                chance-or-better on the test split has leaked (DESIGN.md §3.4).
 

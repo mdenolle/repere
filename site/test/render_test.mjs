@@ -42,6 +42,14 @@ const vb = (store["#chart"] && store["#chart"].attrs && store["#chart"].attrs.vi
 console.log("viewBox:", vb);
 const note = store["#chart-note"]?.textContent || "";
 console.log("chart note:", note.slice(0, 70));
-const ok = (counts.circle || 0) + (counts.rect || 0) >= 20 && (counts.line || 0) > 0;
+// Expect two markers per row (no-skill and skill), not a hardcoded count. The
+// threshold used to be `>= 20`, which silently encoded the size of the July
+// dataset: a smaller but perfectly valid board then failed as though the chart
+// were broken.
+const nRows = JSON.parse(fs.readFileSync("site/data/skill_lift.json", "utf8")).rows.length;
+const markers = (counts.circle || 0) + (counts.rect || 0) + (counts.polygon || 0) + (counts.path || 0);
+const expected = 2 * nRows;
+console.log(`rows: ${nRows} · markers drawn: ${markers} (expected >= ${expected})`);
+const ok = nRows > 0 && markers >= expected && (counts.line || 0) > 0;
 console.log(ok ? "✅ CHART RENDERS (markers + lift lines present)" : "❌ CHART EMPTY");
 process.exit(ok ? 0 : 1);

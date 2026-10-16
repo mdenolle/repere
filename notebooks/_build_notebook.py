@@ -35,7 +35,7 @@ CELLS = [
 
 This notebook walks through the smallest end-to-end run the framework supports:
 
-1. Load three **small-tier** models from `config/models.yaml`.
+1. Load three **small-size-band** models from `config/models.yaml`.
 2. Load the `stalta-detection` **skill**.
 3. Run the public **STA/LTA intent-extraction** suite under two conditions:
    - `none` — passthrough prompt (baseline)
@@ -77,7 +77,7 @@ REPO
         """\
 ## 2. Load registry, suite, and skill
 
-`config/models.yaml` ships with 13 cards across `nano`/`small`/`medium`/`big`/`cloud` tiers.
+`config/models.yaml` ships with 13 cards across `nano`/`small`/`medium`/`big`/`cloud` size bands.
 We pick three **small** cards and the `stalta-detection` skill. The suite is
 the public 6-event STA/LTA intent-extraction benchmark.
 """
@@ -89,7 +89,7 @@ suite = STALTAIntentExtractionSuite()
 skill = SkillLoader(skills_dir=REPO / ".github" / "skills").get("stalta-detection")
 
 cards = [registry.get(mid) for mid in ("mistral:7b", "llama3.1:8b", "qwen2.5:7b")]
-[(c.id, c.metadata.get("tier"), c.context_window) for c in cards]
+[(c.id, c.metadata.get("size_band"), c.context_window) for c in cards]
 """
     ),
     md(
@@ -237,7 +237,7 @@ Uncomment the cell below and re-run section **5**.
         """\
 ## What just happened, in one paragraph
 
-You loaded a YAML model registry, picked three small-tier cards, attached a
+You loaded a YAML model registry, picked three small-size-band cards, attached a
 skill that follows the Anthropic Agent Skills format, and ran the same
 benchmark suite under two skill conditions for each model. The runner used a
 shared `BudgetGuard` so the total spend across all models is capped, and

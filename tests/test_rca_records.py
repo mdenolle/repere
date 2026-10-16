@@ -51,16 +51,16 @@ def test_schema_is_valid_json_schema():
     schema = json.loads(SCHEMA_PATH.read_text())
     assert schema["$schema"].endswith("2020-12/schema")
     assert set(schema["properties"]["tier"]["enum"]) == {
-        "T1_physics",
-        "T2_execution",
-        "T3_reference",
-        "T4_judgment",
+        "V1_physics",
+        "V2_execution",
+        "V3_reference",
+        "V4_judgment",
     }
 
 
 def test_load_records_filters():
     assert {r["family"] for r in load_records(family="coding")} == {"coding"}
-    assert all(r["tier"] == "T2_execution" for r in load_records(tier="T2_execution"))
+    assert all(r["tier"] == "V2_execution" for r in load_records(tier="V2_execution"))
     assert load_records(ids=["rca-coding-qc-continuity-001"])[0]["group"] == "1b_qc"
     assert load_records(include_templates=False) == []
 
@@ -83,6 +83,31 @@ def test_r02_tier_method_mismatch(qc_record):
     rec = copy.deepcopy(qc_record)
     rec["scoring"]["method"] = "retrieval_metrics"
     assert any(e.startswith("R02") for e in _errs(rec))
+
+
+def test_r16_metric_not_producible_by_the_method(qc_record):
+    """A record may only declare metrics its scoring method actually produces.
+
+    The negative control for R16. `citation_precision` is a real metric name in
+    the schema enum, and `execution_check` is a real method; the pair is the
+    kind of plausible-looking annotation that went unchecked before R16 existed.
+    """
+    rec = copy.deepcopy(qc_record)
+    rec["scoring"]["metrics"] = ["citation_precision"]
+    assert any(e.startswith("R16") for e in _errs(rec))
+
+
+def test_r16_empty_metrics_rejected(qc_record):
+    rec = copy.deepcopy(qc_record)
+    rec["scoring"]["metrics"] = []
+    assert any(e.startswith("R16") for e in _errs(rec))
+
+
+def test_r16_passes_on_every_seed():
+    """All 16 seeds conform today; this pins that they keep conforming."""
+    for path in sorted(SEEDS_DIR.rglob("*.yaml")):
+        rec = load_record(path)
+        assert not [e for e in _errs(rec) if e.startswith("R16")], path.name
 
 
 def test_r08_test_split_must_be_private(qc_record):

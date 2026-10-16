@@ -1,4 +1,4 @@
-"""Model registry helpers — load YAML into ModelCards, filter by tier."""
+"""Model registry helpers — load YAML into ModelCards, filter by size_band."""
 
 from __future__ import annotations
 
@@ -11,25 +11,25 @@ import yaml
 from . import ModelCard, ModelRegistry
 
 
-VALID_TIERS = ("nano", "small", "medium", "big", "cloud")
+VALID_SIZE_BANDS = ("nano", "small", "medium", "big", "cloud")
 
 
 def _coerce_card(entry: dict[str, Any]) -> tuple[ModelCard, str]:
-    """Translate a YAML entry into a ModelCard plus its tier."""
+    """Translate a YAML entry into a ModelCard plus its size_band."""
     required = ("id", "family", "context_window", "backend")
     missing = [k for k in required if k not in entry]
     if missing:
         raise ValueError(f"models.yaml entry missing keys {missing!r}: {entry.get('id')}")
 
-    tier = entry.get("tier")
-    if tier is None or tier not in VALID_TIERS:
+    size_band = entry.get("size_band")
+    if size_band is None or size_band not in VALID_SIZE_BANDS:
         raise ValueError(
-            f"models.yaml entry {entry['id']!r} has invalid tier {tier!r}; "
-            f"valid tiers: {VALID_TIERS}"
+            f"models.yaml entry {entry['id']!r} has invalid size_band {size_band!r}; "
+            f"valid size bands: {VALID_SIZE_BANDS}"
         )
 
     metadata = dict(entry.get("metadata") or {})
-    metadata.setdefault("tier", tier)
+    metadata.setdefault("size_band", size_band)
 
     card = ModelCard(
         id=str(entry["id"]),
@@ -41,13 +41,13 @@ def _coerce_card(entry: dict[str, Any]) -> tuple[ModelCard, str]:
         cost_per_1k_out=float(entry.get("cost_per_1k_out", 0.0)),
         metadata=metadata,
     )
-    return card, tier
+    return card, size_band
 
 
 def load_registry_yaml(path: str | Path) -> ModelRegistry:
     """Load a `models.yaml` file into a `ModelRegistry`.
 
-    Each card's tier is preserved on `card.metadata['tier']`.
+    Each card's size_band is preserved on `card.metadata['size_band']`.
     """
     p = Path(path)
     with open(p) as f:
@@ -70,10 +70,10 @@ def load_registry_yaml(path: str | Path) -> ModelRegistry:
     return registry
 
 
-def cards_in_tier(registry: ModelRegistry, tier: str) -> list[ModelCard]:
-    if tier not in VALID_TIERS:
-        raise ValueError(f"Unknown tier {tier!r}; valid: {VALID_TIERS}")
-    return [c for c in registry.list() if c.metadata.get("tier") == tier]
+def cards_in_size_band(registry: ModelRegistry, size_band: str) -> list[ModelCard]:
+    if size_band not in VALID_SIZE_BANDS:
+        raise ValueError(f"Unknown size band {size_band!r}; valid: {VALID_SIZE_BANDS}")
+    return [c for c in registry.list() if c.metadata.get("size_band") == size_band]
 
 
 def cards_by_backend(registry: ModelRegistry, backend: str) -> list[ModelCard]:
@@ -105,9 +105,9 @@ def with_overrides(card: ModelCard, **overrides: Any) -> ModelCard:
 
 
 __all__ = [
-    "VALID_TIERS",
+    "VALID_SIZE_BANDS",
     "cards_by_backend",
-    "cards_in_tier",
+    "cards_in_size_band",
     "load_registry_yaml",
     "sorted_by_cost",
     "with_overrides",

@@ -2,7 +2,7 @@
 
 Repère is an open evaluation framework for scientific AI agents in the geosciences. It measures whether a model or multi-agent system meets a task-specific **quality floor**, and what it **costs** to get there — so labs can adopt AI on measured evidence, not demos and anecdotes. Rigor is preserved by scoring against reference truth wherever possible; frugality is first-class because the interesting winner is the cheapest system that still clears the floor.
 
-The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide.
+The narrative overview lives on the [landing page](https://mdenolle.github.io/repere/) (served from [`site/`](site/)); this README is the developer guide. Every metric, tier and row-field name is defined once in [`docs/glossary.md`](docs/glossary.md).
 
 > **v0.5.2 — the held-out splits leave the repository and the wheel** (September 2026). `pip install repere`. Import paths are `repere` / `repere_suites`, the CLI is `repere`, the sandbox image is `ghcr.io/mdenolle/repere-sandbox:v0.5.0`, and the 31 `FM_*` environment variables are now `REPERE_*` with no back-compatibility shim. The substrate is unchanged from v0.4.0: InspectAI `@task` / `@solver` / `@scorer`, a pinned Docker sandbox, a multi-step ReAct baseline with three Inspect tools, and telemetry aligned with `EvalSample` / `EvalOutput`. See [`CHANGELOG.md`](CHANGELOG.md) for the full set and [`ROADMAP.md`](ROADMAP.md) for what's next.
 
@@ -287,6 +287,9 @@ Adding a golden set of your own? [`docs/holdout_policy.md`](docs/holdout_policy.
 is the procedure and the checklist: where held-out rows live, the five
 properties a suite loader must implement, and the four guards that keep a
 held-out row out of the repository and out of the published wheel.
+For the whole path from authored cases to a pinned, versioned release
+(row format, manifest, export, pinning, pre-merge checklist), start at
+[`docs/golden_packaging/README.md`](docs/golden_packaging/README.md).
 
 ### 2. Build the plot PNG goldens
 

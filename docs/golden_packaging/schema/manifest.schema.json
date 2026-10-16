@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "repere.suite.v1/manifest",
+  "title": "Repère manifest.json (one per datasets/<dataset_id>/<version>/)",
+  "description": "Transcribed from export_suites() in src/repere/export.py. Not generated from it.",
+  "type": "object",
+  "required": ["schema_version", "dataset_id", "version", "generated_at", "files"],
+  "properties": {
+    "schema_version": {"const": "repere.suite.v1"},
+    "dataset_id": {"type": "string"},
+    "version": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["dataset_id", "suite_id", "version", "task_kind", "path", "rows", "sha256"],
+        "properties": {
+          "dataset_id": {"type": "string"},
+          "suite_id": {"type": "string"},
+          "version": {"type": "string"},
+          "task_kind": {"type": "string"},
+          "path": {"type": "string", "description": "Relative to the datasets root, e.g. atlas/v0.1/routing.jsonl"},
+          "rows": {"type": "integer", "minimum": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

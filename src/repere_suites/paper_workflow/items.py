@@ -44,7 +44,7 @@ PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", _REPO / "data" / "priv
 HIDDEN_PAPERS_PATH = PRIVATE_DIR / "paper_workflow_test.yaml"
 
 VALID_SPLITS = ("validation", "test")
-VALID_TIERS = ("easy", "medium", "hard")
+VALID_DIFFICULTIES = ("easy", "medium", "hard")
 
 
 def load_ontology() -> dict:
@@ -76,11 +76,11 @@ def _load_papers(split: str | None = None) -> list[dict]:
 
     known = set(operation_ids())
     for p in papers:
-        for key in ("id", "tier", "split", "visibility", "title", "abstract", "workflow"):
+        for key in ("id", "difficulty", "split", "visibility", "title", "abstract", "workflow"):
             if key not in p:
                 raise ValueError(f"paper {p.get('id')!r} missing key {key!r}")
-        if p["tier"] not in VALID_TIERS:
-            raise ValueError(f"paper {p['id']!r}: bad tier {p['tier']!r}")
+        if p["difficulty"] not in VALID_DIFFICULTIES:
+            raise ValueError(f"paper {p['id']!r}: bad difficulty {p['difficulty']!r}")
         # An annotation using a term outside the ontology can never be matched by
         # a model that is only shown the ontology — fail loudly at load.
         for n in p["workflow"]["nodes"]:
@@ -125,17 +125,17 @@ class PaperWorkflowSuite(DenolleGroupSuite):
         )
 
         # Tier controls how much of the paper the model is allowed to see. The
-        # `hard` tier withholds the abstract, so the model must DESIGN the
+        # `hard` difficulty withholds the abstract, so the model must DESIGN the
         # workflow rather than extract it.
-        tier = p["tier"]
-        if tier == "hard":
+        difficulty = p["difficulty"]
+        if difficulty == "hard":
             given = f"Title:\n  {' '.join(p['title'].split())}\n"
         else:
             given = (
                 f"Title:\n  {' '.join(p['title'].split())}\n\n"
                 f"Abstract:\n  {' '.join(p['abstract'].split())}\n"
             )
-            if tier == "easy" and p.get("methods"):
+            if difficulty == "easy" and p.get("methods"):
                 given += f"\nMethods:\n  {' '.join(p['methods'].split())}\n"
 
         prompt = (
@@ -168,7 +168,7 @@ class PaperWorkflowSuite(DenolleGroupSuite):
         }
         meta = {
             "paper_id": p["id"],
-            "tier": tier,
+            "difficulty": difficulty,
             "provisional": bool(p.get("provisional", False)),
             "cutoff_date": p.get("cutoff_date"),
             "n_expected_ops": len(wf["nodes"]),

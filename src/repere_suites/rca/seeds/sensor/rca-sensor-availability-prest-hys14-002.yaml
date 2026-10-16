@@ -6,7 +6,7 @@ schema_version: rca.golden.v0.1
 id: rca-sensor-availability-prest-hys14-002
 family: sensor
 group: 3_sensor
-tier: T3_reference
+tier: V3_reference
 shape: A_text
 status: template
 difficulty: medium

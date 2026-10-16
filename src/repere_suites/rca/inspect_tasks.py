@@ -165,7 +165,7 @@ async def _execute(rec: dict[str, Any], code: str) -> Any:
 # ---------------------------------------------------------------------------
 
 
-async def _score_t2(rec: dict[str, Any], state: TaskState, *, allow_live: bool) -> Score:
+async def _score_v2(rec: dict[str, Any], state: TaskState, *, allow_live: bool) -> Score:
     from repere_suites.sta_lta.sandbox import extract_code
 
     completion = state.output.completion if state.output else ""
@@ -227,7 +227,7 @@ async def _score_t2(rec: dict[str, Any], state: TaskState, *, allow_live: bool) 
     )
 
 
-async def _score_t1(rec: dict[str, Any], state: TaskState, *, allow_live: bool) -> Score:
+async def _score_v1(rec: dict[str, Any], state: TaskState, *, allow_live: bool) -> Score:
     """Oracle comparison. The agent's numbers come either from executing its
     code (shape B, preferred) or from a JSON object in the completion."""
     from repere_suites.sta_lta.sandbox import extract_code
@@ -311,7 +311,7 @@ _ABSTAIN = (
 )
 
 
-async def _score_t3(rec: dict[str, Any], state: TaskState) -> Score:
+async def _score_v3(rec: dict[str, Any], state: TaskState) -> Score:
     from repere_suites.lit_rag.scorers import make_scorer_from_spec
 
     completion = state.output.completion if state.output else ""
@@ -370,7 +370,7 @@ async def _score_t3(rec: dict[str, Any], state: TaskState) -> Score:
             accepted = ref if isinstance(ref, list) else [ref]
             value = 1.0 if any(norm(a) in norm(completion) for a in accepted) else 0.0
     else:
-        return _void(f"unknown T3 method {method!r}", completion)
+        return _void(f"unknown V3 method {method!r}", completion)
     return Score(
         value=max(0.0, min(1.0, value)),
         answer=completion,
@@ -379,20 +379,20 @@ async def _score_t3(rec: dict[str, Any], state: TaskState) -> Score:
     )
 
 
-async def _score_t4(rec: dict[str, Any], state: TaskState) -> Score:
+async def _score_v4(rec: dict[str, Any], state: TaskState) -> Score:
     completion = state.output.completion if state.output else ""
     judge = rec["scoring"].get("judge") or {}
     if os.environ.get("REPERE_RCA_ENABLE_JUDGE") != "1":
         return _void(
-            "T4 judge disabled: judge scores are reportable only after inter-rater agreement and judge calibration (DESIGN.md §4.4)",
+            "V4 judge disabled: judge scores are reportable only after inter-rater agreement and judge calibration (DESIGN.md §4.4)",
             completion,
         )
     if not judge.get("human_ratings_ref") or not judge.get("calibration_set_ref"):
         return _void(
-            "T4 judge not calibrated: human_ratings_ref and calibration_set_ref are empty",
+            "V4 judge not calibrated: human_ratings_ref and calibration_set_ref are empty",
             completion,
         )
-    return _void("T4 judge path not implemented in the skeleton", completion)
+    return _void("V4 judge path not implemented in the skeleton", completion)
 
 
 # ---------------------------------------------------------------------------
@@ -407,14 +407,14 @@ def rca_scorer(records_by_id: dict[str, dict[str, Any]], allow_live_network: boo
         if rec is None:
             return _void(f"no record for sample {state.sample_id!r}")
         tier = rec.get("tier")
-        if tier == "T2_execution":
-            s = await _score_t2(rec, state, allow_live=allow_live_network)
-        elif tier == "T1_physics":
-            s = await _score_t1(rec, state, allow_live=allow_live_network)
-        elif tier == "T3_reference":
-            s = await _score_t3(rec, state)
-        elif tier == "T4_judgment":
-            s = await _score_t4(rec, state)
+        if tier == "V2_execution":
+            s = await _score_v2(rec, state, allow_live=allow_live_network)
+        elif tier == "V1_physics":
+            s = await _score_v1(rec, state, allow_live=allow_live_network)
+        elif tier == "V3_reference":
+            s = await _score_v3(rec, state)
+        elif tier == "V4_judgment":
+            s = await _score_v4(rec, state)
         else:
             s = _void(f"unknown tier {tier!r}")
         md = dict(s.metadata or {})

@@ -50,12 +50,12 @@
     },
     "tier": {
       "enum": [
-        "T1_physics",
-        "T2_execution",
-        "T3_reference",
-        "T4_judgment"
+        "V1_physics",
+        "V2_execution",
+        "V3_reference",
+        "V4_judgment"
       ],
-      "description": "How correctness is established. T1: scored against an independently measured physical quantity with an oracle solver. T2: deterministic checker on the execution result of generated code. T3: retrieval and attribution scored against a date-bounded reference corpus. T4: expert rubric; judge scores reportable only after inter-rater agreement and judge calibration."
+      "description": "How correctness is established (V for verification; distinct from the scorer tiers T0-T4, see docs/glossary.md). V1: scored against an independently measured physical quantity with an oracle solver. V2: deterministic checker on the execution result of generated code. V3: retrieval and attribution scored against a date-bounded reference corpus. V4: expert rubric; judge scores reportable only after inter-rater agreement and judge calibration."
     },
     "shape": {
       "enum": [
@@ -473,6 +473,7 @@
           ]
         },
         "metrics": {
+   "description": "Metrics this record's scoring.method actually produces. Validated by rule R16 against _METHOD_METRICS in validate.py; a method cannot declare a metric it does not compute. At least one is required.",
           "type": "array",
           "items": {
             "enum": [

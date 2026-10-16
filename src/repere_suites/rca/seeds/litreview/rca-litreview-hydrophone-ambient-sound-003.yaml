@@ -5,7 +5,7 @@ schema_version: rca.golden.v0.1
 id: rca-litreview-hydrophone-ambient-sound-003
 family: litreview
 group: 2_litreview
-tier: T3_reference
+tier: V3_reference
 shape: A_text
 status: template
 difficulty: medium
