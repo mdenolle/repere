@@ -1,0 +1,17 @@
+{
+  "schema_version": "repere.suite.v1",
+  "dataset_id": "atlas",
+  "version": "v0.1",
+  "generated_at": "2026-10-16T00:50:02Z",
+  "files": [
+    {
+      "dataset_id": "atlas",
+      "suite_id": "routing",
+      "version": "v0.1",
+      "task_kind": "orchestration",
+      "path": "atlas/v0.1/routing.jsonl",
+      "rows": 2,
+      "sha256": "2f37f8662f8f6c9394143a099a39ea6819f57426b6584916ddd4ceb3b61b74fa"
+    }
+  ]
+}

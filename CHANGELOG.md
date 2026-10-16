@@ -11,6 +11,137 @@ there cross-references the version that delivered it.
 
 ## [Unreleased]
 
+### Added
+
+- **`docs/golden_packaging/`** — one page for packaging a golden data set,
+  from authored cases to a pinned `repere.suite.v1` release: the row and
+  manifest schemas (as JSON Schema), where hidden gold lives (derive or host),
+  the export procedure, pinning, a pre-merge checklist, and when to author an
+  RCA golden record instead. The example under `example/` was produced by
+  `repere.export.export_suites`. Collects what was spread across four
+  documents; `ATLAS_PROPOSAL.md` applies it to the Atlas routing cases.
+- **`src/repere/jev.py`** and **`src/repere/jev_scorers.py`** — prototype
+  free-text scorers (cited-claim support, report-of-work honesty) on the
+  TypeSafe Jev service, unit-tested against a scripted transport only. No
+  suite row references them and no leaderboard number comes from them;
+  `docs/jev_scorers.md` gives the calibration protocol that has to run first.
+- **`docs/glossary.md`** — every metric, scorer name, tier, and leaderboard
+  field defined once, with the file that owns each. The repository had no
+  glossary; the word did not appear anywhere in it.
+- **`src/repere/reliability.py`** — the metrics that only exist once a
+  configuration is run more than once: outcome and resource consistency,
+  trajectory consistency (distributional and sequential), the three robustness
+  ratios, calibration/Brier/AUROC, and both confidence intervals. Pure
+  standard-library functions, 33 tests. Definitions come from the published
+  reliability literature under CC BY 4.0; provenance in
+  `docs/ecosystem/hal_adoption.md`.
+- **`src/repere/pareto.py`** — the cost-versus-quality frontier, as a convex
+  hull including the origin, computed **per suite**. `computeParetoFront` had
+  been deleted from `site/app.js` some time ago while `DESIGN.md`,
+  `CHANGELOG.md` and the RCA design all still described it as present. In
+  Python now, so the public board and the RCA harness share one implementation.
+- **`docs/ecosystem/hal_adoption.md`** — what is adopted from the HAL and
+  reliability papers, under what licence, and what is deliberately not taken.
+  The rule: methods and concepts from the papers and public documentation
+  pages, nothing from the HAL source code, which carries no LICENSE file and
+  was archived in July 2026.
+- **`tests/test_glossary_covers_the_vocabulary.py`** — the glossary must name
+  every leaderboard field, reliability field and reliability function the code
+  produces. Added because the drift it guards against happened inside one
+  session: the glossary was written before schema v0.2 and the reliability
+  metrics existed, and did not mention any of them.
+- **`src/repere/provenance.py`** — what has to travel with a number produced on
+  a machine nobody else can reach: harness commit, host profile, Ollama model
+  **digests** (not tags), sandbox image, price-map version, dataset hashes, and
+  an explicit list of the fields that are host-bound and must never be compared
+  across machines. Collection never raises; a missing fact records `None`.
+- **`src/repere/publish.py`** and **`scripts/publish_board.py`** — the outbound
+  guard. `tests/test_no_holdout_in_repo.py` keeps held-out data out of the
+  repository; this keeps it off the public board, which matters now that a
+  private GPU host pushes to git without a human in the loop. An allowlist of
+  row fields (a denylist fails open), a refusal of any free text, and a check
+  for held-out vocabulary anywhere in the payload. Nothing reaches disk when the
+  check fails.
+- **`docs/remote_runs.md`** — how to run on the private host and publish
+  safely, including what is invariant across machines and what is not.
+- **`src/repere/perturbations.py`** — the robustness phases: seeded fault
+  injection (FDSN 503 and timeout, M2M auth failure and partial return,
+  truncated miniSEED, empty stream), meaning-preserving structural reshapes,
+  and deterministic prompt paraphrase. Every fault is a pure function of
+  `(seed, tool_name, call_index)`, so a perturbed run repeats exactly.
+- **`site/board.js`** and a board panel on the landing page — the cost-quality
+  frontier, drawn per eval, with error bars where repeats exist and hollow
+  dashed markers where they do not. `site/data/leaderboard.json` was generated,
+  tested and deployed on every push while nothing on the page read it.
+- **Paper Methods gains a reliability subsection** covering self-agreement,
+  the three robustness perturbations and the convex-hull cost frontier, with
+  citations; the statistics subsection now states the K=5 protocol and the
+  distinction between the two intervals (over repeats, over records).
+- **Tokens as a leaderboard x-axis** on the skill-lift chart (issue #41) and on
+  the board panel, so a reader can re-price rows under a different price list.
+- A **consistency column** on the board, labelled with its scope. `arm` is the
+  coarse whole-suite form recoverable from per-run means; `record` is the
+  per-item statistic as defined. `build_leaderboard` derives the arm form when a
+  runner supplied repeats but computed no consistency.
+- Validator rule **R16**: a record may only declare metrics its `scoring.method`
+  actually produces. `scoring.metrics` was decorative before this — nothing in
+  the package read it, and six of the eleven enum values had no implementation.
+
+### Changed
+
+- **Leaderboard schema v0.1 → v0.2.** `score` becomes `score_mean` +
+  `score_ci95` + `score_runs` + `n_epochs`; tokens, latency, tool calls and
+  `scoring_cost_usd` are first-class; rows carry `phase` provenance and the two
+  frontier flags. `efficiency_score` and `quality_percent` are retired. The
+  committed July board is migrated in place: the numbers are unchanged and are
+  now labelled as the single-run point estimates they always were.
+- **The word "tier" now has one meaning.** It had five. RCA verification tiers
+  become `V1_physics`…`V4_judgment`; `config/models.yaml` gains `size_band` in
+  place of `tier`; `paper_workflow` papers gain `difficulty`. The scorability
+  spectrum keeps `T0`–`T4`, and the ecosystem ladder keeps `L0`–`L4`.
+- `repere_suites.rca.run` reports outcome and resource consistency alongside its
+  existing pass-rate statistics, and shares `bootstrap_ci` with the public board
+  instead of keeping a second copy.
+
+### Fixed
+
+- **A K=5 sweep produced leaderboard rows reading `n_epochs: 1`.** The per-repeat
+  series only ever reached `skill_lift.json`; `demo_dashboard` built each
+  leaderboard row from `arm["score"]`, the mean, and discarded `arm["scores"]`.
+  So the board reported single runs for a run that was anything but, and the
+  error bars still could not draw. The row now carries `score_runs`,
+  `latency_s_runs`, `out_tokens` and a reliability block.
+- **The board's cost axis ran to $1.00 when every configuration cost $0.** An
+  all-local eval now collapses the axis and states the fact, instead of drawing
+  ticks up to a dollar nobody paid.
+- **Figure 1 drew arrows between point estimates.** On the first real repeated
+  sweep some endpoints carry a 34 to 42 pp interval, wide enough that the
+  arrow's direction is the claim rather than its length. The figure now draws
+  the intervals where repeats exist.
+- **A fourth codameter over-rename.** `scripts/demo_dashboard.py` imported
+  `codameter.repere`; the upstream module is `codameter.frugalmind`, exactly as
+  the comment in `src/repere_suites/dvv/scorers.py` had warned since the
+  FrugalMind rename. It broke every live dv/v run, and stayed invisible because
+  codameter is an optional dependency: without it installed the import fails for
+  the other reason and reads as a missing package.
+  `tests/test_codameter_import_not_over_renamed.py` is the guard, and it reads
+  code rather than comments so the fix can document the wrong spelling.
+- **Two render tests encoded one dataset's size.** `site/test/render_test.mjs`
+  asserted at least 20 markers, which was the July board's row count; a smaller
+  but valid board failed as though the chart were broken. Both render tests now
+  expect a marker count proportional to the data they are given.
+- **`BHZ` vs `HHZ` was wrongly listed as a meaning-preserving perturbation.**
+  Those are different channels at different sample rates (40 Hz and 200 Hz on
+  the COSZO stations, per `docs/rca/prior_art/coszo_chronfix.md`), so an agent
+  that answered differently after the swap would be correct to. Replaced with
+  empty-location-code spelling (`""` vs `--`), which is a genuine FDSN
+  ambiguity; `tests/test_perturbations.py` now asserts that no transform in the
+  catalogue touches a channel code.
+- A single run no longer reports a zero-width confidence interval. `_ci95`
+  returned `0.0` for one run and `site/app.js` guards its error bars on
+  `ci > 0`, so single-run boards rendered as though they had measured zero
+  variance. Every aggregate in `reliability.py` returns `None` instead.
+
 ## [0.5.2] — 2026-09-22 — the held-out splits leave the repository
 
 ### Fixed

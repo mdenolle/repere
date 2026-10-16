@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "repere.suite.v1/benchmark_row",
+  "title": "Repère BenchmarkRow (one JSONL line)",
+  "description": "Transcribed from the BenchmarkRow dataclass in src/repere/export.py and the validity rules in docs/dataset_submission.md section 2. The dataclass is the contract; this file is a convenience for external submitters and has not been generated from it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "dataset_id", "suite_id", "version", "task_kind", "split", "visibility", "prompt", "gold", "scorer_spec"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+/[a-z0-9_]+/[A-Za-z0-9._:-]+$",
+      "description": "Globally unique: dataset_id/suite_id/item_id. Must start with this row's dataset_id and suite_id (checked by tests, not by this schema)."
+    },
+    "dataset_id": {"type": "string", "description": "Directory name under datasets/."},
+    "suite_id": {"type": "string", "description": "File name stem of the JSONL."},
+    "version": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+(-rc[0-9]+)?$", "description": "Bump when any prompt or gold changes."},
+    "task_kind": {
+      "enum": ["extraction", "code_generation", "plotting", "report_drafting", "numerical_regression", "retrieval", "translation", "grounded_qa", "orchestration"],
+      "description": "repere.TaskKind. Add an enum member in src/repere/__init__.py before using a new value."
+    },
+    "split": {"enum": ["validation", "test"]},
+    "visibility": {"enum": ["public", "private"], "description": "validation rows are public, test rows are private. A test row never appears in a committed or published file."},
+    "prompt": {"type": "string", "description": "Exactly what the model is shown. Must not contain the answer, the checker logic or a corpus id."},
+    "gold": {"description": "Any JSON value. Shape is fixed by scorer_spec.name: object for json_extraction, number array for numerical_regression, relevant-id list for retrieval_metrics."},
+    "scorer_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "config"],
+      "properties": {
+        "name": {"type": "string", "description": "Resolved by the suite family's make_scorer_from_spec. Must be registered there."},
+        "config": {"type": "object"}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Free-form but use these keys so the leaderboard can slice: difficulty (easy|medium|hard), cutoff_date (ISO date or null), category, source_case (id in the upstream truth set).",
+      "properties": {
+        "difficulty": {"enum": ["easy", "medium", "hard"]},
+        "cutoff_date": {"type": ["string", "null"], "format": "date"},
+        "category": {"type": "string"},
+        "source_case": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"split": {"const": "test"}}}, "then": {"properties": {"visibility": {"const": "private"}}}}
+  ]
+}
