@@ -66,14 +66,14 @@ def test_sorted_by_cost_ranks_cheapest_first(tmp_path):
     assert "claude-opus-4-6" in ids_at_end
 
 
-def test_invalid_tier_in_yaml_rejected(tmp_path):
+def test_invalid_size_band_in_yaml_rejected(tmp_path):
     bad = {
         "schema_version": 0.1,
         "models": [
             {
                 "id": "x",
                 "family": "x",
-                "tier": "huge",
+                "size_band": "huge",
                 "context_window": 1024,
                 "backend": "anthropic",
             }
@@ -92,14 +92,14 @@ def test_duplicate_id_rejected(tmp_path):
             {
                 "id": "m",
                 "family": "f",
-                "tier": "small",
+                "size_band": "small",
                 "context_window": 1024,
                 "backend": "ollama",
             },
             {
                 "id": "m",
                 "family": "f",
-                "tier": "small",
+                "size_band": "small",
                 "context_window": 1024,
                 "backend": "ollama",
             },
@@ -115,7 +115,7 @@ def test_missing_required_keys_rejected(tmp_path):
     incomplete = {
         "schema_version": 0.1,
         "models": [
-            {"id": "x", "tier": "small"}  # missing family, context_window, backend
+            {"id": "x", "size_band": "small"}  # missing family, context_window, backend
         ],
     }
     p = tmp_path / "bad.yaml"
