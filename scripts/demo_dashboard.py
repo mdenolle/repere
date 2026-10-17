@@ -510,7 +510,9 @@ def _main_live(args) -> int:
                 (full["cost"] - none["cost"]) / none["cost"] * 100.0
                 if none["cost"] > 0 else None
             )
-            op = openness.get(card.id, "unknown")
+            # Models outside MODELS (the GPU-host size ladder) take openness from
+            # config/models.yaml rather than reading "unknown" on the board.
+            op = openness.get(card.id) or card.metadata.get("openness", "unknown")
             row = SkillLiftRow(
                 model_id=card.id, suite=suite_name,
                 skill_name=skill_name, skill_version=skill_version,

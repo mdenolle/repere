@@ -157,6 +157,65 @@ models:
       provider: google
       license: gemma
 
+  # Size ladder for the GPU host (4x A100 80GB). Each family spans sizes at the
+  # Ollama default quantization, so a change in score along a family is a
+  # change in size, not in quantization or training recipe.
+  - id: olmo2:13b
+    family: olmo2
+    size_band: medium
+    size_b: 13.0
+    context_window: 4096
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: allenai
+      license: apache-2.0
+      note: "fully open; Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (8.4 GB)"
+
+  - id: deepseek-r1:14b
+    family: deepseek-r1
+    size_band: medium
+    size_b: 14.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: deepseek
+      license: mit
+      note: "R1 distill onto Qwen2.5-14B; Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (9.0 GB)"
+
+  - id: qwen2.5:32b
+    family: qwen2.5
+    size_band: medium
+    size_b: 32.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: alibaba
+      license: apache-2.0
+      note: "Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (19.9 GB)"
+
+  - id: deepseek-r1:32b
+    family: deepseek-r1
+    size_band: medium
+    size_b: 32.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: deepseek
+      license: mit
+      note: "R1 distill onto Qwen2.5-32B; Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (19.9 GB)"
+
   # ---- big: 70B+ open weights ----------------------------------------------
   - id: llama3.3:70b
     family: llama3.3
@@ -171,6 +230,34 @@ models:
       provider: meta
       license: llama3
       notes: "Strong open-weight ceiling; needs ~48GB GPU at 4-bit."
+
+  - id: qwen2.5:72b
+    family: qwen2.5
+    size_band: big
+    size_b: 72.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: alibaba
+      license: qwen-research
+      note: "Qwen RESEARCH LICENSE per the Ollama license layer, not Apache-2.0; Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (47.4 GB)"
+
+  - id: deepseek-r1:70b
+    family: deepseek-r1
+    size_band: big
+    size_b: 70.0
+    context_window: 128000
+    backend: ollama
+    cost_per_1k_in: 0.0
+    cost_per_1k_out: 0.0
+    metadata:
+      openness: open-source-open-weight
+      provider: deepseek
+      license: mit
+      note: "R1 distill onto Llama-3.3-70B, so the Llama 3.3 licence also applies although Ollama ships only MIT; Ollama default tag, ~4-bit; size and license read from the registry manifest 2026-10-16 (42.5 GB)"
 
   # ---- cloud: API-served frontier and near-frontier ------------------------
   - id: claude-haiku-4-5-20251001
