@@ -84,7 +84,7 @@ docker --version && nvidia-smi
 git clone git@github.com:mdenolle/repere.git
 cd repere
 pixi install                           # resolves from pixi.lock, no network drift
-pixi run -e default pytest             # 535 passed, 9 skipped on a clean checkout
+pixi run -e default pytest             # all pass, same suite as CI; no failures allowed
 ```
 
 If that test run is not green, stop here. It is the same suite CI runs, and a
@@ -107,6 +107,14 @@ sudo systemctl edit ollama    # add, then restart:
 
 ollama pull qwen2.5:7b && ollama pull llama3.1:8b
 ollama pull deepseek-r1:7b && ollama pull olmo2:7b
+
+# The size ladder (registered in config/models.yaml). Every one fits on a
+# single A100 80GB at the default ~4-bit tag; the largest, qwen2.5:72b, is
+# 47.4 GB. Same quantization at every size, so a family's curve is a size
+# effect. qwen2.5:72b ships under the Qwen Research License.
+for m in qwen2.5:14b qwen2.5:32b qwen2.5:72b \
+         deepseek-r1:14b deepseek-r1:32b deepseek-r1:70b \
+         olmo2:13b llama3.3:70b; do ollama pull "$m"; done
 ollama list                            # record the digests; see 3.6
 ```
 
@@ -174,8 +182,18 @@ digest is the only thing that will tell you.
 ### 3.7 Running a sweep
 
 ```bash
-# The deterministic suites, five epochs, temperature 0.
-pixi run -e full python scripts/demo_dashboard.py --live --repeats 5 --temperature 0
+# The deterministic suites, five epochs, every item (never --limit on a run
+# meant for the board: a capped run replaces the full one). Temperature 0.7,
+# not 0: repeats at T=0 return near-identical text and give error bars that
+# measure nothing.
+pixi run -e full python scripts/demo_dashboard.py --live --repeats 5 --temperature 0.7
+
+# The size ladder in the same run, so every row shares one protocol and host.
+pixi run -e full python scripts/demo_dashboard.py --live --repeats 5 --temperature 0.7 \
+    --models qwen2.5:7b qwen2.5:14b qwen2.5:32b qwen2.5:72b \
+             deepseek-r1:7b deepseek-r1:14b deepseek-r1:32b deepseek-r1:70b \
+             olmo2:7b olmo2:13b llama3.1:8b llama3.3:70b \
+             claude-haiku-4-5-20251001
 
 # The RCA harness, which already understands epochs.
 pixi run -e full python -m repere_suites.rca.run \
@@ -191,7 +209,7 @@ add robustness on a subset.
 ```bash
 pixi run -e default python scripts/publish_board.py \
     --results-dir results --host-label "$REPERE_HOST_LABEL" \
-    --epochs 5 --seed 0 --temperature 0
+    --epochs 5 --seed 0 --temperature 0.7
 ```
 
 It builds v0.2 rows, attaches provenance, stamps `host_id` on every row, runs
