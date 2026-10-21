@@ -28,7 +28,9 @@ on the table.
   agent baseline. ~3–4 weeks.
 - **Phase 3 — Larger pivots.** Submit STA/LTA as an `inspect_evals`
   benchmark, scale the truth set to ~50 events, hide the test split,
-  reframe the leaderboard around skill-lift. ~6–8 weeks.
+  reframe the leaderboard around skill-lift. ~6–8 weeks. Added in October
+  2026: evaluate every model on every suite with a size ladder on the GPU
+  host (P3.6), and take RCA golden items from RCA Atlas (P3.7).
 
 ### Phase 2 execution order
 
@@ -505,6 +507,72 @@ builds on:
 > **Effort** M
 > **Depends on** none
 > **Tracking** _(issue not yet filed)_
+
+## P3.6 · Every model on every suite, on the GPU host, with a size ladder
+
+> **Goal** One sweep protocol evaluates one fixed model list on every suite
+> that puts a model in the loop, and the site shows the result as a
+> model × suite matrix beside the per-suite frontier. No score is averaged
+> across suites.
+>
+> **Why** Each suite has so far been run on its own model list and protocol,
+> and a partial run can replace a full one: the 2026-09-23 sweep scored the
+> first 4 items per suite for 3 models and replaced a July board of 5 models
+> on every item. A 4×A100 80 GB host makes a family-controlled size ladder
+> possible (qwen2.5 7–72B, deepseek-r1 7–70B, olmo2 7–13B, llama 8–70B, all at
+> the default ~4-bit tag), which turns "do skills only rescue small models?"
+> into a measurable question.
+>
+> **Deliverables**
+> - Ladder registered in `config/models.yaml`; runbook in
+>   `docs/remote_runs.md` (PR #56).
+> - A full sweep: every item, both skill conditions, K=5, temperature 0.7,
+>   Ollama digests recorded, published through `scripts/publish_board.py`.
+> - Site: model × suite matrix (score ± 95 % CI, cost, tokens); family as
+>   hue and size as a second channel; the cost chart spreads points when
+>   every configuration costs $0; the callout text reads from the data.
+> - A guard that a run with `--limit` cannot overwrite a full board.
+> - Suites added to the sweep as each gains a model harness: the five
+>   `sta_lta.*` suites, orchestration, pipeline_regression, paper_workflow,
+>   and the Atlas suites of P3.7.
+>
+> **Acceptance** The board lists every registered ladder model on every
+> swept suite with `n_total` equal to the suite size and `n_epochs` = 5, and a
+> reader can see skill lift as a function of model size within each family.
+>
+> **Effort** L
+> **Depends on** P3.4
+> **Tracking** _(issue not yet filed)_ · PR #56
+
+## P3.7 · RCA Atlas as the external source of RCA golden items
+
+> **Goal** RCA golden items are owned and authored in RCA Atlas
+> (`coszo-hub/RCA-Atlas`). Repère pulls them at a pinned commit, verifies
+> each file's SHA-256, evaluates its models on them, and displays aggregates.
+>
+> **Why** One copy of each case, maintained by the people who own the
+> science. The Atlas licence is proprietary, so Repère may not commit,
+> package or publish Atlas rows; pulling at run time with hash pins is the
+> only arrangement that is both reproducible and compliant.
+>
+> **Deliverables**
+> - `src/repere_suites/atlas/` (pins and verified loader),
+>   `scripts/pull_atlas.py`, `tests/test_atlas_pull.py`, held-out guard over
+>   the RCA seeds (PR #55).
+> - An Atlas agent suite in Repère: the 21 `agent_tasks`, the Atlas MCP
+>   tools, and three conditions (code only, tools, tools plus a SKILL.md
+>   authored in Atlas) to separate tool lift from skill lift.
+> - Routing and quake-question suites as model evaluations.
+> - Repin to a release tag on Atlas `main`; migrate the overlapping
+>   `rca/seeds/` records to Atlas.
+>
+> **Acceptance** No Atlas row exists in Repère's tree or wheel (enforced by
+> test); every Atlas-based board row names the Atlas commit and file hash;
+> the Atlas owners have approved publishing aggregates.
+>
+> **Effort** L
+> **Depends on** P3.3, P3.6
+> **Tracking** _(issue not yet filed)_ · PR #55
 
 ---
 
