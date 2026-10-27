@@ -13,6 +13,18 @@ there cross-references the version that delivered it.
 
 ### Added
 
+- **`attribution` and `abstention` scorers, and a hard-distractor shortlist,**
+  ported from the archived branch `archive/lit-rag-ooi-rca-2026-09` to score
+  RCA Atlas answers (ROADMAP P3.7). `attribution` reports citation validity,
+  precision, recall, the list of fabricated ids and fact coverage, and now
+  reads Atlas's numbered `[n]` citations. `abstention` is a proper scoring rule
+  over answerable and unanswerable queries.
+  `repere_suites.atlas.answers` turns a pulled Atlas gold record and the
+  numbered source list into a scorer spec, with Atlas's own matching rules.
+  Only `corpus_verified` gold (45 of 60 at the pin) may feed a ranked number.
+  The branch's aRCADA corpus and its 39 items were not ported: the corpus
+  carries publisher abstracts with unconfirmed redistribution terms, and RCA
+  golden items now belong to RCA Atlas.
 - **RCA Atlas owns the RCA golden items; Repère pulls them.**
   `src/repere_suites/atlas/` pins `coszo-hub/RCA-Atlas` at a commit and the
   SHA-256 of 11 dataset files, `scripts/pull_atlas.py` downloads them into

@@ -99,6 +99,8 @@ Artifact predicates: `int_ge_1`, `int_eq_0`, `float_gt_0`.
 | `retrieval_metrics` | one ranking metric over a parsed ranked id list | gold relevant ids | T0 |
 | `term_preservation` | fraction of `required_terms` present, minus `1/len(required)` per forbidden term | config only | T0 |
 | `citation_support` | `0.5·validity + 0.5·coverage − 0.25·forbidden`; validity is the fraction of `[S#]` resolving to a provided source | `valid_sources` | T0 |
+| `attribution` | `⅓·validity + ⅓·recall + ⅓·coverage − 0.25·forbidden`, with precision and the list of fabricated ids in `.breakdown`; reads DOIs, `[S#]`, and numbered `[n]` against the listed sources | `valid_sources`, `relevant_sources` | T0 |
+| `abstention` | 1 for a clean `NO_RELEVANT_PAPERS` on an unanswerable query, 0 for any answer; on an answerable query 0 for declining, else recall of the gold ids | `answerable`, gold ids | T0 |
 
 `citation_support` checks a citation **resolves**, not that the passage supports the
 claim. The second question is `jev_grounding` (§2.6).
