@@ -74,3 +74,41 @@ def test_package_data_patterns_ship_no_holdout_file():
         "The wheel ships everything package-data matches, so these would be "
         "published to PyPI."
     )
+
+
+RCA_SEEDS = SUITES_DIR / "rca" / "seeds"
+
+# Held-out seeds committed before this guard existed, awaiting removal from
+# the repository (and migration to RCA Atlas, which owns golden items). The
+# entry is an assistant template with no stored answer; its test status is
+# spent either way, because it has been public. Empty this set when the file
+# goes; `test_pending_removals_still_exist` fails until you do.
+PENDING_REMOVAL = {"rca-coding-timing-resyncs-hys14-002.yaml"}
+
+
+def test_no_rca_seed_is_held_out():
+    """RCA records ship in the wheel (`seeds/*/*.yaml` in package-data).
+
+    Held-out RCA records belong in $REPERE_RCA_PRIVATE_DIR/records/<family>/,
+    which `repere_suites.rca.record_paths` merges at load time. This guard was
+    missing until 2026-10-15: the truth-set list above never covered RCA, and
+    one template seed carried `split: test`.
+    """
+    leaked = []
+    for p in sorted(RCA_SEEDS.glob("*/*.y*ml")):
+        holdout = (yaml.safe_load(p.read_text()) or {}).get("holdout") or {}
+        if p.name in PENDING_REMOVAL:
+            continue
+        if holdout.get("split") == "test" or holdout.get("visibility") == "private":
+            leaked.append(p.name)
+    assert not leaked, (
+        f"RCA seeds marked held out: {leaked}. Move them to "
+        "$REPERE_RCA_PRIVATE_DIR/records/<family>/; anything under seeds/ is "
+        "committed and published to PyPI."
+    )
+
+
+def test_pending_removals_still_exist():
+    """The exception list may only name files that are still there."""
+    gone = sorted(n for n in PENDING_REMOVAL if not list(RCA_SEEDS.glob(f"*/{n}")))
+    assert not gone, f"remove {gone} from PENDING_REMOVAL; the files are gone"

@@ -1,5 +1,13 @@
 # Authoring golden records for Repère-RCA
 
+> **Ownership changed on 2026-10-15.** RCA golden items are now owned and
+> authored in [RCA Atlas](https://github.com/coszo-hub/RCA-Atlas); Repère pulls
+> them at a pinned commit and evaluates on them
+> ([`../golden_packaging/ATLAS_PROPOSAL.md`](../golden_packaging/ATLAS_PROPOSAL.md)).
+> Write new items there, not under `src/repere_suites/rca/seeds/`. This page
+> still describes the review trail a golden item needs, and the records already
+> here, which are to be migrated.
+
 This is the contract for co-authors. The validator
 (`python -m repere_suites.rca.validate`) enforces everything marked with a
 rule id; the rest is judgement, and the reviewer checks it.

@@ -1,194 +1,153 @@
-# Proposal: packaging the RCA Atlas baseline evals as Repère golden sets
+# RCA Atlas: owned upstream, evaluated in Repère
 
-Status: proposal, not implemented. Nothing in this file has been run against
-Repère's scorers.
+Decision (Marine Denolle, 2026-10-15): **RCA Atlas owns the RCA golden items.
+Repère implements the evaluation and displays the results.** This replaces the
+earlier version of this page, which proposed exporting Atlas cases into
+Repère's `datasets/`. That would have kept two copies of every case, and the
+Atlas licence does not allow it.
 
-Source: the 2026-10-08 baseline catalog,
-`coszo-hub/RCA-Atlas` branch `rca-atlas-eval-suite`,
-`src/atlas_eval/results/2026-10-08-baseline/catalog.html`. Counts below come
-from the JSON embedded in that page (715 cases, 11 suites), read on 2026-10-15.
-Method write-up cited by the page:
-`src/atlas_eval/EVALUATION_METHOD.md` at `e8d828d`. I have not read it, nor the
-`datasets/*.jsonl` files the page links to.
+Everything below was read from `coszo-hub/RCA-Atlas` at `e8d828d` (2026-10-14)
+and checked against Repère `main`. What is implemented is marked; the rest is a
+plan.
 
-Read [`README.md`](README.md) first for the row format and the A/B decision rule.
+## 1. The licence decides the mechanism
 
-## Verdict
+RCA Atlas is a public GitHub repository under the "RCA Atlas Proprietary
+License": authorised project members may use the materials for authorised
+project work, and nothing may be copied, redistributed or published without
+written permission from the copyright holder. Repère is a public repository,
+a PyPI package and a public board. So:
 
-Seven of the eleven Atlas suites are synthetic with a seeded generator
-(gaps, timing, dvv, pressure, agent, agent_llm, and the windowing half of
-quakes). They are Mode A: package the generator and a secret, store nothing.
-Four suites are human-written or corpus-bound (routing, quake_questions,
-retrieval, answers). They are Mode B and need a real public/hidden split that
-does not exist yet.
+| Repère may | Repère may not |
+|---|---|
+| download Atlas files at run time into `$REPERE_EVAL_DATA_DIR` (gitignored, outside the wheel) | commit or package an Atlas row, prompt or gold value |
+| commit the commit SHA and each file's SHA-256 | quote Atlas cases in its docs or site |
+| publish aggregate scores, if the Atlas owners agree (open question 1) | publish per-item outputs that reproduce Atlas content |
 
-One action is needed before any of it is packaged: the published catalog
-exposes the held-out data (next section).
+`src/repere/publish.py` already refuses free text on the board, which covers
+the last row.
 
-## Problem 1: the catalog page publishes the answers
+## 2. Pulling (implemented)
 
-`catalog.html` embeds every case with its full record. In that JSON:
+| Piece | File |
+|---|---|
+| Commit and per-file SHA-256 for 11 datasets | `src/repere_suites/atlas/pins.yaml` |
+| Verified download and loader | `src/repere_suites/atlas/__init__.py` (`fetch_atlas`, `load_atlas`) |
+| Command | `pixi run python scripts/pull_atlas.py [--check]` |
+| Tests, no network | `tests/test_atlas_pull.py`, including a guard that no pinned file is committed |
 
-| Suite | Evidence the page carries gold | Rows |
+A file whose hash differs from its pin is refused and not written, so a moved
+branch or an edited case cannot be scored silently. To take a new Atlas
+release, change `commit`, recompute the hashes, and record the change in
+`CHANGELOG.md`; scores before and after are on different dataset versions.
+
+The routing pin equals the `dataset_sha256` that Atlas's own runner recorded in
+`results/2026-10-08-baseline/provenance/routing.json`, so the two harnesses name
+the same file the same way.
+
+**The pin is provisional.** `e8d828d` is on Atlas's unmerged
+`rca-atlas-eval-suite` branch, which has since moved two commits. Repin to a
+release tag on Atlas `main` (open question 2).
+
+## 3. What Repère can evaluate with its own models
+
+Atlas has eleven suites. Only four put a language model in the loop; the rest
+test Atlas's own NumPy tools or its retriever.
+
+| Atlas dataset | Rows | Atlas tests | In Repère |
+|---|---|---|---|
+| `agent_tasks` | 21 | an LLM agent calling the 11 `atlas_tasks` tools over MCP | **First target.** The model chooses tools and reports `{"answer": ...}` |
+| `routing` | 156 (83 dev, 73 test) | a rule-based router and the Worker's JavaScript | a 15-class classification prompt, scored by exact match |
+| `quake_questions` | 26 | the Worker's date parser | extraction of `{start, end, min_mag}` given `now_utc` |
+| `rca_eval` + `rca_eval_gold` + `answers_extra` | 60 + 60 + 12 | Gemini and Groq answering over retrieved evidence | needs Atlas's frozen evidence packages (`model_eval.runner.run_frozen_answer_eval`); the corpus is not in the datasets |
+| `gaps`, `timing`, `dvv`, `pressure`, `quakes` | 120, 60, 72, 72, 35 | the tools, called directly | not a model evaluation as they stand; they become one only as code-writing tasks |
+
+None of these is held out from Repère's point of view: every row, including
+routing's `test` half, is in a public repository. Under
+[`../holdout_policy.md`](../holdout_policy.md) they give public-set numbers.
+Held-out cases need fresh draws from Atlas's seeded generator
+(`src/atlas_eval/synth.py`) with a secret seed that never enters either
+repository. That works for `agent_tasks` and the synthetic suites, not for the
+hand-labelled ones.
+
+## 4. Skill lift on the agent tasks
+
+What the Atlas agent receives today (`src/atlas_eval/suites/agent.py`):
+
+| Element | Content |
+|---|---|
+| System prompt | two sentences appended to Claude Code's: work only through the atlas MCP tools, do not ask questions |
+| Tool descriptions | `TOOL_SCHEMAS` in `src/atlas_tasks/tools.py`, one sentence per tool; only the two pressure tools say which to use when |
+| Harness | `claude -p --model haiku`, at most 12 turns, all non-Atlas tools disallowed |
+| Not given to the agent | the conventions in `src/atlas_tasks/README.md`: sign of Δt, dv/v as a fraction while tasks ask for percent, UTC days, `missing_days` |
+
+There is no SKILL.md, AGENTS.md or prompt file. The one before/after Atlas
+recorded is sharper tool descriptions (Haiku 18/20 to 21/21, then 20/21 on a
+rerun), one model and one run each, so it is not a skill-lift measurement.
+Running under Claude Code also mixes Claude Code's own system prompt into the
+condition.
+
+Plan for Repère, same 21 tasks, every model in `config/models.yaml`, K=5
+repeats:
+
+| Condition | Agent gets | Isolates |
 |---|---|---|
-| routing | `split: "test"` rows with `task` (the gold label) | 73 test, 83 dev |
-| retrieval | `gold.reference_answer`, `required_chunk_ids` | 60 |
-| answers | `gold.reference_answer`, `required_chunk_ids`, `required_citations` | 60 of 72 |
-| quake_questions | `expected` date range and magnitude | 26 |
+| `code-only` | `python_session`, no Atlas tools | baseline |
+| `tools-only` | Atlas MCP tools and Atlas's two-sentence prompt | tool lift (vs `code-only`) |
+| `tools+skill` | as above plus a SKILL.md on the tool conventions | skill lift (vs `tools-only`) |
 
-The page loads without credentials through raw.githack, which serves public
-GitHub content. I did not check the repository's visibility settings. If the
-page is public, then under `docs/holdout_policy.md` the routing test half is
-already burned for ranked use: its labels and questions are readable. The same
-policy treats the human-written suites as having no hidden partition at all.
+The SKILL.md describes Atlas's tools, so it should be authored in RCA Atlas
+and pulled at the same pin as the data. With n = 21, Atlas's own method note
+(§4) gives a 95 % half-width near ±20 points at 50 %; only large lifts will
+show. Growing the task set from the generator fixes that and gives the held-out
+draw at the same time.
 
-Fix, in order:
+Repère has no MCP client yet (`src/repere/agents/react.py` wires three local
+tools). Two routes: Inspect's stdio MCP tool support, if the pinned
+`inspect_ai` version has it (not checked: Inspect is not installed in either
+local pixi environment), or a small tool-calling loop over
+`OpenAICompatAdapter`, which already reaches Ollama.
 
-1. Decide per suite which rows are the held-out partition (section "Splits").
-2. Re-cut the held-out rows from questions that have never been in the repo, its
-   history, or a published page. Do not move the existing test rows; they are
-   spent.
-3. Make the catalog generator omit `gold`, `expected` and `reference_answer`
-   for test-split rows. Aggregates and per-case pass/fail stay.
-4. Note the retirement date of the old split in the changelog so a published
-   number is attributable to one split.
+## 5. Display (not started)
 
-## Task-type mapping
+Repère's board shows scores per suite, condition and model, with the cost
+frontier. For the Atlas suites that means aggregates only, labelled with the
+Atlas commit and file hash. Showing the items themselves on Repère's public
+site would be public display of Atlas material; link to Atlas's own catalog
+instead, unless the owners grant permission.
 
-`task_kind` is a `repere.TaskKind` value. `Scorer` says whether it exists today
-(file checked, not run) or must be written and registered in a
-`make_scorer_from_spec`.
+## 6. Overlap with Repère's own RCA seeds
 
-| Atlas suite | n | task_kind | Scorer | Tier | Mode | Gold |
-|---|---|---|---|---|---|---|
-| routing | 156 | `orchestration` | `exact_match` on `task` (**register**; exists only as an RCA method) | T0 | B | label from 15-class set |
-| quake_questions | 26 | `extraction` | `json_extraction` (exists, `sta_lta/scorers.py`) | T0 | A for templated rows, B for paraphrases | `{start, end, min_mag}`; `now_utc` goes in the prompt |
-| retrieval | 60 | `retrieval` | `retrieval_metrics` (exists, `lit_rag`) | T0 | B | `required_chunk_ids`, plus `corpus_snapshot` |
-| answers | 72 | `grounded_qa` | `citation_support` (exists, `lit_rag`) as primary; `rubric_judge` as secondary | T0, T4 | B | `reference_answer`, `required_terms`, `required_chunk_ids` |
-| quakes | 35 | `numerical_regression` | exact integer or histogram match (**new**, or `numerical_regression` with tolerance 0) | T1 | A for windows, public fixture | computed by an oracle at scoring time |
-| gaps | 120 | `extraction` | fault-set F1 with interval overlap (**new**: `fault_f1`) | T0 | A | list of `{kind, start, length}` |
-| timing | 60 | `numerical_regression` | per-hour error against generative truth, pass if within 1 sample (**new**, or RCA `oracle_compare`) | T1 | A | `jump_s`, `jump_hour`, `drift_s_per_day`, `kind` |
-| dvv | 72 | `numerical_regression` | `numerical_regression` (exists, `pipeline_regression`) | T1 | A | `dvv` (fractional) |
-| pressure | 72 | `numerical_regression` | `numerical_regression` on model parameters | T1 | A | calibration offsets, `rate_kpa_per_yr`, settling `amp` and `tau` |
-| agent | 21 | `orchestration` | `trajectory_dag` (exists, `orchestration`) plus answer check | T3 | A | expected answer and required tool |
-| agent_llm | 21 | `orchestration` | same dataset as `agent` | T3 | A | same |
-
-Notes on the table:
-
-- **agent and agent_llm are one dataset.** The two differ in who solves the
-  tasks (scripted oracle vs `claude:haiku`), which is run configuration, not
-  data. Package once, as `atlas/agent`, and record the solver on the leaderboard
-  row. The oracle run is the ceiling check, not a benchmark result.
-- **retrieval and answers share questions.** Ids match (`instrument-001` is in
-  both). Ship two suites with the same `prompt` and `gold` and different
-  `scorer_spec`, so a change to a question bumps both versions together.
-- **dvv already has a Repère suite** (`codameter`, Mode A, secret
-  `CODAMETER_GOLDEN_SECRET`; `docs/dvv_suite_v0.md`). Reuse its generator and
-  seed policy. Do not hold a second hidden corpus for the same quantity.
-- **Existing scorer names were read from `make_scorer_from_spec` source, not
-  run.** Confirm each round-trips before the first export.
-
-## Per-suite preparation
-
-### Mode A suites (gaps, timing, pressure, dvv, agent, quakes windows)
-
-Atlas already seeds each case (`gaps-001` seed 1000, `timing-001` seed 2000,
-`dvv-001` seed 3000, `pressure-001` seed 4000, `agent-diagnose-1` seed 6000). Keep that
-generator as the public validation set and add a second one:
-
-1. Write `generate(secret, version) -> cases` that reproduces today's
-   validation cases exactly when given the public seed, and a distinct draw
-   when given the secret. Today's seeds are in the catalog; the secret must not
-   be derivable from them.
-2. Split the generator output into an **observable** part (the series file,
-   the station records, the question text) and a **truth** part (the injected
-   faults, `dvv`, offsets). The model gets only the first. In the catalog the
-   gaps case record carries `case.faults` next to the series parameters;
-   make sure the sandbox view contains the series and not that list.
-3. Publish `sha256(cases.json)` for the hidden draw as the commitment. Keep the
-   contents in the runner temp dir for the life of the job.
-4. Add the scorer, register it, and add a round-trip test.
-
-Per suite:
-
-- **gaps.** Seven fault kinds appear (zero_fill 46, duplicate 41, nan_fill 40,
-  gap 37, spike 37, backstep 36, flatline 25 injections). 20 of the 120 cases
-  inject no fault, so clean series are already covered; keep that share in the
-  hidden draw. Score each case by set F1 over kinds and by interval overlap of
-  start and length. The one failing case is worth reading before freezing the
-  gold.
-- **timing.** 15 cases each of `none`, `jump`, `drift`, `jump+drift`, over five
-  SNR levels (0.08 to 0.35). Pass is "diagnosis right, jump found, at least 95 %
-  of estimated hours within one sample". See the abstention question below.
-- **pressure.** Tasks `a0a`, `scpr`, `drift`, 24 each. The headline excludes
-  the uplift-confound cases; make that a `metadata.category` so the exclusion is
-  a slice, not a silent filter.
-- **dvv.** 72 cases, three methods (stretching, MWCS, DTW) scored per case.
-  One row per case with the per-method pass rates as separate metrics, or
-  three rows per case. The first keeps the row count equal to Atlas's n.
-- **quakes.** The fixture catalog is real data, so hold the fixture public and
-  pinned by sha256 (RCA rule R13). Generate the query windows from the secret.
-  Gold is the count or histogram computed from the fixture at scoring time,
-  never typed into a row. Cross-implementation agreement (the catalog tracks
-  three: `atlas_tasks`, `axial_agent_tools`, `worker_js`) is a test of the
-  oracle, not part of the gold.
-
-### Mode B suites (routing, quake_questions, retrieval, answers)
-
-These need a human to write and a second human to verify.
-
-- **Splits.** Routing has 15 task types at 10 to 12 questions each. A
-  held-out half is 3 to 6 per class, so per-class recall is nearly
-  uninformative (95 % CI on 4 cases is wide). Report macro-F1 and accuracy only,
-  and say so in the dataset card.
-- **Verification state.** In the 120 retrieval and answers rows, 30
-  (15 questions) carry `review_status: requires_human_review` and 90 carry
-  `corpus_verified`. Package the 15 as `draft`, not verified, and exclude them
-  from any ranked number until a second named person checks the gold against
-  the corpus. The RCA lifecycle in `docs/rca/AUTHORING.md` is the model.
-- **Corpus pin.** Retrieval gold is chunk ids. Re-chunking the corpus silently
-  invalidates it. Put the corpus snapshot id and hash in
-  `metadata.corpus_snapshot` and set `cutoff_date` (RCA rule R05).
-- **Abstention.** Include questions whose right answer is "the corpus does not
-  establish this". The `tool_avoidance` and `tool_selection` categories in
-  retrieval (5 cases) are the start of this; extend them.
-- **Answers scoring.** The baseline uses an LLM judge (`claude:haiku`) over
-  answers from `gemini-2.5-flash` and gets 79 % [66 %, 88 %] with 6 errored
-  cases. In Repère terms that is tier T4. Lead with `citation_support`
-  (required terms and valid citations), and report the judge score only after
-  two humans have rated a calibration set and agreement is published
-  (RCA rule R06). The catalog has 5 `n/a` rows: decide whether they are
-  excluded or counted as errors before the first export.
-- **quake_questions.** Split by construction: templated questions (date
-  ranges, magnitudes, relative dates against a given `now_utc`) are Mode A and
-  can be drawn from the secret; the paraphrased ones are Mode B.
-
-## Questions only the domain experts can settle
-
-These change the gold, so they belong to the assigned experts on the sheet.
-
-1. **Does abstaining count as a pass?** In timing, 20 of the 24 failures sit at
-   SNR 0.08 (12 of 12 fail) or 0.12 (8 of 12 fail). All 18 abstentions
-   (`insufficient_snr`) are scored as fails, and only 1 case is flagged
-   confidently wrong. At SNR 0.08 the right answer may be "cannot estimate". If
-   so the 60 % headline understates the method and the gold needs an
-   `abstain` outcome.
-2. **Is 1 sample the right tolerance** (0.125 s at 8 Hz) for the real stations,
-   or only for the synthetic pair? chronfix reports a picker quantum of 0.125 s
-   and typical sigma 0.08 s on field data (see the `rca-coding-timing-offset`
-   seed).
-3. **Which pressure cases are the uplift confound**, and are they negative
-   controls or excluded?
-4. **For the 15 `requires_human_review` questions,** who is the second
-   verifier?
-
-## Order of work
-
-| Step | Output | Unblocks |
+| Repère | Atlas | Plan |
 |---|---|---|
-| 1 | Catalog generator stops emitting gold for held-out rows; retire the routing test half | any ranked number |
-| 2 | Register `exact_match`; write `fault_f1` and the timing scorer | exports for routing, gaps, timing |
-| 3 | `generate(secret, version)` for gaps, timing, pressure, agent; reuse codameter for dvv | Mode A hidden draws |
-| 4 | Export public `validation` JSONL and `manifest.json` for the seven Mode A suites | a pinned v0.1 |
-| 5 | Verify the 15 draft questions; write new held-out routing, quake_questions, retrieval, answers rows into `$REPERE_EVAL_DATA_DIR` | Mode B hidden split |
-| 6 | Upload the gated dataset, record the HF SHA, add the leaderboard pin | ranked results |
+| `rca-coding-timing-offset-hys14-001`, `-resyncs-002` (real HYS14 against chronfix, V1) | `timing_v1` (synthetic); `EVALUATION_METHOD.md` §10.1 plans the real HYS14 set | migrate to Atlas as the start of §10.1 |
+| `rca-coding-qc-continuity-001` (real data) | `gaps_v1` (synthetic) | migrate; complementary |
+| codameter dv/v suite | `dvv_v1` (synthetic) | keep one generator; decide which |
+| 5 `rca-sensor-*`, 5 `rca-litreview-*` (templates) | `rca_eval_v1` (60 questions, 14 categories, `corpus_verified` gold) | retire in favour of Atlas's set |
+
+## 7. Questions for the RCA Atlas owners
+
+1. May Repère publish aggregate scores computed on Atlas data on its public
+   board? The licence requires written permission for publication.
+2. Will Atlas tag a dataset release on `main` for Repère to pin?
+3. Where do held-out RCA items live? Atlas has no private partition; a gated
+   store (for example a gated Hugging Face dataset owned by the project) is the
+   pattern Repère uses.
+4. Will Atlas rows gain a review trail (author, verifier, source reference),
+   as `rca.golden.v0.1` records have?
+5. Atlas's published `catalog.html` embeds gold for routing `test` rows,
+   retrieval and answers. That is Atlas's choice, but it means those rows can
+   never be held out.
+
+## 8. Order of work
+
+| Step | Where | Status |
+|---|---|---|
+| Pull at a pinned commit with hash checks | Repère | done |
+| Remove Atlas rows from Repère; guard against recommitting | Repère | done |
+| Tag a dataset release; answer §7 | Atlas | open |
+| Atlas agent suite in Repère: MCP tools, scorer reproducing `AgentSuite.score_case`, three conditions | Repère | next |
+| SKILL.md for the Atlas tools | Atlas | open |
+| Routing and quake_questions as model suites | Repère | after the agent suite |
+| Board display of Atlas aggregates | Repère | after question 1 |
+| Migrate the overlapping RCA seeds | Atlas | open |

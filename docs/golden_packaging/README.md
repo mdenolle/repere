@@ -7,8 +7,17 @@ and `docs/holdout_policy.md`. Where those four disagree with the code, the code
 wins and this page says which.
 
 Checked against `repere` at commit `77a4511` (v0.5.2). The example in
-`example/` was produced by running `repere.export.export_suites`, not typed by
-hand.
+`example/` was produced by running `repere.export.export_suites` on Repère's
+own orchestration suite, not typed by hand.
+
+**Who owns which golden items.** RCA golden items are owned and authored in
+[RCA Atlas](https://github.com/coszo-hub/RCA-Atlas) (`src/atlas_eval/datasets/`
+and `src/model_eval/datasets/`). Repère does not copy them: it pulls them at a
+pinned commit, checks each file's SHA-256, evaluates models on them and
+displays the results. See [`ATLAS_PROPOSAL.md`](ATLAS_PROPOSAL.md) for how.
+The Atlas licence is proprietary, so no Atlas row may be committed to Repère;
+`tests/test_atlas_pull.py` fails if a pinned file is committed. The rest of this page
+covers golden sets that Repère itself owns.
 
 ## 0. Three formats exist; use the first for new work
 
@@ -42,12 +51,11 @@ schemas: [`schema/benchmark_row.schema.json`](schema/benchmark_row.schema.json),
 | `scorer_spec` | `{name, config}` | declarative; resolved by the suite family's `make_scorer_from_spec` |
 | `metadata` | object | use `difficulty`, `cutoff_date`, `category`, `source_case` so the leaderboard can slice |
 
-Example (from [`example/`](example/datasets/atlas/v0.1/routing.jsonl), a real
-public Atlas routing case; the `exact_match` scorer is a proposal, see the note
-under the example):
+Example (from [`example/`](example/datasets/orchestration/v0.1/orchestration.jsonl),
+the one public row of Repère's orchestration suite, prompt shortened here):
 
 ```json
-{"id": "atlas/routing/route-001", "dataset_id": "atlas", "suite_id": "routing", "version": "v0.1", "task_kind": "orchestration", "split": "validation", "visibility": "public", "prompt": "How many Axial earthquakes occurred yesterday?", "gold": {"task": "earthquake_count"}, "scorer_spec": {"name": "exact_match", "config": {"field": "task", "normalize": "lower"}}, "metadata": {"difficulty": "easy", "cutoff_date": null, "source_case": "route-001"}}
+{"id": "orchestration/orchestration/multi-station-detection-report", "dataset_id": "orchestration", "suite_id": "orchestration", "version": "v0.1", "task_kind": "orchestration", "split": "validation", "visibility": "public", "prompt": "Goal: produce a detection report for a regional earthquake using two stations. ...", "gold": {"nodes": ["fetch_waveform", "detect", "locate", "draft_report"], "edges": [["fetch_waveform", "detect"], ["detect", "locate"], ["locate", "draft_report"]]}, "scorer_spec": {"name": "trajectory_dag", "config": {"expected_agents": ["fetch_waveform", "detect", "locate", "draft_report"], "expected_edges": [["fetch_waveform", "detect"], ["detect", "locate"], ["locate", "draft_report"]], "max_calls": 6}}, "metadata": {"task_id": "multi-station-detection-report", "available_agents": ["fetch_waveform", "detect", "locate", "draft_report"], "max_calls": 6}}
 ```
 
 Manifest, one per `datasets/<dataset>/<version>/`:
@@ -55,13 +63,13 @@ Manifest, one per `datasets/<dataset>/<version>/`:
 ```json
 {
   "schema_version": "repere.suite.v1",
-  "dataset_id": "atlas",
+  "dataset_id": "orchestration",
   "version": "v0.1",
-  "generated_at": "2026-10-16T00:50:02Z",
+  "generated_at": "2026-10-16T02:36:36Z",
   "files": [
-    {"dataset_id": "atlas", "suite_id": "routing", "version": "v0.1",
-     "task_kind": "orchestration", "path": "atlas/v0.1/routing.jsonl",
-     "rows": 2, "sha256": "2f37f8662f8f6c9394143a099a39ea6819f57426b6584916ddd4ceb3b61b74fa"}
+    {"dataset_id": "orchestration", "suite_id": "orchestration", "version": "v0.1",
+     "task_kind": "orchestration", "path": "orchestration/v0.1/orchestration.jsonl",
+     "rows": 1, "sha256": "781ad2162508618677ee0afb91497f5bfc06a24b2a53398b86da6a94f39a562b"}
   ]
 }
 ```
@@ -114,10 +122,10 @@ later removed test row is compromised: `git log -S` recovers it.
 7. **Export.**
 
    ```bash
-   pixi run export-suite --suite atlas.routing --visibility public --out datasets/
+   pixi run export-suite --suite sta_lta.intent_extraction --visibility public --out datasets/
    ```
 
-   This writes `datasets/atlas/<version>/routing.jsonl` and
+   This writes `datasets/sta_lta/<version>/intent_extraction.jsonl` and
    `manifest.json`. Commit both. The exporter's `--visibility public` filter
    is what keeps test rows out of the committed JSONL; check the row count in
    the manifest against your validation count.
@@ -166,7 +174,23 @@ Do not cache a generated hidden corpus or a downloaded gold directory in CI.
 - [ ] Private partition is in the gated dataset, with the SHA recorded.
 - [ ] If `package-data` gained a pattern: build the wheel and inspect it.
 
-## 7. When to use an RCA golden record instead
+## 7. RCA items: author them in RCA Atlas
+
+New RCA golden items go to RCA Atlas, following its
+`src/atlas_eval/EVALUATION_METHOD.md` (§2 for provenance and dev/test, §11 for
+adding a case: append to the suite's JSONL, and bump to `_v2` once `v1` has
+been reported). Repère picks them up when its pin in
+`src/repere_suites/atlas/pins.yaml` moves to the Atlas commit that adds them.
+
+Atlas has no hidden partition today: every row in its repository is public, so
+a held-out RCA item must not be committed there either. Until the project
+owners set up a gated store for it, keep held-out items off GitHub entirely.
+
+The `rca.golden.v0.1` records still under `src/repere_suites/rca/seeds/` were
+written before this split of ownership. They are templates, they stay valid
+input to Repère's RCA harness, and they are to be migrated to RCA Atlas rather
+than extended here. What the format offers, and what an Atlas row would need to
+match it:
 
 Use `rca.golden.v0.1` YAML (`docs/rca/AUTHORING.md`) when the item needs a
 human review trail: a named author, a named verifier, a source you can open, a
@@ -178,6 +202,8 @@ execution-verified (`execution_check`), V3 reference-verified
 `python -m repere_suites.rca.validate [--strict]` with rules R01 to R16.
 
 Cost: about 100 lines of YAML per item. Fine for dozens of items, not for 700.
+Atlas rows today carry none of the review trail (author, verifier, source
+reference); adding those fields is a decision for the Atlas maintainers.
 
 ## 8. Known gaps (verified by reading the code, not by running it)
 
@@ -189,6 +215,12 @@ Cost: about 100 lines of YAML per item. Fine for dozens of items, not for 700.
 - The RCA suite has no `export_rows`, so RCA records cannot yet become JSONL.
 - `datasets/` currently holds only its README; no exported release exists in
   the tree.
+- `repere export-suite` knows only the five `sta_lta.*` suites; other suites
+  with `export_rows` (orchestration, lit_rag, dvv, ...) export through
+  `repere.export.export_suites` in Python, as the example here was.
+- `src/repere_suites/rca/seeds/coding/rca-coding-timing-resyncs-hys14-002.yaml`
+  is a committed `split: test` template. `tests/test_no_holdout_in_repo.py`
+  now rejects any held-out RCA seed and lists this one as pending removal.
 - `docs/dataset_submission.md` numbers two sections 5d. Cosmetic.
 - Four documents describe one process. This page does not replace them; link
   to it rather than copying from it.
