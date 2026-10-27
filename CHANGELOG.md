@@ -13,6 +13,8 @@ there cross-references the version that delivered it.
 
 ### Added
 
+- RCA Atlas placeholders on the landing page (Q&A, agent tasks, routing,
+  each marked "soon") while the Atlas suites are built (ROADMAP P3.7).
 - **RCA Atlas owns the RCA golden items; Repère pulls them.**
   `src/repere_suites/atlas/` pins `coszo-hub/RCA-Atlas` at a commit and the
   SHA-256 of 11 dataset files, `scripts/pull_atlas.py` downloads them into
@@ -118,6 +120,18 @@ there cross-references the version that delivered it.
 
 ### Fixed
 
+- **The board shows the full July run again.** The 2026-09-23 sweep (3
+  models, first 4 items per suite) had replaced the July board (5 models
+  including claude-haiku and deepseek-r1, every item: codameter 20, lit_rag 12,
+  synthetic_stalta 11), so STA/LTA and dv/v looked empty. The July rows are
+  rebuilt in schema v0.2 with `build_leaderboard`, scores unchanged, marked
+  single run; `skill_lift.json` is the July file. The September data stays in
+  history at `d341d2f` until the GPU-host sweep (ROADMAP P3.6) replaces both.
+- **The cost chart no longer stacks every $0 model on one line.** Rows sharing
+  an x value are offset a few pixels, or spread across the plot when every
+  configuration costs $0, as the board already did; the note says so and the
+  tooltip keeps the true value. An all-$0 run no longer prints `$0.000` ticks or
+  a `NaN` label.
 - **PR #54 committed two RCA Atlas rows** (`route-001`, `route-005`) as the
   golden-packaging example. The example is now the
   one public row of Repère's own orchestration suite. The rows remain in git

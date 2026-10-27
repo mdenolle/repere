@@ -222,9 +222,35 @@ function draw() {
     return;
   }
   rows = usable;
-  const maxX = Math.max(...rows.flatMap((r) => [ax.none(r), ax.full(r)]), 1e-9);
-  const xMax = maxX * 1.18;
+  const rawMax = Math.max(...rows.flatMap((r) => [ax.none(r), ax.full(r)]));
+  // Every configuration at $0 (an all-local sweep) leaves no scale to draw:
+  // the axis collapses and the ticks all read "$0.000".
+  const allZero = rawMax === 0;
+  const xMax = allZero ? 1 : rawMax * 1.18;
   const x = (v) => M.left + (v / xMax) * PW;
+
+  // Local models bill exactly $0, so on the cost axis their rows share one
+  // column and every lift line lands on top of the others. Rows whose two arms
+  // sit at the same x are spread a few pixels apart (or across the plot when
+  // every row is at $0), as site/board.js does. Cosmetic only: the tooltip
+  // and the table keep the true values, and the note says so.
+  const shared = new Map();
+  for (const r of rows) {
+    if (ax.none(r) === ax.full(r)) shared.set(ax.none(r), (shared.get(ax.none(r)) || 0) + 1);
+  }
+  const seen = new Map();
+  const px = new Map();
+  let nDodged = 0;
+  for (const r of rows) {
+    const v = ax.none(r);
+    const n = ax.none(r) === ax.full(r) ? shared.get(v) : 1;
+    if (n < 2) continue;
+    const i = seen.get(v) || 0;
+    seen.set(v, i + 1);
+    nDodged += 1;
+    const step = Math.min(12, (PW * 0.25) / n);
+    px.set(r, allZero ? M.left + ((i + 0.5) / n) * PW : x(v) + 6 + i * step);
+  }
   const y = (v) => M.top + (1 - v) * PH; // score is already 0..1
 
   // gridlines + y axis
@@ -240,9 +266,9 @@ function draw() {
     }, g).textContent = fmtPct(yv);
   }
   // x ticks
-  const nTicks = L.narrow ? 2 : 4;   // 4 tick labels collide on a phone
+  const nTicks = allZero ? 0 : L.narrow ? 2 : 4;   // 4 tick labels collide on a phone
   for (let i = 0; i <= nTicks; i++) {
-    const xv = (xMax / nTicks) * i;
+    const xv = nTicks ? (xMax / nTicks) * i : 0;  // all-$0: one tick, "$0"
     el("text", {
       class: "axis", x: x(xv), y: M.top + PH + 20, "text-anchor": "middle",
       "font-size": L.fAxis,
@@ -270,8 +296,8 @@ function draw() {
   for (const r of rows) {
     const hex = modelHex(r.model_id);
     const shape = shapeFor(r.suite);
-    const x0 = x(ax.none(r)), y0 = y(r.score_none);
-    const x1 = x(ax.full(r)), y1 = y(r.score_full);
+    const x0 = px.get(r) ?? x(ax.none(r)), y0 = y(r.score_none);
+    const x1 = px.get(r) ?? x(ax.full(r)), y1 = y(r.score_full);
 
     el("line", {
       class: "lift-line", x1: x0, y1: y0, x2: x1, y2: y1,
@@ -309,9 +335,12 @@ function draw() {
   }, defs);
   el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#6f6890", opacity: 0.5 }, arrowMarker);
 
+  const dodgeNote = !nDodged ? "" : allZero
+    ? `Every configuration here costs ${ax.fmt(0)}, so the points are spread across the plot to stay visible. `
+    : `${nDodged} pairs share an x value and are offset a few pixels to stay visible; hover for the true value. `;
   note.textContent =
     `${rows.length} model×eval pairs. Hollow marker = no skill; filled = skill loaded; ` +
-    `the line is the lift. ${state.meta.note || ""}`;
+    `the line is the lift. ${dodgeNote}${state.meta.note || ""}`;
 
   renderLegend(rows);
   renderTable(rows);
