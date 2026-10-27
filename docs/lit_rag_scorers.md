@@ -17,7 +17,8 @@ the loop. The judge becomes an opt-in fallback, not the primary signal.
 |----------|-----------------|--------|------|
 | RAG retrieval | ranked docs vs gold relevant set | `retrieval_metrics` | T0 |
 | Translation | domain terms must survive verbatim | `term_preservation` | T0 |
-| Grounded QA | citations resolve to real sources; facts present | `citation_support` | T0 |
+| Grounded QA | citations resolve to real sources, cite the right ones; facts present | `citation_support`, `attribution` | T0 |
+| Abstention | decline exactly when nothing relevant was provided | `abstention` | T0 |
 | Interpolation | held-out text/value predicted | reuse `numerical_regression` / lexical | T0–T1 |
 | Review / critique | rubric criteria | pinned-rubric LLM-judge (P3.5) | T4 |
 | Multimodal | answer about a figure/waveform | any of the above on the answer | T0–T4 |
@@ -46,6 +47,27 @@ Answer must cite inline `[S#]`; score = 0.5·(fraction of citations that resolve
 to a **provided** source) + 0.5·(fraction of required facts present) − penalty
 for forbidden tokens (e.g. a fabricated `[S9]`). No citations → 0 on the
 validity half.
+
+### `attribution`
+The full citation picture behind `citation_support`. The breakdown reports
+validity (cited ids resolve to a provided source), precision and recall against
+the gold relevant sources, the **list** of fabricated ids (auditable, not just
+a rate), fact coverage and forbidden terms. The scalar blends validity, recall
+and coverage, a third each by default; precision is reported but not blended.
+Citations are read as DOIs, `[S#]` keys, and, with `numbered: true`, as
+`[n]`, `[2-4]`, `[1, 5]` indexing the listed sources; an out-of-range `[n]` is a
+fabricated `#n`. `repere_suites.atlas.answers.answer_attribution_spec` builds
+the spec for an RCA Atlas question from its pulled gold (ROADMAP P3.7).
+
+### `abstention`
+A proper scoring rule. The model declines by emitting `NO_RELEVANT_PAPERS`
+alone, with no citation. Unanswerable query: 1 for a clean decline, 0 for
+anything else. Answerable query: 0 for declining, otherwise the fraction of gold
+ids cited or ranked. Declining is never free and never punished when right.
+
+`attribution`, `abstention` and the distractor helper
+`repere_suites.lit_rag.shortlist.hard_shortlist` come from the archived branch
+`archive/lit-rag-ooi-rca-2026-09`.
 
 ## Serialisable spec
 
