@@ -33,9 +33,16 @@ PRIVATE_DIR = Path(os.environ.get("REPERE_EVAL_DATA_DIR", REPO / "data" / "priva
 HF_REPO = os.environ.get("REPERE_HF_DATASET", "gaia-hazlab/repere-hidden")
 
 # Files the hidden dataset is expected to provide. Add one line per suite whose
-# test split is hidden.
+# test split is hidden. scripts/push_hidden_split.py uploads exactly this list.
 HIDDEN_FILES = [
+    "SECRET_SEED",
     "synthetic_stalta_test.yaml",
+    "sta_lta_test.yaml",
+    "gaia_data_downloader_test.yaml",
+    "fixtures/sta_lta.fetch_code.test.json",
+    "fixtures/sta_lta.intent_extraction.test.json",
+    "fixtures/sta_lta.report.test.json",
+    "fixtures/sta_lta.trigger_code.test.json",
 ]
 
 

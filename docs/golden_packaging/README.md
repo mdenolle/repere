@@ -1,5 +1,8 @@
 # Packaging a golden data set for Repère
 
+> Publishing a public split on Hugging Face, with Croissant/GeoCroissant
+> metadata and a DOI: [`HF_RELEASES.md`](HF_RELEASES.md).
+
 How a golden set goes from "cases I wrote" to a pinned, versioned artifact a
 leaderboard row can cite. This page collects what is already spread across
 `datasets/README.md`, `docs/dataset_submission.md`, `docs/golden_data_provisioning.md`

@@ -131,7 +131,10 @@ the leaderboard can slice by it.
 
 ---
 
-## 5. Hugging Face hosting (proposed design)
+## 5. Hugging Face hosting
+
+> Implemented for the public split: see [`golden_packaging/HF_RELEASES.md`](golden_packaging/HF_RELEASES.md)
+> for how a release is built, described in Croissant, published and given a DOI.
 
 > Status: design. Roadmap items **P2.3** (move large goldens to DVC/HF) and
 > **P3.3** (hidden test split via gated HF with server-side scoring) track the
@@ -141,11 +144,11 @@ We want three things at once: (a) easy `pull` of public data for development,
 (b) large golden artifacts out of git, and (c) hidden test gold that is *never
 distributed*. A two-repo layout on Hugging Face does all three.
 
-### 5a. Public dataset repo — `repere/<dataset>` (open)
+### 5a. Public dataset repo — `gaia-hazlab/repere-<dataset>` (open)
 
 - Contains **only** `validation` / `public` rows and any large public artifacts
   (plot goldens, corpora) that are painful in git.
-- Pulled with `datasets.load_dataset("repere/<dataset>", split="validation")`
+- Pulled with `datasets.load_dataset("gaia-hazlab/repere-<dataset>", "<suite_id>", split="validation")`
   or a `pixi run pull-dataset <name>` helper backed by the HF CLI / DVC remote.
 - Carries the `manifest.json` sha256 set so a pulled copy is verifiably the
   version a leaderboard row was scored against.
@@ -153,7 +156,7 @@ distributed*. A two-repo layout on Hugging Face does all three.
   redacted twin (prompt only) so tooling can *see* a hidden item exists without
   its answer.
 
-### 5b. Hidden test repo — `repere/<dataset>-test` (gated)
+### 5b. Hidden test repo — `gaia-hazlab/repere-hidden` (private)
 
 - **Gated** (HF access request / org membership). Access is granted to the
   scoring service, not to model developers.
