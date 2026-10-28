@@ -13,6 +13,22 @@ there cross-references the version that delivered it.
 
 ### Added
 
+- **Public releases on Hugging Face with Croissant metadata.** Two public
+  development splits are on the Hub under `gaia-hazlab`, one DOI each:
+  `repere-codameter` (4 rows, revision `3306d31`, tag v0.1) and
+  `repere-synthetic-stalta` (11 rows plus the CI.MWC seed waveform, revision
+  `2a38ac6`, tag v0.2). `datasets/releases.yaml` defines each release (suites,
+  license, RAI text, readiness profile); an OOI RCA entry is a placeholder.
+  `src/repere/croissant.py` writes Croissant 1.1 with the RAI extension,
+  GeoCroissant 1.0 for releases with a station and a time span, and one
+  Croissant Tasks `TaskProblem` per suite. `scripts/build_hf_release.py`
+  builds the folder and refuses held-out rows even when a hidden split is on
+  the machine; `scripts/publish_hf_release.py` re-checks and uploads;
+  `scripts/push_hidden_split.py` backs up the held-out files to the private
+  `gaia-hazlab/repere-hidden`. Guide: `docs/golden_packaging/HF_RELEASES.md`.
+  Checked with mlcroissant 1.1.1 (validate, and every record read back from the
+  Hub) and the Croissant Tasks SHACL shapes. `tests/test_hf_release.py`.
+
 - RCA Atlas placeholders on the landing page (Q&A, agent tasks, routing,
   each marked "soon") while the Atlas suites are built (ROADMAP P3.7).
 - **RCA Atlas owns the RCA golden items; Repère pulls them.**

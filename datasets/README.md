@@ -1,5 +1,8 @@
 # Repère curated benchmark datasets
 
+Public releases on Hugging Face are defined in [`releases.yaml`](releases.yaml);
+see [`../docs/golden_packaging/HF_RELEASES.md`](../docs/golden_packaging/HF_RELEASES.md).
+
 This folder is the canonical home for **frozen `(prompt, gold)` artifacts**
 exported from every Repère suite. Layout:
 

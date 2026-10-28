@@ -1,0 +1,206 @@
+# Public dataset releases on the Hugging Face Hub (gaia-hazlab organization).
+#
+# One entry per DOI. `scripts/build_hf_release.py <name>` turns an entry into a
+# release folder (data JSONL, manifest.json, croissant.json, tasks.jsonld,
+# README.md dataset card); `scripts/publish_hf_release.py <name>` uploads it.
+#
+# Rules (docs/golden_packaging/HF_RELEASES.md):
+#   * Only rows with split: validation AND visibility: public are released. The
+#     build refuses anything else. Held-out splits live in the private
+#     gaia-hazlab/repere-hidden repository, which never gets a DOI.
+#   * A DOI locks the Hub repository (no delete, rename or visibility change
+#     without a support request). Generate it only after the release is final.
+#   * `hf_revision` and `doi` are filled in after publishing; together with the
+#     manifest sha256 they say exactly which bytes a score was computed on.
+#
+# Readiness profile: evidence level 0 missing / 1 present but incomplete /
+# 2 verifiable by another team; null = not yet assessed. Criterion IDs follow
+# the AI-readiness instrument (A analysis, B AI, D agent-evaluation). This is a
+# v0 self-assessment by the maintainer, not a reviewed profile.
+
+releases:
+
+  codameter:
+    status: release
+    hf_repo: gaia-hazlab/repere-codameter
+    hf_revision: 3306d316d7be53edfd61c5eecaac98af31d78db8   # tag v0.1, 2026-10-28
+    doi: null                                                # set after "Generate DOI" on the Hub
+    pretty_name: "Repère codameter: dv/v processing tasks (public development split)"
+    version: v0.1
+    suites:
+      - cls: repere_suites.dvv.suite:DVVParamRecommendationSuite
+        output: >-
+          A JSON processing configuration (estimator, frequency band, coda
+          window, stack length, reference, quality gate).
+        evaluation: >-
+          Scorer dvv_recovery runs the configuration through codameter on the
+          case's synthetic data and grades the RMS error of the recovered dv/v
+          against the imposed one, from 1 at or below rms_ceiling to 0 at
+          rms_bad. Missing core keys or an invalid band, window or estimator
+          score 0.
+      - cls: repere_suites.dvv.suite:DVVSeriesSuite
+        output: The recovered dv/v(t) series, one value per day.
+        evaluation: >-
+          Scorer dvv_series_regression grades the RMS error of the returned
+          series against the imposed dv/v on the same scale (rms_ceiling to
+          rms_bad); rms_bad is set so a no-change series scores about 0.
+    license: mit
+    license_url: https://opensource.org/license/mit
+    description: >-
+      Agent-evaluation tasks for ambient-noise relative seismic velocity change
+      (dv/v) monitoring. In param_recommendation the model chooses processing
+      parameters (estimator, frequency band, coda window, stacking, reference);
+      in dvv_series it returns the recovered dv/v(t) series. Both are scored
+      against synthetic data with a known dv/v, generated deterministically by
+      codameter from each case recipe. This release holds the public
+      development split only; the evaluation corpus is withheld.
+    keywords: [seismology, ambient noise, dv/v, coda wave interferometry, agent evaluation, benchmark]
+    depends_on:
+      name: codameter
+      url: https://github.com/Denolle-Lab/codameter
+      version: "0.3.0"
+      commit: 9c3259b982ad79b35fb5e85cc8fb0952dc09244a
+    data_origin: simulated
+    rai:
+      dataCollection: >-
+        Synthetic. Each case is a recipe (application, grade, seed, SNR, record
+        length); codameter regenerates daily cross-correlation functions with an
+        imposed dv/v history from the recipe. No field recordings, no human
+        subjects.
+      dataCollectionType: [Simulation]
+      dataLimitations: >-
+        Two development cases (easy volcano, medium earthquake fault zone). The
+        withheld corpus has 30 cases over three grades and six applications
+        (codameter golden.py). Synthetic coda omits
+        source-distribution changes and instrument problems found in field data.
+        Scores on this split are for development, not ranking.
+      dataBiases: >-
+        Cases follow codameter's synthetic model; a method tuned to that model
+        may not transfer to field data.
+      personalSensitiveInformation: None.
+      dataUseCases: >-
+        Developing and debugging agents and skills for dv/v processing choices;
+        reproducing the Repère development board. Not for training.
+      dataReleaseMaintenancePlan: >-
+        Versioned with Repère; a changed recipe or scorer is a new version with a
+        new DOI. Withheld cases rotate independently.
+    readiness:
+      A1: {level: 2, evidence: "MIT license; generator pinned at codameter 9c3259b; manifest sha256 per file"}
+      A2: {level: 1, evidence: "dv/v units and sign stated in each prompt; no separate conventions record"}
+      A3: {level: null}
+      A4: {level: 2, evidence: "croissant.json (Croissant 1.1 + RAI) and tasks.jsonld (Croissant Tasks)"}
+      B1: {level: 1, evidence: "independent unit = case recipe; 2 public cases"}
+      B7: {level: 1, evidence: "cases split by recipe; withheld cases carry secret truth parameters (codameter golden.py)"}
+      D1: {level: 2, evidence: "scorer_spec on every row; tasks.jsonld"}
+      D2: {level: 1, evidence: "dvv_series scorer anchored so a no-change series scores about 0 (codameter); tests/test_dvv_suite.py"}
+      D3: {level: 1, evidence: "public development split only; withheld split private; no rotation log yet"}
+      D4: {level: 1, evidence: "2 task families x 2 public cases (grades easy, medium)"}
+      D5: {level: 0, evidence: "no case where abstention is correct"}
+      D6: {level: 1, evidence: "leaderboard schema records repeats; published board is one run per configuration"}
+
+  synthetic_stalta:
+    status: release
+    hf_repo: gaia-hazlab/repere-synthetic-stalta
+    hf_revision: 2a38ac669725b281dd07e80c13a6e48efeb09bff   # tag v0.2, 2026-10-28
+    doi: null                                                # set after "Generate DOI" on the Hub
+    pretty_name: "Repère synthetic STA/LTA: detector code tasks on a Ridgecrest record (public development split)"
+    version: v0.2
+    suites:
+      - cls: repere_suites.synthetic_stalta.items:SyntheticSTALTASuite
+        output: >-
+          Python code that runs an STA/LTA detector on the provided waveform and
+          calls record(picks=[...]) with trigger onset times in seconds.
+        evaluation: >-
+          Scorer stalta_code runs the code in a sandbox with the waveform
+          injected and matches the recorded picks to the gold onsets within
+          tolerance_s. Scoring is staged: code that runs but reports wrong
+          onsets caps at 0.2. An empty pick list is the correct answer on
+          noise-only cases.
+    extra_files:
+      - from: src/repere_suites/synthetic_stalta/data/ridgecrest_seed.mseed
+        to: data/ridgecrest_seed.mseed
+        encoding: application/vnd.fdsn.mseed
+        description: >-
+          Seed waveform CI.MWC..BHZ, 2019-07-06T03:19:52.9945Z to
+          03:21:32.9945Z, resampled to 10 Hz (1001 samples). Every case is a
+          documented transform of this record.
+    license: other
+    license_name: mit-and-scedc
+    license_url:
+      - https://opensource.org/license/mit
+      - https://scedc.caltech.edu/about/citation.html
+    license_note: >-
+      Task rows, prompts, gold onsets and scorer specifications are MIT
+      (Repère). The waveform in data/ridgecrest_seed.mseed and the waveform
+      arrays embedded in each row derive from Southern California Seismic
+      Network data distributed by SCEDC; cite both DOIs below when you use them.
+    description: >-
+      Code-generation tasks: the model writes a classic STA/LTA detector and
+      reports trigger onset times on a 100 s vertical record from the July 2019
+      Ridgecrest sequence, recorded at CI.MWC (Mount Wilson). Each case is a
+      documented transform of the real record (unmodified, amplitude scaling,
+      added noise, delayed onset, a second event, noise only), with the onset
+      times known by construction. Noise-only cases test that the model reports
+      no detection. This release holds the public development split only; the
+      test split is generated from a secret seed and withheld.
+    keywords: [seismology, earthquake detection, STA/LTA, Ridgecrest, code generation, agent evaluation, benchmark]
+    data_origin: derived
+    cite_also:
+      - "SCEDC (2013). Southern California Earthquake Data Center. Caltech. Dataset. https://doi.org/10.7909/C3WD3XH1"
+      - "California Institute of Technology and United States Geological Survey Pasadena (1926). Southern California Seismic Network. International Federation of Digital Seismograph Networks. Dataset. https://doi.org/10.7914/SN/CI"
+    geo:
+      # FDSN station service, service.scedc.caltech.edu, queried 2026-10-28.
+      station: CI.MWC..BHZ
+      latitude: 34.22362
+      longitude: -118.05832
+      elevation_m: 1725
+      crs: "EPSG:4326"
+      temporal_coverage: "2019-07-06T03:19:52Z/2019-07-06T03:21:33Z"
+      sampling_rate_hz: 10.0
+    rai:
+      dataCollection: >-
+        One 100 s window of CI.MWC..BHZ downloaded from the SCEDC FDSN service
+        (native 40 Hz), detrended, tapered, bandpassed 1-10 Hz and resampled to
+        10 Hz. Cases are produced by a published
+        generator (scripts/build_synthetic_stalta.py) applying amplitude, noise,
+        delay and superposition transforms; gold onsets follow from the
+        transform.
+      dataCollectionType: [Secondary Data Analysis, Simulation]
+      dataLimitations: >-
+        One station, one event, one component, 10 Hz. 11 development cases.
+        Detection skill here does not establish skill on continuous data or
+        other networks.
+      dataBiases: >-
+        All positives share one source waveform, so a model can overfit its
+        shape; noise-only cases use Gaussian or tiled pre-event noise.
+      personalSensitiveInformation: None.
+      dataUseCases: >-
+        Developing agents that write and run seismic detection code; checking
+        that a skill file changes the code an agent writes. Not for training.
+      dataReleaseMaintenancePlan: >-
+        Versioned with Repère; new transforms or a new seed record are a new
+        version with a new DOI. The withheld split rotates by changing its secret seed.
+    readiness:
+      A1: {level: 2, evidence: "MIT rows; SCEDC and CI network DOIs cited; manifest sha256 per file"}
+      A2: {level: 1, evidence: "station, channel, sampling rate and band stated; instrument response not applied or recorded"}
+      A3: {level: 1, evidence: "single 100 s window; the builder merges traces with interpolated fill, so gap presence is not recorded; noise level per case stated in its transform"}
+      A4: {level: 2, evidence: "croissant.json (Croissant 1.1 + RAI + GeoCroissant) and tasks.jsonld (Croissant Tasks)"}
+      B1: {level: 1, evidence: "independent unit = source record; 1 record, 11 transformed cases"}
+      B7: {level: 1, evidence: "test split drawn from a secret seed, not regenerable from the repository"}
+      D1: {level: 2, evidence: "scorer_spec on every row; tasks.jsonld"}
+      D2: {level: 2, evidence: "tests/test_synthetic_stalta.py scores a correct no-detection as 1 and a false alarm as 0"}
+      D3: {level: 1, evidence: "public development split only; test split private; no rotation log yet"}
+      D4: {level: 1, evidence: "11 cases, 8 positive and 3 noise-only; one task family"}
+      D5: {level: 2, evidence: "3 of 11 cases have no event; correct answer is an empty pick list"}
+      D6: {level: 1, evidence: "leaderboard schema records repeats; published board is one run per configuration"}
+
+  ooi_rca:
+    status: placeholder
+    hf_repo: null
+    pretty_name: "OOI Regional Cabled Array literature and data tasks"
+    note: >-
+      Placeholder. RCA golden items are owned and written in RCA Atlas
+      (coszo-hub/RCA-Atlas, roadmap P3.7), whose licence does not allow
+      redistribution without the owners' written permission. The OOI literature
+      corpus will be added here once the Atlas items and their terms are
+      settled. Nothing is built or published for this entry.
